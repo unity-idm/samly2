@@ -1,0 +1,24 @@
+<!-- configure java package names -->
+<xb:config xmlns:xb="http://www.bea.com/2002/09/xbean/config">
+
+	<!-- Those are imported from outside, samlTypes of SecurityFramework. -->
+    <xb:namespace uri="urn:oasis:names:tc:SAML:2.0:assertion">
+        <xb:package>xmlbeans.org.oasis.saml2.assertion</xb:package>
+    </xb:namespace>
+	<xb:namespace uri="urn:oasis:names:tc:SAML:2.0:protocol">
+        <xb:package>xmlbeans.org.oasis.saml2.protocol</xb:package>
+    </xb:namespace>
+    <xb:namespace uri="http://www.w3.org/2001/04/xmlenc#">
+        <xb:package>xmlbeans.org.w3.x2001.x04.xmlenc</xb:package>
+    </xb:namespace>
+    <xb:namespace uri="http://www.w3.org/2000/09/xmldsig#">
+        <xb:package>xmlbeans.org.w3.x2000.x09.xmldsig</xb:package>
+    </xb:namespace>
+
+    <xb:namespace uri="urn:vo:SAML:2.0:nameIdMap:ext">
+        <xb:package>xmlbeans.pl.edu.icm.samlvo.namemapext</xb:package>
+    </xb:namespace>
+    <xb:namespace uri="urn:vo:SAML:2.0:attribute:ext">
+        <xb:package>xmlbeans.pl.edu.icm.samlvo.attrext</xb:package>
+    </xb:namespace>
+</xb:config>
