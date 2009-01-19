@@ -9,6 +9,8 @@
 package eu.unicore.samly2.assertion;
 
 import java.io.IOException;
+import java.io.Serializable;
+
 import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -55,8 +57,10 @@ import xmlbeans.org.w3.x2000.x09.xmldsig.X509DataType;
  * 
  * @author K. Benedyczak
  */
-public abstract class AbstractAssertion
+public abstract class AbstractAssertion implements Serializable
 {
+       private static final long serialVersionUID=1L;
+
 	private static String ID_PREFIX = "SAMLY2lib_assert_";
 	
 	protected AssertionType assertion;
