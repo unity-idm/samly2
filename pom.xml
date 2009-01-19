@@ -26,10 +26,12 @@
 			<artifactId>stax-api</artifactId>
 			<version>1.0.1</version>
 		</dependency>
+		<!-- this is repackaged and fixed version to work with both JDK 5 and 6
+		(in JDK6 internal implementation is not used) -->
 		<dependency>
 			<groupId>org.apache.santuario</groupId>
-			<artifactId>xmlsec</artifactId>
-			<version>1.4.1</version>
+			<artifactId>xmlsec-java6</artifactId>
+			<version>1.4.2</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
