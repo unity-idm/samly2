@@ -8,6 +8,8 @@
 
 package eu.unicore.security.dsig;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyException;
 import java.security.NoSuchAlgorithmException;
@@ -53,6 +55,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 
 import eu.unicore.security.CertificateUtils;
 
@@ -144,6 +148,10 @@ public class DigSignatureUtil
 		SignedInfo si = fac.newSignedInfo(canMethod, sigMethod,
 					Collections.singletonList(ref));
 
+		if (log.isTraceEnabled())
+			log.trace("Will generate signature of a document:\n" + 
+					dumpDOMToString(docToSign));
+
 		DOMSignContext dsc = null;
 		if (insertBefore == null)
 			dsc = new DOMSignContext(privKey, 
@@ -178,6 +186,11 @@ public class DigSignatureUtil
 		XMLSignature signature = fac.newXMLSignature(si, ki);
 
 		signature.sign(dsc);
+
+		if (log.isTraceEnabled())
+			log.trace("Signed document:\n" + 
+					dumpDOMToString(docToSign));
+
 	}
 	
 	public boolean verifyEnvelopedSignature(Document signedDocument, PublicKey validatingKey) 
@@ -225,6 +238,10 @@ public class DigSignatureUtil
 			PublicKey validatingKey, Node signatureNode) 
 		throws MarshalException, XMLSignatureException
 	{
+		if (log.isTraceEnabled())
+			log.trace("Will verify signature of document:\n" + 
+					dumpDOMToString(signedDocument));
+
 		DOMValidateContext valContext = new DOMValidateContext(validatingKey,
 				signatureNode);
 
@@ -282,4 +299,22 @@ public class DigSignatureUtil
 		}
 		return signature.getSignedInfo().getReferences();
 	}
+	
+	
+	public static String dumpDOMToString(Document doc)
+	{
+        	XMLSerializer serializer = new XMLSerializer();
+        	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        	serializer.setOutputByteStream(baos);
+        	try
+        	{
+        		serializer.serialize(doc);
+        		return baos.toString();
+        	} catch (IOException e)
+        	{
+        		log.warn("Can't serialize DOM to String: " + e);
+        		return null;
+        	}
+	}
+
 }
