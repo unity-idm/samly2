@@ -187,7 +187,30 @@ public abstract class AbstractAssertion implements Serializable
 
 	public void setSubject(SubjectType subject)
 	{
-		assertion.setSubject(subject);
+		//The following line should be enough here but unfortunately the produced
+		//XML has not prefix set (uses default NS defined in it). 
+		//It is perfectly OK, but unicore gateway 
+		//(as of version 1.1.3 and probably all earlier) can't handle this situation
+		//and adds the prefix what spoils the signature. So we do the copy manually
+		//- this way xmlbeans adds prefixes.
+		
+		//assertion.setSubject(subject);
+		
+		//---- hack start
+		if (assertion.isSetSubject())
+			assertion.unsetSubject();
+		SubjectType added = assertion.addNewSubject();
+		if (subject.isSetNameID())
+			added.setNameID(subject.getNameID());
+		if (subject.isSetEncryptedID())
+			added.setEncryptedID(subject.getEncryptedID());
+		if (subject.isSetBaseID())
+			added.setBaseID(subject.getBaseID());
+		if (subject.sizeOfSubjectConfirmationArray() > 0)
+			added.setSubjectConfirmationArray(subject.getSubjectConfirmationArray());
+		//----- hack end
+		
+		
 		if (subject.getNameID().getFormat().equals(SAMLConstants.NFORMAT_DN))
 			subjectDN = subject.getNameID().getStringValue();
 		modified = true;
