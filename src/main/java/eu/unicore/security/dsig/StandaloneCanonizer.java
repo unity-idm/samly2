@@ -16,7 +16,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.xml.security.signature.XMLSignatureInput;
 import org.apache.xml.security.transforms.Transforms;
 import org.apache.xml.security.utils.Constants;
-import org.apache.xml.security.utils.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -70,7 +69,16 @@ public class StandaloneCanonizer
 				System.in : new FileInputStream(file));
 		return inputDoc;
 	}
-	
+
+	public static Element createDSctx(Document doc, String prefix,
+		String namespace)
+	{
+		Element ctx = doc.createElementNS(null, "namespaceContext");
+		ctx.setAttributeNS(Constants.NamespaceSpecNS, "xmlns:" + prefix, namespace);
+		return ctx;
+	}
+
+
 	public String fireCanon(Document inputDoc, boolean envSigTr) throws Exception
 	{
 		org.apache.xml.security.Init.init();
@@ -80,7 +88,7 @@ public class StandaloneCanonizer
 		XMLSignatureInput result;
 		if (envSigTr)
 		{
-			Element nscontext = XMLUtils.createDSctx(inputDoc, "ds", 
+			Element nscontext = createDSctx(inputDoc, "ds", 
 					Constants.SignatureSpecNS);
 			Element transformsElement = (Element) XPathAPI.selectSingleNode(
 					inputDoc, "//ds:Transforms", nscontext);

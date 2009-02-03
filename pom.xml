@@ -5,7 +5,7 @@
 	<groupId>pl.edu.icm.saml</groupId>
 	<artifactId>samly2</artifactId>
 	<packaging>jar</packaging>
-	<version>1.2</version>
+	<version>1.2.1</version>
 	<name>samly2</name>
 	<url>http://www.chemomentum.org</url>
 
@@ -116,9 +116,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<skip>true</skip>
-				</configuration>
 			</plugin>
 			
 			<plugin>
