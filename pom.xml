@@ -46,7 +46,7 @@
 		<dependency>
 			<groupId>eu.unicore.security</groupId>
 			<artifactId>crl-checking</artifactId>
-			<version>1.0-rc1</version>
+			<version>1.0</version>
 		</dependency>
 	</dependencies>
 
