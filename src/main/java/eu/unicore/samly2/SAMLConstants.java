@@ -21,6 +21,9 @@ public class SAMLConstants
 		"urn:oasis:names:tc:SAML:1.1:nameid-format:";
 	private static final String NAME_FORMAT20_P = 
 		"urn:oasis:names:tc:SAML:2.0:nameid-format:";
+
+	public static final String ASSERTION_NS = SAML_P + "assertion";
+	
 	
 	public static final String NFORMAT_UNSPEC = NAME_FORMAT11_P + "unspecified";
 	public static final String NFORMAT_EMAIL = NAME_FORMAT11_P + "emailAddress";

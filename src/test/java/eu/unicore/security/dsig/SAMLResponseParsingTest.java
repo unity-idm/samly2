@@ -10,13 +10,7 @@ package eu.unicore.security.dsig;
 
 import java.security.cert.X509Certificate;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.protocol.ResponseDocument;
-import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.assertion.Assertion;
 import eu.unicore.samly2.exceptions.SAMLParseException;
 import eu.unicore.samly2.proto.AssertionResponse;
@@ -24,24 +18,6 @@ import junit.framework.TestCase;
 
 public class SAMLResponseParsingTest extends TestCase
 {
-	/*
- 		Element node = (Element)respXml.getDomNode();
-		NodeList asNodes = node.getElementsByTagNameNS(
-			SAMLConstants.ASSERTION_NS, "Assertion");
-		if (asNodes == null || asNodes.getLength() == 0)
-			return new Assertion[0];
-		Assertion []ret = new Assertion[asNodes.getLength()];
-		for (int i=0; i<asNodes.getLength(); i++)
-		{
-			Node asNode = asNodes.item(i);
-			AssertionDocument wrapper = AssertionDocument.Factory.parse(asNode);
-			ret[i] = new Assertion(wrapper);
-		}
-		return ret;
-
-	  
-	  
-	 */
 	public void testResponse()
 	{
 		ResponseDocument xmlRespDoc;

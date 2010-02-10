@@ -15,7 +15,11 @@ import java.security.cert.X509Certificate;
 
 import org.apache.xmlbeans.XmlException;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
+import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.assertion.Assertion;
 import eu.unicore.samly2.elements.NameID;
 import eu.unicore.samly2.exceptions.SAMLParseException;
@@ -73,6 +77,22 @@ public class AssertionResponse extends AbstractStatusResponse
 	public Assertion[] getAssertions() 
 		throws SAMLParseException, XmlException, IOException
 	{
+ 		Element node = (Element)respXml.getDomNode();
+		NodeList asNodes = node.getElementsByTagNameNS(
+			SAMLConstants.ASSERTION_NS, "Assertion");
+		if (asNodes == null || asNodes.getLength() == 0)
+			return new Assertion[0];
+		Assertion []ret = new Assertion[asNodes.getLength()];
+		for (int i=0; i<asNodes.getLength(); i++)
+		{
+			Node asNode = asNodes.item(i);
+			AssertionDocument wrapper = AssertionDocument.Factory.parse(asNode);
+			ret[i] = new Assertion(wrapper);
+		}
+		return ret;
+/*
+ This version is faster however less safe - root Assertion element can get additional namespace
+ declarations. Should not affect signature checking but to be 100% correct we parse from DOM as above.
 		AssertionType[] xmlAs = respXml.getAssertionArray();
 		if (xmlAs == null || xmlAs.length == 0)
 			return new Assertion[0];
@@ -84,6 +104,7 @@ public class AssertionResponse extends AbstractStatusResponse
 			ret[i] = new Assertion(wrapper);
 		}
 		return ret;
+*/
 	}
 	                 
 	

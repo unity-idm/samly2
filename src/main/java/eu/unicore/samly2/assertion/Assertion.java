@@ -32,6 +32,8 @@ import xmlbeans.org.oasis.saml2.assertion.SubjectLocalityType;
  */
 public class Assertion extends AbstractAssertion
 {
+	private static final long serialVersionUID = 1;
+
 	public Assertion()
 	{
 	}
