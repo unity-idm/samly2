@@ -1,7 +1,6 @@
 package eu.unicore.security.dsig;
 
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.PublicKey;
