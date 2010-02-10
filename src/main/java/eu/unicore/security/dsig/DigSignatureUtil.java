@@ -50,13 +50,13 @@ import javax.xml.crypto.dsig.spec.TransformParameterSpec;
 
 import org.apache.log4j.Logger;
 import org.apache.xml.security.utils.Base64;
+import org.apache.xml.serialize.XMLSerializer;
 import org.apache.xmlbeans.XmlBase64Binary;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 
 import eu.unicore.security.CertificateUtils;
 
@@ -300,21 +300,35 @@ public class DigSignatureUtil
 		return signature.getSignedInfo().getReferences();
 	}
 	
-	
-	public static String dumpDOMToString(Document doc)
+	public static String dumpDOMToString(Document node)
 	{
         	XMLSerializer serializer = new XMLSerializer();
         	ByteArrayOutputStream baos = new ByteArrayOutputStream();
         	serializer.setOutputByteStream(baos);
         	try
         	{
-        		serializer.serialize(doc);
+        		serializer.serialize(node);
         		return baos.toString();
         	} catch (IOException e)
         	{
-        		log.warn("Can't serialize DOM to String: " + e);
+        		log.warn("Can't serialize DOM Document to String: " + e);
         		return null;
         	}
 	}
-
+	
+	public static String dumpDOMToString(Element node)
+	{
+        	XMLSerializer serializer = new XMLSerializer();
+        	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        	serializer.setOutputByteStream(baos);
+        	try
+        	{
+        		serializer.serialize(node);
+        		return baos.toString();
+        	} catch (IOException e)
+        	{
+        		log.warn("Can't serialize DOM Element to String: " + e);
+        		return null;
+        	}
+	}
 }
