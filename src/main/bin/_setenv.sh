@@ -52,6 +52,6 @@ CP=.
 for JAR in $JARS ; do 
     CP=$CP:$JAR
 done
-CP=${CP}:conf
+CP=${CP}:bin
 
 #echo Reading code from $CP

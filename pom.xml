@@ -5,7 +5,7 @@
 	<groupId>pl.edu.icm.saml</groupId>
 	<artifactId>samly2</artifactId>
 	<packaging>jar</packaging>
-	<version>1.2.1</version>
+	<version>1.2.2-SNAPSHOT</version>
 	<name>samly2</name>
 	<url>http://www.chemomentum.org</url>
 
