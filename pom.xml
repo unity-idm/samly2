@@ -5,7 +5,7 @@
 	<groupId>pl.edu.icm.saml</groupId>
 	<artifactId>samly2</artifactId>
 	<packaging>jar</packaging>
-	<version>1.2.2-SNAPSHOT</version>
+	<version>1.2.3-SNAPSHOT</version>
 	<name>samly2</name>
 	<url>http://www.chemomentum.org</url>
 
@@ -50,13 +50,13 @@
 		</dependency>
 	</dependencies>
 
-        <repositories>
-                <repository>
-                        <id>vsgc-public</id>
-                        <name>VSGC repository</name>
-                        <url>http://zam904.zam.kfa-juelich.de/maven</url>
-                </repository>
-        </repositories>
+	<repositories>
+		<repository>
+			<id>vsgc-public</id>
+			<name>VSGC repository</name>
+			<url>http://zam904.zam.kfa-juelich.de/maven</url>
+		</repository>
+	</repositories>
 
 	<distributionManagement>
 		<!-- use the following if you're not using a snapshot version. -->
@@ -64,7 +64,7 @@
 			<id>vsgc-public</id>
 			<name>VSGC repository</name>
 			<url>
-				scp://zam904.zam.kfa-juelich.de/srv/www/htdocs/maven
+				dav://zam904.zam.kfa-juelich.de/maven
 			</url>
 		</repository>
 		<!-- use the following if you ARE using a snapshot version. -->
@@ -72,7 +72,7 @@
 			<id>vsgc-public-snapshot</id>
 			<name>VSGC SNAPSHOT Repository</name>
 			<url>
-				scp://zam904.zam.kfa-juelich.de/srv/www/htdocs/maven
+				dav://zam904.zam.kfa-juelich.de/maven
 			</url>
 		</snapshotRepository>
 	</distributionManagement>
