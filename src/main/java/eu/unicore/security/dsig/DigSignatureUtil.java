@@ -14,7 +14,6 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.Provider;
 import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
@@ -74,15 +73,18 @@ public class DigSignatureUtil
 {
 	private static final Logger log = Logger.getLogger("unicore.security.dsig." + 
 		DigSignatureUtil.class.getSimpleName());
-	private final static String PROVIDER = "refactored.org.jcp.xml.dsig.internal.dom.XMLDSigRI";
 	private static XMLSignatureFactory fac = null;
 	
 	public DigSignatureUtil() throws DSigException
 	{
 		try
 		{
-			fac = XMLSignatureFactory.getInstance("DOM",
-					(Provider) Class.forName(PROVIDER).newInstance());
+			fac = XMLSignatureFactory.getInstance();
+			double ver = fac.getProvider().getVersion();
+			if (ver < 1.44)
+				log.error("xmlsec library is not properly configured, XML dsig will sometimes fail! " +
+					"Currently version " + ver + " is used, while at least version 1.44 should be used." +
+					" Most often this means that xmlsec-x.xx.jar is not in Java endorsed directory.");
 		} catch (Exception e)
 		{
 			throw new DSigException("Initialization of digital signature " +
