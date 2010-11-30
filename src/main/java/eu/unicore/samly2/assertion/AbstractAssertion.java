@@ -190,7 +190,7 @@ public abstract class AbstractAssertion implements Serializable
 		//The following line should be enough here but unfortunately the produced
 		//XML has not prefix set (uses default NS defined in it). 
 		//It is perfectly OK, but unicore gateway 
-		//(as of version 1.1.3 and probably all earlier) can't handle this situation
+		//(prior to version 6.3.0) can't handle this situation
 		//and adds the prefix what spoils the signature. So we do the copy manually
 		//- this way xmlbeans adds prefixes.
 		

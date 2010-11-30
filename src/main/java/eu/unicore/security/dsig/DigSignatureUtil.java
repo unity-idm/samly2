@@ -165,6 +165,7 @@ public class DigSignatureUtil
 			dsc = new DOMSignContext(privKey, 
 					docToSign.getDocumentElement(), insertBefore);
 		//hack to overcome gateway/ActiveSOAP bugs with default prefixes...
+		// -> only relevant for gateway version < 6.3.0  
 		dsc.putNamespacePrefix(
 			"http://www.w3.org/2000/09/xmldsig#", 
 			"dsig");
