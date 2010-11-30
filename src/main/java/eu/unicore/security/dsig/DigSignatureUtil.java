@@ -8,8 +8,7 @@
 
 package eu.unicore.security.dsig;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.StringWriter;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyException;
 import java.security.NoSuchAlgorithmException;
@@ -46,10 +45,14 @@ import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.crypto.dsig.spec.TransformParameterSpec;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
 import org.apache.xml.security.utils.Base64;
-import org.apache.xml.serialize.XMLSerializer;
 import org.apache.xmlbeans.XmlBase64Binary;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -301,36 +304,32 @@ public class DigSignatureUtil
 		}
 		return signature.getSignedInfo().getReferences();
 	}
+
+	public static String dumpDOMToString(Element node)
+	{
+		return dumpNodeToString(node);
+	}
 	
 	public static String dumpDOMToString(Document node)
 	{
-        	XMLSerializer serializer = new XMLSerializer();
-        	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        	serializer.setOutputByteStream(baos);
-        	try
-        	{
-        		serializer.serialize(node);
-        		return baos.toString();
-        	} catch (IOException e)
-        	{
+		return dumpNodeToString(node);
+	}
+
+	private static String dumpNodeToString(Node document)
+	{
+		TransformerFactory transformerFactory = TransformerFactory.newInstance();
+		try
+		{
+			Transformer transformer = transformerFactory.newTransformer();
+			StringWriter stringWriter = new StringWriter();
+			StreamResult streamResult = new StreamResult(stringWriter);
+			DOMSource domSource = new DOMSource(document);
+			transformer.transform(domSource, streamResult);
+			return stringWriter.toString();
+		} catch (TransformerException e)
+		{
         		log.warn("Can't serialize DOM Document to String: " + e);
         		return null;
-        	}
-	}
-	
-	public static String dumpDOMToString(Element node)
-	{
-        	XMLSerializer serializer = new XMLSerializer();
-        	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        	serializer.setOutputByteStream(baos);
-        	try
-        	{
-        		serializer.serialize(node);
-        		return baos.toString();
-        	} catch (IOException e)
-        	{
-        		log.warn("Can't serialize DOM Element to String: " + e);
-        		return null;
-        	}
+		}
 	}
 }

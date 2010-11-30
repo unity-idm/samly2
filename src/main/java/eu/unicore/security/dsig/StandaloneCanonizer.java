@@ -16,11 +16,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.xml.security.signature.XMLSignatureInput;
 import org.apache.xml.security.transforms.Transforms;
 import org.apache.xml.security.utils.Constants;
+import org.apache.xpath.XPathAPI;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import com.sun.org.apache.xpath.internal.XPathAPI;
 
 /**
  * @author K. Benedyczak
