@@ -56,7 +56,7 @@ public class CertificateUtils
 			finally{
 				if(fis!=null)try{fis.close();}catch(IOException ignored){}
 			}
-			crlManager=new CRLManager(crlMgrProps);
+			crlManager=CRLManager.getInstance(crlMgrProps);
 		}
 
 	}
