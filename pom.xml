@@ -26,8 +26,6 @@
 			<artifactId>xmlbeans</artifactId>
 			<version>2.4.0</version>
 		</dependency-->
-		<!-- this is a repackaged and fixed version to work with both JDK 5 and 
-			6 (in JDK6 internal implementation is not used) -->
 		<dependency>
 			<groupId>org.apache.santuario</groupId>
 			<artifactId>xmlsec</artifactId>
@@ -73,6 +71,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>xmlbeans-maven-plugin</artifactId>
+				<version>2.3.3</version>
 				<executions>
 					<execution>
 						<goals>
