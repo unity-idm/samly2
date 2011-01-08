@@ -5,7 +5,7 @@
 	<groupId>pl.edu.icm.saml</groupId>
 	<artifactId>samly2</artifactId>
 	<packaging>jar</packaging>
-	<version>1.3.1</version>
+	<version>1.3.2</version>
 	<name>samly2</name>
 
 	<parent>
@@ -54,7 +54,7 @@
 		<dependency>
 			<groupId>eu.unicore.security</groupId>
 			<artifactId>crl-checking</artifactId>
-			<version>1.1</version>
+			<version>1.2</version>
 		</dependency>
 	</dependencies>
 	
