@@ -1,0 +1,27 @@
+<saml:Assertion ID="_6100e27a-39ae-452b-a83c-f246bd24df78" IssueInstant="2008-01-25T13:26:50.861Z" Version="2.0" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+	<saml:Issuer>
+		example.com
+    </saml:Issuer>
+	<saml:Subject>
+		<saml:NameID Format="urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress">
+			Alice@example.com
+       </saml:NameID>
+		<saml:SubjectConfirmation Method="urn:oasis:names:tc:SAML:2.0:cm:sender-vouches" />
+	</saml:Subject>
+	<saml:Conditions NotBefore="2003-04-17T00:46:02Z" NotOnOrAfter="2003-04-17T00:51:02Z">
+		<saml:AudienceRestriction>
+			<saml:Audience>
+				example2.com
+          </saml:Audience>
+		</saml:AudienceRestriction>
+	</saml:Conditions>
+	<saml:AttributeStatement>
+		<saml:Attribute xmlns:x500="urn:oasis:names:tc:SAML:2.0:profiles:attribute:X500"
+			NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri" Name="urn:oid:2.5.4.20"
+			FriendlyName="telephoneNumber">
+			<saml:AttributeValue xsi:type="xs:string">
+				+1-888-555-1212
+          </saml:AttributeValue>
+		</saml:Attribute>
+	</saml:AttributeStatement>
+</saml:Assertion>
