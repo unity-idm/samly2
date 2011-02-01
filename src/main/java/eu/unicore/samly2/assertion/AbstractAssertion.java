@@ -49,20 +49,18 @@ import xmlbeans.org.oasis.saml2.assertion.SubjectType;
 import xmlbeans.org.w3.x2000.x09.xmldsig.KeyInfoType;
 import xmlbeans.org.w3.x2000.x09.xmldsig.X509DataType;
 
-
 /**
- * SAML v2 assertion. It is generic, i.e. can represent any kind of assertion 
+ * SAML v2 assertion. It is generic, i.e. can represent any kind of assertion
  * (identity, attribute, ...) but implements only subset of SAML constructs.
  * There is no code related to statements here.
  * 
  * @author K. Benedyczak
  */
-public abstract class AbstractAssertion implements Serializable
-{
-       private static final long serialVersionUID=1L;
+public abstract class AbstractAssertion implements Serializable {
+	private static final long serialVersionUID = 1L;
 
 	private static String ID_PREFIX = "SAMLY2lib_assert_";
-	
+
 	protected AssertionType assertion;
 	private AssertionDocument assertionDoc;
 	private ConditionsType conditions;
@@ -70,16 +68,15 @@ public abstract class AbstractAssertion implements Serializable
 	private AudienceRestrictionType audienceRestriction;
 	private boolean modified;
 	private int conditionsCount;
-	
+
 	private String issuerDN, subjectDN;
-	
-	public AbstractAssertion()
-	{
+
+	public AbstractAssertion() {
 		modified = true;
 		proxyRestriction = null;
 		audienceRestriction = null;
 		conditionsCount = 0;
-		
+
 		assertionDoc = AssertionDocument.Factory.newInstance();
 
 		assertion = AssertionType.Factory.newInstance();
@@ -89,61 +86,56 @@ public abstract class AbstractAssertion implements Serializable
 
 		conditions = ConditionsType.Factory.newInstance();
 	}
-	
-	public AbstractAssertion(AssertionDocument doc) throws SAMLParseException, 
-		XmlException, IOException
-	{
+
+	public AbstractAssertion(AssertionDocument doc) throws SAMLParseException,
+			XmlException, IOException {
 		modified = true;
-		assertionDoc = AssertionDocument.Factory.parse(
-				doc.newReader());
+		assertionDoc = AssertionDocument.Factory.parse(doc.newReader());
 		assertion = assertionDoc.getAssertion();
 		if (assertion == null)
 			assertion = AssertionType.Factory.newInstance();
 		conditions = assertion.getConditions();
 		proxyRestriction = null;
 		audienceRestriction = null;
-		if (conditions != null)
-		{
+		if (conditions != null) {
 			ProxyRestrictionType pp[] = conditions.getProxyRestrictionArray();
 			if (pp.length > 0)
 				proxyRestriction = pp[0];
-			AudienceRestrictionType ar[] = conditions.getAudienceRestrictionArray();
+			AudienceRestrictionType ar[] = conditions
+					.getAudienceRestrictionArray();
 			if (ar.length > 0)
 				audienceRestriction = ar[0];
 		} else
 			conditions = ConditionsType.Factory.newInstance();
 
-		NameIDType n1 =  assertion.getIssuer();
-		if (n1 != null)
-		{
-			if (SAMLConstants.NFORMAT_DN.equals(n1.getFormat()))
-			{
+		NameIDType n1 = assertion.getIssuer();
+		if (n1 != null) {
+			if (SAMLConstants.NFORMAT_DN.equals(n1.getFormat())) {
 				XmlCursor cur = n1.newCursor();
 				cur.toFirstContentToken();
 				issuerDN = cur.getTextValue();
-			} /*else
-				throw new SAMLParseException("Unsupported " +
-					"issuer format: " + n1.getFormat());*/
+			} /*
+			 * else throw new SAMLParseException("Unsupported " +
+			 * "issuer format: " + n1.getFormat());
+			 */
 		} else
 			throw new SAMLParseException("No issuer in assertion");
-		
-		SubjectType s =  assertion.getSubject();
-		if (s != null && s.getNameID() != null)
-		{
+
+		SubjectType s = assertion.getSubject();
+		if (s != null && s.getNameID() != null) {
 			n1 = s.getNameID();
-			if (SAMLConstants.NFORMAT_DN.equals(n1.getFormat()))
-			{
+			if (SAMLConstants.NFORMAT_DN.equals(n1.getFormat())) {
 				XmlCursor cur = n1.newCursor();
 				cur.toFirstContentToken();
 				subjectDN = cur.getTextValue();
-			} /*else
-				throw new SAMLParseException("Unsupported " +
-					"subject format: " + n1.getFormat());*/			
+			} /*
+			 * else throw new SAMLParseException("Unsupported " +
+			 * "subject format: " + n1.getFormat());
+			 */
 		}
 	}
 
-	public void setX509Issuer(String issuerName)
-	{
+	public void setX509Issuer(String issuerName) {
 		String dn = RFC2253Parser.rfc2253toXMLdsig(issuerName);
 		NameIDType issuerN = NameIDType.Factory.newInstance();
 		issuerN.setFormat(SAMLConstants.NFORMAT_DN);
@@ -153,16 +145,14 @@ public abstract class AbstractAssertion implements Serializable
 		modified = true;
 	}
 
-	public void setIssuer(NameIDType issuer)
-	{
+	public void setIssuer(NameIDType issuer) {
 		assertion.setIssuer(issuer);
 		if (issuer.getFormat().equals(SAMLConstants.NFORMAT_DN))
 			issuerDN = issuer.getStringValue();
 		modified = true;
 	}
-	
-	public void setX509Subject(String subjectName)
-	{
+
+	public void setX509Subject(String subjectName) {
 		String dn = RFC2253Parser.rfc2253toXMLdsig(subjectName);
 		NameIDType subjectN = NameIDType.Factory.newInstance();
 		subjectN.setFormat(SAMLConstants.NFORMAT_DN);
@@ -175,8 +165,7 @@ public abstract class AbstractAssertion implements Serializable
 		modified = true;
 	}
 
-	public void setSubject(NameIDType subject)
-	{
+	public void setSubject(NameIDType subject) {
 		SubjectType subjectT = SubjectType.Factory.newInstance();
 		subjectT.setNameID(subject);
 		assertion.setSubject(subjectT);
@@ -185,18 +174,19 @@ public abstract class AbstractAssertion implements Serializable
 		modified = true;
 	}
 
-	public void setSubject(SubjectType subject)
-	{
-		//The following line should be enough here but unfortunately the produced
-		//XML has not prefix set (uses default NS defined in it). 
-		//It is perfectly OK, but unicore gateway 
-		//(prior to version 6.3.0) can't handle this situation
-		//and adds the prefix what spoils the signature. So we do the copy manually
-		//- this way xmlbeans adds prefixes.
-		
-		//assertion.setSubject(subject);
-		
-		//---- hack start
+	public void setSubject(SubjectType subject) {
+		// The following line should be enough here but unfortunately the
+		// produced
+		// XML has not prefix set (uses default NS defined in it).
+		// It is perfectly OK, but unicore gateway
+		// (prior to version 6.3.0) can't handle this situation
+		// and adds the prefix what spoils the signature. So we do the copy
+		// manually
+		// - this way xmlbeans adds prefixes.
+
+		// assertion.setSubject(subject);
+
+		// ---- hack start
 		if (assertion.isSetSubject())
 			assertion.unsetSubject();
 		SubjectType added = assertion.addNewSubject();
@@ -207,90 +197,79 @@ public abstract class AbstractAssertion implements Serializable
 		if (subject.isSetBaseID())
 			added.setBaseID(subject.getBaseID());
 		if (subject.sizeOfSubjectConfirmationArray() > 0)
-			added.setSubjectConfirmationArray(subject.getSubjectConfirmationArray());
-		//----- hack end
-		
-		
+			added.setSubjectConfirmationArray(subject
+					.getSubjectConfirmationArray());
+		// ----- hack end
+
 		if (subject.getNameID().getFormat().equals(SAMLConstants.NFORMAT_DN))
 			subjectDN = subject.getNameID().getStringValue();
 		modified = true;
 	}
 
-	public void setHolderOfKeyConfirmation(X509Certificate[] certificates) 
-		throws CertificateEncodingException
-	{
+	public void setHolderOfKeyConfirmation(X509Certificate[] certificates)
+			throws CertificateEncodingException {
 		setConfirmation(certificates, SAMLConstants.CONFIRMATION_HOLDER_OF_KEY);
 	}
 
-	public void setSenderVouchesX509Confirmation(X509Certificate[] certificates) 
-		throws CertificateEncodingException
-	{
+	public void setSenderVouchesX509Confirmation(X509Certificate[] certificates)
+			throws CertificateEncodingException {
 		setConfirmation(certificates, SAMLConstants.CONFIRMATION_SENDER_VOUCHES);
 	}
 
-	private void setConfirmation(X509Certificate[] certificates, String method) 
-		throws CertificateEncodingException
-	{
+	private void setConfirmation(X509Certificate[] certificates, String method)
+			throws CertificateEncodingException {
 		SubjectType subject = assertion.getSubject();
-		SubjectConfirmationType confirmation = subject.addNewSubjectConfirmation();
+		SubjectConfirmationType confirmation = subject
+				.addNewSubjectConfirmation();
 		confirmation.setMethod(method);
-		KeyInfoConfirmationDataType confirData = 
-			KeyInfoConfirmationDataType.Factory.newInstance();
+		KeyInfoConfirmationDataType confirData = KeyInfoConfirmationDataType.Factory
+				.newInstance();
 		KeyInfoType ki = DigSignatureUtil.generateX509KeyInfo(certificates);
-		confirData.setKeyInfoArray(new KeyInfoType[] {ki});
+		confirData.setKeyInfoArray(new KeyInfoType[] { ki });
 		confirmation.setSubjectConfirmationData(confirData);
 	}
-	
-	
-	public void updateIssueTime()
-	{
-		assertion.setIssueInstant(Calendar.getInstance());		
+
+	public void updateIssueTime() {
+		assertion.setIssueInstant(Calendar.getInstance());
 	}
 
-	public void setTimeConditions(Date notBefore, Date notOnOrAfter)
-	{
+	public void setTimeConditions(Date notBefore, Date notOnOrAfter) {
 		Calendar c = Calendar.getInstance();
-		if (notBefore != null)
-		{
+		if (notBefore != null) {
 			if (!conditions.isSetNotBefore())
 				conditionsCount++;
 			c.setTime(notBefore);
 			conditions.setNotBefore(c);
-		} else
-		{
-			if (conditions.isSetNotBefore())
-			{
+		} else {
+			if (conditions.isSetNotBefore()) {
 				conditionsCount--;
 				conditions.unsetNotBefore();
 			}
 		}
-		if (notOnOrAfter != null)
-		{
+		if (notOnOrAfter != null) {
 			if (!conditions.isSetNotOnOrAfter())
 				conditionsCount++;
 			c.setTime(notOnOrAfter);
 			conditions.setNotOnOrAfter(c);
 			conditionsCount++;
-		} else
-		{
-			if (conditions.isSetNotOnOrAfter())
-			{
+		} else {
+			if (conditions.isSetNotOnOrAfter()) {
 				conditionsCount--;
 				conditions.unsetNotOnOrAfter();
 			}
 		}
-		
+
 		modified = true;
 	}
-	
+
 	/**
 	 * Checks if time is in this assertion's lifetime. If the assertion doesn't
-	 * have lifetime set then true is returned.   
+	 * have lifetime set then true is returned.
+	 * 
 	 * @param time
 	 * @return
 	 */
-	public boolean checkTimeConditions(Date time)
-	{
+	public boolean checkTimeConditions(Date time) {
 		long t = time.getTime();
 		if (getNotBefore() != null && getNotBefore().getTime() > t)
 			return false;
@@ -300,34 +279,30 @@ public abstract class AbstractAssertion implements Serializable
 	}
 
 	/**
-	 * Checks if current time is in this assertion's lifetime. If the assertion doesn't
-	 * have lifetime set then true is returned.   
+	 * Checks if current time is in this assertion's lifetime. If the assertion
+	 * doesn't have lifetime set then true is returned.
+	 * 
 	 * @param time
 	 * @return
 	 */
-	public boolean checkTimeConditions()
-	{
+	public boolean checkTimeConditions() {
 		return checkTimeConditions(new Date());
 	}
 
 	/**
 	 * 
-	 * @param value use negative value to remove proxy restriction 
+	 * @param value
+	 *            use negative value to remove proxy restriction
 	 */
-	public void setProxyRestriction(int value)
-	{
-		if (value > 0)
-		{
-			if (proxyRestriction == null)
-			{
+	public void setProxyRestriction(int value) {
+		if (value > 0) {
+			if (proxyRestriction == null) {
 				proxyRestriction = conditions.addNewProxyRestriction();
 				conditionsCount++;
 			}
 			proxyRestriction.setCount(BigInteger.valueOf(value));
-		} else
-		{
-			if (proxyRestriction != null)
-			{
+		} else {
+			if (proxyRestriction != null) {
 				conditions.removeProxyRestriction(0);
 				proxyRestriction = null;
 				conditionsCount--;
@@ -336,20 +311,15 @@ public abstract class AbstractAssertion implements Serializable
 		modified = true;
 	}
 
-	public void setAudienceRestriction(String []audienceArray)
-	{
-		if (audienceArray != null)
-		{
-			if (audienceRestriction == null)
-			{
+	public void setAudienceRestriction(String[] audienceArray) {
+		if (audienceArray != null) {
+			if (audienceRestriction == null) {
 				audienceRestriction = conditions.addNewAudienceRestriction();
 				conditionsCount++;
 			}
 			audienceRestriction.setAudienceArray(audienceArray);
-		} else
-		{
-			if (audienceRestriction != null)
-			{
+		} else {
+			if (audienceRestriction != null) {
 				conditions.removeAudienceRestriction(0);
 				audienceRestriction = null;
 				conditionsCount--;
@@ -358,9 +328,7 @@ public abstract class AbstractAssertion implements Serializable
 		modified = true;
 	}
 
-	
-	public void addCustomCondition(XmlObject condition)
-	{
+	public void addCustomCondition(XmlObject condition) {
 		ConditionAbstractType newCondition = conditions.addNewCondition();
 		newCondition.set(condition);
 		XmlCursor cur = newCondition.newCursor();
@@ -370,72 +338,66 @@ public abstract class AbstractAssertion implements Serializable
 			type = condition.schemaType().getDocumentElementName();
 		String prefix = cur.prefixForNamespace(type.getNamespaceURI());
 		cur.insertNamespace(prefix, type.getNamespaceURI());
-		cur.insertAttributeWithValue("type", "http://www.w3.org/2001/XMLSchema-instance",  
-				prefix + ":" + type.getLocalPart());
+		cur.insertAttributeWithValue("type",
+				"http://www.w3.org/2001/XMLSchema-instance", prefix + ":"
+						+ type.getLocalPart());
 		cur.dispose();
 		conditionsCount++;
 		modified = true;
 	}
-	
-	public void sign(PrivateKey pk) throws DSigException 
-	{
+
+	public void sign(PrivateKey pk) throws DSigException {
 		sign(pk, null);
 	}
-	
-	public void sign(PrivateKey pk, X509Certificate []cert) throws DSigException
-	{
+
+	public void sign(PrivateKey pk, X509Certificate[] cert)
+			throws DSigException {
 		DigSignatureUtil sign = new DigSignatureUtil();
 		AssertionDocument unsignedDoc = getXML();
 		Document docToSign = SAMLUtils.getDOM(unsignedDoc);
-		
+
 		NodeList nodes = docToSign.getFirstChild().getChildNodes();
 		Node sibling = null;
-		for (int i=0; i<nodes.getLength(); i++)
-		{
+		for (int i = 0; i < nodes.getLength(); i++) {
 			Node n = nodes.item(i);
-			if (n.getLocalName().equals("Subject"))
-			{
-				sibling = n;
-				break;
+			if (n.getLocalName() != null) {
+				if (n.getLocalName().equals("Subject")) {
+					sibling = n;
+					break;
+				}
 			}
 		}
 
-		sign.genEnvelopedSignature(pk, null, cert, 
-				docToSign, sibling);
-		try
-		{
+		sign.genEnvelopedSignature(pk, null, cert, docToSign, sibling);
+		try {
 			assertionDoc = AssertionDocument.Factory.parse(docToSign);
-		} catch (XmlException e)
-		{
+		} catch (XmlException e) {
 			throw new DSigException("Parsing signed document failed", e);
 		}
 		assertion = assertionDoc.getAssertion();
 	}
 
-	public boolean isSigned()
-	{
-		if (assertionDoc.getAssertion().getSignature() == null 
+	public boolean isSigned() {
+		if (assertionDoc.getAssertion().getSignature() == null
 				|| assertionDoc.getAssertion().getSignature().isNil())
 			return false;
-		else return true;
+		else
+			return true;
 	}
-	
-	public boolean isCorrectlySigned(PublicKey key) throws DSigException
-	{
+
+	public boolean isCorrectlySigned(PublicKey key) throws DSigException {
 		if (!isSigned())
 			return false;
 		DigSignatureUtil sign = new DigSignatureUtil();
-		return sign.verifyEnvelopedSignature(
-			(Document) getXML().getDomNode(), key);
+		return sign.verifyEnvelopedSignature((Document) getXML().getDomNode(),
+				key);
 	}
-	
-	public X509Certificate[] getIssuerFromSignature()
-	{
+
+	public X509Certificate[] getIssuerFromSignature() {
 		return SAMLUtils.getIssuerFromSignature(assertion.getSignature());
 	}
 
-	public X509Certificate[] getSubjectFromConfirmation()
-	{
+	public X509Certificate[] getSubjectFromConfirmation() {
 		SubjectType subject = assertion.getSubject();
 		if (subject == null)
 			return null;
@@ -446,12 +408,10 @@ public abstract class AbstractAssertion implements Serializable
 		if (confirmation == null)
 			return null;
 		KeyInfoConfirmationDataType confirData;
-		try
-		{
-			confirData = (KeyInfoConfirmationDataType) 
-				confirmation.getSubjectConfirmationData();
-		} catch (ClassCastException e)
-		{
+		try {
+			confirData = (KeyInfoConfirmationDataType) confirmation
+					.getSubjectConfirmationData();
+		} catch (ClassCastException e) {
 			return null;
 		}
 		if (confirData == null)
@@ -462,18 +422,15 @@ public abstract class AbstractAssertion implements Serializable
 		X509DataType[] x509Data = ki.getX509DataArray();
 		if (x509Data == null)
 			return null;
-		for (int i=0; i<x509Data.length; i++)
+		for (int i = 0; i < x509Data.length; i++)
 			if (x509Data[i].getX509CertificateArray().length > 0)
-				return Utils.deserializeCertificateChain(
-						x509Data[i].getX509CertificateArray());
+				return Utils.deserializeCertificateChain(x509Data[i]
+						.getX509CertificateArray());
 		return null;
 	}
-	
-	
-	public AssertionDocument getXML()
-	{
-		if (modified)
-		{
+
+	public AssertionDocument getXML() {
+		if (modified) {
 			if (conditionsCount > 0)
 				assertion.setConditions(conditions);
 			assertionDoc.setAssertion(assertion);
@@ -481,38 +438,32 @@ public abstract class AbstractAssertion implements Serializable
 		}
 		return assertionDoc;
 	}
-	
-	public String getIssuerDN()
-	{
+
+	public String getIssuerDN() {
 		return issuerDN;
 	}
-	
-	public String getSubjectDN()
-	{
+
+	public String getSubjectDN() {
 		return subjectDN;
 	}
-	
-	public int getProxyRestriction()
-	{
+
+	public int getProxyRestriction() {
 		if (proxyRestriction == null)
 			return -1;
 		return proxyRestriction.getCount().intValue();
 	}
-	
-	public Date getNotBefore()
-	{
+
+	public Date getNotBefore() {
 		Calendar c = conditions.getNotBefore();
 		return c == null ? null : c.getTime();
 	}
 
-	public Date getNotOnOrAfter()
-	{
+	public Date getNotOnOrAfter() {
 		Calendar c = conditions.getNotOnOrAfter();
 		return c == null ? null : c.getTime();
 	}
-	
-	public ConditionAbstractType[] getCustomConditions()
-	{
+
+	public ConditionAbstractType[] getCustomConditions() {
 		return conditions.getConditionArray();
 	}
 }
