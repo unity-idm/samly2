@@ -98,7 +98,9 @@ public class NameIDMappingResponse extends AbstractStatusResponse
 		try
 		{
 			xbdoc = NameIDMappingResponseDocument.Factory.parse(doc);
+			xmlResp = xbdoc.getNameIDMappingResponse();
 			respXml = xbdoc.getNameIDMappingResponse();
+			
 		} catch (XmlException e)
 		{
 			throw new DSigException("Parsing signed document failed", e);
