@@ -393,10 +393,11 @@ public abstract class AbstractAssertion implements Serializable
 		for (int i=0; i<nodes.getLength(); i++)
 		{
 			Node n = nodes.item(i);
-			if (n.getLocalName().equals("Subject"))
-			{
-				sibling = n;
-				break;
+			if (n.getLocalName() != null) {
+				if (n.getLocalName().equals("Subject")) {
+					sibling = n;
+					break;
+				}
 			}
 		}
 
