@@ -28,19 +28,21 @@ import xmlbeans.org.oasis.saml2.protocol.NameIDMappingResponseType;
 /**
  * @author K. Benedyczak
  */
-public class NameIDMappingResponse extends AbstractStatusResponse {
+public class NameIDMappingResponse extends AbstractStatusResponse
+{
 	private NameIDMappingResponseType respXml;
 	private NameIDMappingResponseDocument xbdoc;
-
+	
 	public NameIDMappingResponse(NameIDMappingResponseDocument src)
-			throws SAMLParseException {
+		throws SAMLParseException
+	{
 		super(src.getNameIDMappingResponse());
 		xbdoc = src;
 		respXml = src.getNameIDMappingResponse();
 	}
-
-	public NameIDMappingResponse(NameID issuer, String inResponseTo,
-			NameID mapped) {
+	
+	public NameIDMappingResponse(NameID issuer, String inResponseTo, NameID mapped)
+	{
 		xbdoc = NameIDMappingResponseDocument.Factory.newInstance();
 		respXml = xbdoc.addNewNameIDMappingResponse();
 		init(respXml, issuer, inResponseTo);
@@ -48,53 +50,57 @@ public class NameIDMappingResponse extends AbstractStatusResponse {
 		respXml.setStatus(getOKStatus());
 	}
 
-	public NameIDMappingResponse(NameID issuer, String inResponseTo,
-			SAMLProtocolException error) {
+	public NameIDMappingResponse(NameID issuer, String inResponseTo, 
+			SAMLProtocolException error)
+	{
 		xbdoc = NameIDMappingResponseDocument.Factory.newInstance();
 		respXml = xbdoc.addNewNameIDMappingResponse();
 		init(respXml, issuer, inResponseTo);
-		// ughhh -> what to do?? SAML requires nameID in response always,
-		// even when there is an error!
+		//ughhh -> what to do?? SAML requires nameID in response always,
+		//even when there is an error!
 		respXml.addNewNameID().setNil();
 		respXml.setStatus(getErrorStatus(error));
 	}
-
-	public void setExtensions(XmlObject val) {
+	
+	public void setExtensions(XmlObject val)
+	{
 		ExtensionsType exts = respXml.getExtensions();
 		if (exts == null)
 			exts = respXml.addNewExtensions();
 		exts.set(val);
 	}
-
-	public NameIDMappingResponseDocument getDoc() {
+	
+	public NameIDMappingResponseDocument getDoc()
+	{
 		return xbdoc;
 	}
-
+	
 	@Override
-	public void parse() throws SAMLParseException {
+	public void parse() throws SAMLParseException
+	{
 		super.parse();
 		if (respXml.getEncryptedID() != null)
-			throw new SAMLParseException(
-					"Unsupported encrypted nameID received");
+			throw new SAMLParseException("Unsupported encrypted nameID received");
 		if (respXml.getNameID() == null)
 			throw new SAMLParseException("No nameID in response");
 	}
-
+	
 	@Override
-	public boolean isCorrectlySigned(PublicKey key) throws DSigException {
+	public boolean isCorrectlySigned(PublicKey key) throws DSigException
+	{
 		return isCorrectlySigned(key, (Document) xbdoc.getDomNode());
 	}
 
 	@Override
-	public void sign(PrivateKey pk, X509Certificate[] cert)
-			throws DSigException {
+	public void sign(PrivateKey pk, X509Certificate[] cert) throws DSigException
+	{
 		Document doc = signInt(pk, cert);
-		try {
+		try
+		{
 			xbdoc = NameIDMappingResponseDocument.Factory.parse(doc);
-			xmlResp = xbdoc.getNameIDMappingResponse();
 			respXml = xbdoc.getNameIDMappingResponse();
-
-		} catch (XmlException e) {
+		} catch (XmlException e)
+		{
 			throw new DSigException("Parsing signed document failed", e);
 		}
 	}
