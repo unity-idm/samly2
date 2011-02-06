@@ -122,7 +122,7 @@ public class AssertionResponse extends AbstractStatusResponse
 		{
 			xbdoc = ResponseDocument.Factory.parse(doc);
 			respXml = xbdoc.getResponse();
-			respXml = xbdoc.getResponse();
+			xmlResp = xbdoc.getResponse();
 		} catch (XmlException e)
 		{
 			throw new DSigException("Parsing signed document failed", e);
