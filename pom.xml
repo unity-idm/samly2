@@ -5,7 +5,7 @@
 	<groupId>pl.edu.icm.saml</groupId>
 	<artifactId>samly2</artifactId>
 	<packaging>jar</packaging>
-	<version>1.3.2</version>
+	<version>1.3.3-SNAPSHOT</version>
 	<name>samly2</name>
 
 	<parent>
@@ -13,6 +13,11 @@
 		<artifactId>unicore-parent-endorsed</artifactId>
 		<version>1.3</version>
 	</parent>
+	
+	<scm>
+		<connection>scm:svn:https://unicore.svn.sourceforge.net/svnroot/securityFramework/samly2/trunk</connection>
+		<developerConnection>scm:svn:https://unicore.svn.sourceforge.net/svnroot/unicore/securityFramework/samly2/trunk</developerConnection>
+	</scm>
 
 	<dependencies>
 		<dependency>
@@ -54,7 +59,7 @@
 		<dependency>
 			<groupId>eu.unicore.security</groupId>
 			<artifactId>crl-checking</artifactId>
-			<version>1.2</version>
+			<version>1.3</version>
 		</dependency>
 	</dependencies>
 	
