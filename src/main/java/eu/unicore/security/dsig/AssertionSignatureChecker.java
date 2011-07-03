@@ -72,8 +72,18 @@ public class AssertionSignatureChecker
 
 	private Document readDoc(String file) throws Exception
 	{
-		Document inputDoc = documentBuilder.parse(file == null ?
-			System.in : new FileInputStream(file));
-		return inputDoc;
+		if(file==null){
+			Document inputDoc = documentBuilder.parse(System.in);
+			return inputDoc;
+		}
+		else{
+			FileInputStream fis = new FileInputStream(file);
+			try{
+				Document inputDoc = documentBuilder.parse(fis);
+				return inputDoc;
+			} finally {
+				fis.close();
+			}
+		}
 	}
 }

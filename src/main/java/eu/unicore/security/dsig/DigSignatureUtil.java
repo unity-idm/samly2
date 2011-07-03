@@ -267,9 +267,9 @@ public class DigSignatureUtil
 				boolean refValid = ref.validate(valContext);
 
 				log.trace("ref["+j+"] validity status: " + refValid);
-				String s = new String(Base64.encode(ref.getDigestValue()));
+				String s = Base64.encode(ref.getDigestValue());
 				log.trace("ref["+j+"] digest: " + s);
-				s = new String(Base64.encode(ref.getCalculatedDigestValue()));
+				s = Base64.encode(ref.getCalculatedDigestValue());
 				log.trace("ref["+j+"] calculated digest: " + s);
 			}
 		} 
