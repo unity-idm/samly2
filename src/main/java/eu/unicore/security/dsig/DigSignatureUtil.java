@@ -76,7 +76,7 @@ public class DigSignatureUtil
 {
 	private static final Logger log = Logger.getLogger("unicore.security.dsig." + 
 		DigSignatureUtil.class.getSimpleName());
-	private static XMLSignatureFactory fac = null;
+	private XMLSignatureFactory fac = null;
 	
 	public DigSignatureUtil() throws DSigException
 	{
