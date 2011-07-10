@@ -71,4 +71,6 @@ public class SAMLConstants
 	public static final String SCOPE_TYPE_NONE = "urn:SAML:voprofile:NonScopedValue";
 	public static final QName SCOPE_TYPE_XMLATTRIBUTE = new QName("urn:vo:SAML:2.0:attribute:ext", "scopeType");
 	public static final QName ATTRIBUTE_SCOPE_XMLATTRIBUTE = new QName("urn:vo:SAML:2.0:attribute:ext", "attributeScope");
+	
+	public static enum AuthNClasses {NONE, TLS};
 }
