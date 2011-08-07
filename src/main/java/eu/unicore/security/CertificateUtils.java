@@ -14,6 +14,18 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 
+import javax.security.auth.x500.X500Principal;
+
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1String;
+import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.x500.style.IETFUtils;
+
 import eu.unicore.crlcheck.CRLCheckResult;
 import eu.unicore.crlcheck.CRLManager;
 import eu.unicore.crlcheck.CRLManagerProperties;
@@ -32,7 +44,8 @@ import eu.unicore.crlcheck.CRLManagerProperties;
  */
 public class CertificateUtils
 {
-
+	private static final Logger log = Logger.getLogger(CertificateUtils.class);
+	
 	public static final String VERIFY_GENERATION_KEY = "eu.unicore.securty.VerifyExpiredCertUponCreation";
 	public static final String CRLMGR_PROPS_FILE     = "crlmanager.properties.file";
 
@@ -94,5 +107,138 @@ public class CertificateUtils
 	{
 		if (cert == null || cert.length == 0) return "EMPTY certificate";
 		return safePrintSubject(cert[0]);
+	}
+	
+	/**
+	 * Uppers the case of the arg, then lowers it, using non-locale specific 
+	 * algorithm.
+	 * @param src
+	 * @return
+	 */
+	private static String upLowCase(String src) 
+	{
+		char[] chars = src.toCharArray();
+		StringBuilder ret = new StringBuilder(chars.length);
+		for (char c: chars) 
+			ret.append(Character.toLowerCase(Character.toUpperCase(c)));
+		return ret.toString();
+	}
+	
+	/**
+	 * Checks if two given DNs are equivalent, using JDK canonical {@link X500Principal} representation.
+	 * This method is less strict then the original: it compares DC and EMAIL components in case 
+	 * insensitive way. Input arguments with values encoded in hex are also correctly handled. What is more
+	 * it supports DNs with attribute names normally not recognized by X500Principial.
+	 * @param dn1 in RFC2253 encoding
+	 * @param dn2 in RFC2253 encoding
+	 * @return true iff are equivalent
+	 */
+	public static boolean dnEqual(String dn1, String dn2)
+	{
+		//first part: ensures that popular attribute names unsupported by JDK are encoded with OIDs
+		// and converts all DC and EMAIL attributes to lower case.
+		String rfcA = preNormalize(dn1);
+		String rfcB = preNormalize(dn2);
+		
+		//Finally compare using CANONICAL forms.
+		return new X500Principal(rfcA).equals(new X500Principal(rfcB));
+	}
+	
+	/**
+	 * Returns a form of the original DN which will be properly parsed by JDK {@link X500Principal} class by
+	 * replacing attribute names unknown by the {@link X500Principal} with OIDs.
+	 * What is more all DC and EMAIL values are converted to lower case.
+	 * @param dn in RFC 2253 form.
+	 * @return dn in RFC 2253 form, reformatted.
+	 */
+	public static String preNormalize(String dn)
+	{
+		RDN[] rdns;
+		try 
+		{
+			rdns = IETFUtils.rDNsFromString(dn, JavaAndBCStyle.INSTANCE);
+		} catch (IllegalArgumentException e)
+		{
+			log.warn("BC can't parse the DN " + dn + ". Won't normalize this DN. " +
+					"Problem: " + e.toString());
+			return dn;
+		}
+		X500NameBuilder builder = new X500NameBuilder(JavaAndBCStyle.INSTANCE);
+		
+		for (RDN rdn: rdns)
+		{
+			if (rdn.isMultiValued())
+			{
+				AttributeTypeAndValue avas[] = rdn.getTypesAndValues();
+				for (int j=0; j<avas.length; j++)
+					avas[j] = normalizeAVA(avas[j]);
+				builder.addMultiValuedRDN(avas);
+			} else
+			{
+				AttributeTypeAndValue ava = rdn.getFirst();
+				builder.addRDN(normalizeAVA(ava));
+			}
+		}
+		return JavaAndBCStyle.INSTANCE.toString(builder.build());
+	}
+	
+	private static AttributeTypeAndValue normalizeAVA(AttributeTypeAndValue orig)
+	{
+		if (orig.getType().equals(BCStyle.DC) || 
+				orig.getType().equals(BCStyle.EmailAddress))
+		{
+			ASN1Encodable value = orig.getValue();
+			if (value instanceof ASN1String)
+			{
+				if (!(value instanceof DERIA5String)) 
+					log.warn("SHOULDN'T HAPPEN: AVA " + 
+							orig.getType().getId() + " with value " 
+							+ value.toString() + 
+							" is not of the expected type IA5String but of other string type: " +
+							orig.getType().toString());
+				ASN1String ia5Str = (ASN1String) value;
+				String newValue = upLowCase(ia5Str.getString());
+				return new AttributeTypeAndValue(orig.getType(), 
+					new DERIA5String(newValue));
+			} else
+			{
+				log.warn("SHOULDN'T HAPPEN: AVA " + 
+						orig.getType().getId() + 
+						" is not of the expected type IA5String but of: " +
+						orig.getType().toString());
+				return orig;
+			}
+		} else
+			return orig;
+		
+	}
+	
+	/**
+	 * Checks if two given DNs are equivalent. This method ensures NOT to use any detailed
+	 * information from the binary representation of the first argument.
+	 * @param p1 possibly binary represenation of a name
+	 * @param dn2
+	 * @return true iff are equivalent
+	 */
+	public static boolean dnEqual(X500Principal p1, String dn2)
+	{
+		//do it carefully: first loose any ASN.1 info, then compare text versions
+		String dn1Str = p1.getName();
+		return dnEqual(dn1Str, dn2);
+	}
+	
+	
+	/**
+	 * Checks if two given {@link X500Principal} are equivalent. 
+	 * This method ensures NOT to use any detailed information from the binary 
+	 * representation of the arguments, so it can return true even if parameter's equals() 
+	 * returns false. It has the same semantics as other dnEqual methods in this class.
+	 * @param p1 
+	 * @param p2
+	 * @return true iff are equivalent
+	 */
+	public static boolean principalsSoftEqual(X500Principal p1, X500Principal p2) 
+	{
+		return dnEqual(p1.getName(), p2.getName());
 	}
 }
