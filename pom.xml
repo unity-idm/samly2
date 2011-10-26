@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>eu.unicore</groupId>
 		<artifactId>unicore-parent-endorsed</artifactId>
-		<version>1.5</version>
+		<version>1.6</version>
 	</parent>
 	
 	<scm>
@@ -33,7 +33,7 @@
 		<dependency>
 			<groupId>org.apache.santuario</groupId>
 			<artifactId>xmlsec</artifactId>
-			<version>1.4.5</version>
+			<version>1.4.6</version>
 		</dependency>
 				<dependency>
 			<groupId>xalan</groupId>
