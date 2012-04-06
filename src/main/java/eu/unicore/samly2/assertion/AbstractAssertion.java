@@ -21,7 +21,6 @@ import java.util.Date;
 
 import javax.xml.namespace.QName;
 
-import org.apache.xml.security.utils.RFC2253Parser;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
@@ -29,6 +28,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLParseException;
@@ -144,7 +144,9 @@ public abstract class AbstractAssertion implements Serializable
 
 	public void setX509Issuer(String issuerName)
 	{
-		String dn = RFC2253Parser.rfc2253toXMLdsig(issuerName);
+		//This is on purpose: this form should be OK w.r.t. latest XML DSig spec
+		//and the 2002 one was simply invalid.
+		String dn = X500NameUtils.getPortableRFC2253Form(issuerName);
 		NameIDType issuerN = NameIDType.Factory.newInstance();
 		issuerN.setFormat(SAMLConstants.NFORMAT_DN);
 		issuerN.setStringValue(dn);
@@ -163,7 +165,7 @@ public abstract class AbstractAssertion implements Serializable
 	
 	public void setX509Subject(String subjectName)
 	{
-		String dn = RFC2253Parser.rfc2253toXMLdsig(subjectName);
+		String dn = X500NameUtils.getPortableRFC2253Form(subjectName);
 		NameIDType subjectN = NameIDType.Factory.newInstance();
 		subjectN.setFormat(SAMLConstants.NFORMAT_DN);
 		subjectN.setStringValue(dn);

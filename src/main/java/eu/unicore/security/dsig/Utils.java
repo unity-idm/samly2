@@ -9,11 +9,13 @@
 package eu.unicore.security.dsig;
 
 import java.io.ByteArrayInputStream;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
+import java.io.IOException;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
+
+import eu.emi.security.authn.x509.impl.CertificateUtils;
+import eu.emi.security.authn.x509.impl.CertificateUtils.Encoding;
 
 /**
  * Auxiliary static methods.
@@ -24,29 +26,15 @@ public class Utils
 	private static final Logger log = Logger.getLogger("unicore.security." + 
 		Utils.class.getSimpleName());
 
-	public static X509Certificate deserializeCertificate(byte []encodedCert)
+	private static X509Certificate deserializeCertificate(byte []encodedCert)
 	{
-		CertificateFactory cf;
-		try
-		{
-			cf = CertificateFactory.getInstance("X.509");
-		} catch (CertificateException e1)
-		{
-			log.warn("Can't initialize certificate factory for X509 certificates");
-			return null;
-		}
 		ByteArrayInputStream bais = new ByteArrayInputStream(encodedCert);
 		try
 		{
-			X509Certificate cert = (X509Certificate) cf.generateCertificate(bais);
-			return cert;
-		} catch (CertificateException e)
+			return CertificateUtils.loadCertificate(bais, Encoding.DER);
+		} catch (IOException e)
 		{
 			log.warn("Error while deserializing certificate from key info: " + e);
-			return null;
-		} catch (ClassCastException e)
-		{
-			log.warn("Unknown type of certificate in key info");
 			return null;
 		}
 	}
@@ -58,5 +46,4 @@ public class Utils
 			retval[i] = deserializeCertificate(encodedCerts[i]);
 		return retval;
 	}
-
 }
