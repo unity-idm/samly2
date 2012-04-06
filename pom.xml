@@ -28,7 +28,7 @@
 		<dependency>
 			<groupId>eu.emi.security</groupId>
 			<artifactId>canl</artifactId>
-			<version>1.0.0-rc2-SNAPSHOT</version>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.santuario</groupId>
