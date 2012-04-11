@@ -14,6 +14,7 @@ import java.security.KeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Vector;
 
 import javax.xml.crypto.MarshalException;
+import javax.xml.crypto.dom.DOMCryptoContext;
 import javax.xml.crypto.dom.DOMStructure;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.crypto.dsig.DigestMethod;
@@ -51,6 +53,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI;
 import org.apache.log4j.Logger;
 import org.apache.xml.security.utils.Base64;
 import org.apache.xmlbeans.XmlBase64Binary;
@@ -76,11 +79,20 @@ public class DigSignatureUtil
 		DigSignatureUtil.class.getSimpleName());
 	private XMLSignatureFactory fac = null;
 	
+	
+	public static final String[] LOCAL_DSIG_REFERENCES_ATTR_NS = {
+		"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd",
+		"urn:oasis:names:tc:SAML:2.0:assertion"};
+	public static final String[] LOCAL_DSIG_REFERENCES_ATTR_NAME = {
+		"Id",
+		"ID"};
+	
 	public DigSignatureUtil() throws DSigException
 	{
 		try
 		{
-			fac = XMLSignatureFactory.getInstance();
+			Security.addProvider(new XMLDSigRI());
+			fac = XMLSignatureFactory.getInstance("DOM", "ApacheXMLDSig");
 			double ver = fac.getProvider().getVersion();
 			if (ver < 1.44)
 				log.error("xmlsec library is not properly configured, XML dsig will sometimes fail! " +
@@ -112,6 +124,7 @@ public class DigSignatureUtil
 		throws MarshalException, XMLSignatureException,	NoSuchAlgorithmException, 
 		InvalidAlgorithmParameterException, KeyException, CertificateExpiredException, CertificateNotYetValidException
 	{
+		
 		DigestMethod digistMethod = fac.newDigestMethod(DigestMethod.SHA1, null);
 		Vector<Transform> transforms = new Vector<Transform>(); 
 
@@ -158,6 +171,8 @@ public class DigSignatureUtil
 		else
 			dsc = new DOMSignContext(privKey, 
 					docToSign.getDocumentElement(), insertBefore);
+		
+		setDefaultResolverAttributes(dsc, docToSign.getDocumentElement());
 		//hack to overcome gateway/ActiveSOAP bugs with default prefixes...
 		// -> only relevant for gateway version < 6.3.0  
 		dsc.putNamespacePrefix(
@@ -244,6 +259,7 @@ public class DigSignatureUtil
 
 		DOMValidateContext valContext = new DOMValidateContext(validatingKey,
 				signatureNode);
+		setDefaultResolverAttributes(valContext, signedDocument.getDocumentElement());
 
 		XMLSignature signature = fac.unmarshalXMLSignature(valContext);
 		boolean coreValidity = signature.validate(valContext);
@@ -298,6 +314,38 @@ public class DigSignatureUtil
 			throw new DSigException("Can't unmarshal signature", e);
 		}
 		return signature.getSignedInfo().getReferences();
+	}
+	
+	/**
+	 * Only searches in the element and its direct children. 
+	 * @param cryptoContext
+	 * @param element
+	 */
+	private static void setDefaultResolverAttributes(DOMCryptoContext cryptoContext, Element element)
+	{
+		checkElementForResolverAttributes(cryptoContext, element);
+		NodeList nodes = element.getChildNodes();
+		for (int i=0; i<nodes.getLength(); i++)
+		{
+			Node n = nodes.item(i);
+			if (!(n instanceof Element))
+				continue;
+			Element e = (Element) n;
+			setDefaultResolverAttributes(cryptoContext, e);
+		}
+	}
+	
+	private static void checkElementForResolverAttributes(DOMCryptoContext cryptoContext, Element element)
+	{
+		for (int j=0; j<LOCAL_DSIG_REFERENCES_ATTR_NAME.length; j++)
+		{
+			if (element.hasAttributeNS(LOCAL_DSIG_REFERENCES_ATTR_NS[j], LOCAL_DSIG_REFERENCES_ATTR_NAME[j]))
+				cryptoContext.setIdAttributeNS(element, LOCAL_DSIG_REFERENCES_ATTR_NS[j], 
+						LOCAL_DSIG_REFERENCES_ATTR_NAME[j]);
+			if (element.hasAttribute(LOCAL_DSIG_REFERENCES_ATTR_NAME[j]))
+				cryptoContext.setIdAttributeNS(element, null, 
+						LOCAL_DSIG_REFERENCES_ATTR_NAME[j]);
+		}
 	}
 
 	public static String dumpDOMToString(Element node)
