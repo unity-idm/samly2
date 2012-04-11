@@ -94,7 +94,7 @@ public class DigSignatureUtil
 			Security.addProvider(new XMLDSigRI());
 			fac = XMLSignatureFactory.getInstance("DOM", "ApacheXMLDSig");
 			double ver = fac.getProvider().getVersion();
-			if (ver < 1.44)
+			if (ver < 1.50)
 				log.error("xmlsec library is not properly configured, XML dsig will sometimes fail! " +
 					"Currently version " + ver + " is used, while at least version 1.44 should be used." +
 					" Most often this means that xmlsec-x.xx.jar is not in Java endorsed directory.");
