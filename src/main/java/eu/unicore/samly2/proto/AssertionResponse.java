@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.xmlbeans.XmlException;
 import org.w3c.dom.Document;
@@ -78,18 +80,27 @@ public class AssertionResponse extends AbstractStatusResponse
 		throws SAMLParseException, XmlException, IOException
 	{
  		Element node = (Element)respXml.getDomNode();
+ 		NodeList allChildren = node.getChildNodes();
 		NodeList asNodes = node.getElementsByTagNameNS(
 			SAMLConstants.ASSERTION_NS, "Assertion");
 		if (asNodes == null || asNodes.getLength() == 0)
 			return new Assertion[0];
-		Assertion []ret = new Assertion[asNodes.getLength()];
+		List<Assertion> ret = new ArrayList<Assertion>(asNodes.getLength());
+		//work carefully: we only return Assertions which are direct children of the response,
+		//to make XML Dsig attacks more difficult
 		for (int i=0; i<asNodes.getLength(); i++)
 		{
 			Node asNode = asNodes.item(i);
-			AssertionDocument wrapper = AssertionDocument.Factory.parse(asNode);
-			ret[i] = new Assertion(wrapper);
+			for (int j=0; j<allChildren.getLength(); j++)
+			{
+				if (allChildren.item(j).equals(asNode))
+				{
+					AssertionDocument wrapper = AssertionDocument.Factory.parse(asNode);
+					ret.add(new Assertion(wrapper));
+				}
+			}			
 		}
-		return ret;
+		return ret.toArray(new Assertion[ret.size()]);
 /*
  This version is faster however less safe - root Assertion element can get additional namespace
  declarations. Should not affect signature checking but to be 100% correct we parse from DOM as above.

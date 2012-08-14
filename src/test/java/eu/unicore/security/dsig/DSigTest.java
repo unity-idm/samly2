@@ -6,12 +6,16 @@ import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.Collections;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import eu.unicore.samly2.assertion.AbstractAssertion;
 
 
 /**
@@ -30,9 +34,10 @@ public class DSigTest extends TestBase
 			Node n = doc.getDocumentElement().getChildNodes().item(1);
 			PublicKey pubKey = issuerCert1[0].getPublicKey();
 			dsigEngine.genEnvelopedSignature(privKey1, pubKey, issuerCert1, 
-				doc, n);
+				doc, n, AbstractAssertion.ASSERTION_ID_QNAME);
 
-			assertTrue(dsigEngine.verifyEnvelopedSignature(doc, pubKey));
+			assertTrue(dsigEngine.verifyEnvelopedSignature(doc, Collections.singletonList(doc.getDocumentElement()), 
+					AbstractAssertion.ASSERTION_ID_QNAME, pubKey));
 			
 		} catch (Exception e)
 		{
@@ -55,7 +60,10 @@ public class DSigTest extends TestBase
 			KeyFactory kf = KeyFactory.getInstance("RSA");
 			PublicKey pubKey = kf.generatePublic(keySpec);
 
-			boolean result = dsigEngine.verifyEnvelopedSignature(doc, pubKey);
+			IdAttribute WSS_ID = new IdAttribute("http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd", "Id");
+			boolean result = dsigEngine.verifyEnvelopedSignature(doc, 
+					Collections.singletonList((Element)doc.getDocumentElement().getLastChild()), 
+					WSS_ID, pubKey);
 			assertTrue(result);
 		} catch (Exception e)
 		{

@@ -23,6 +23,7 @@ public class SAMLConstants
 		"urn:oasis:names:tc:SAML:2.0:nameid-format:";
 
 	public static final String ASSERTION_NS = SAML_P + "assertion";
+	public static final String PROTOCOL_NS = SAML_P + "protocol";
 	
 	
 	public static final String NFORMAT_UNSPEC = NAME_FORMAT11_P + "unspecified";

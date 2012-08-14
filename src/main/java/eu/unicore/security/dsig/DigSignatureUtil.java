@@ -23,8 +23,10 @@ import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.xml.crypto.MarshalException;
@@ -59,7 +61,6 @@ import org.apache.xml.security.utils.Base64;
 import org.apache.xmlbeans.XmlBase64Binary;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -79,14 +80,6 @@ public class DigSignatureUtil
 		DigSignatureUtil.class.getSimpleName());
 	private XMLSignatureFactory fac = null;
 	
-	
-	public static final String[] LOCAL_DSIG_REFERENCES_ATTR_NS = {
-		"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd",
-		"urn:oasis:names:tc:SAML:2.0:assertion"};
-	public static final String[] LOCAL_DSIG_REFERENCES_ATTR_NAME = {
-		"Id",
-		"ID"};
-	
 	public DigSignatureUtil() throws DSigException
 	{
 		try
@@ -105,13 +98,24 @@ public class DigSignatureUtil
 		}
 	}
 	
+	/**
+	 * Generates an enveloped signature.
+	 * @param privKey private key used for signing
+	 * @param pubKey optional public key which is added to KeyInfo 
+	 * @param cert optional certificate which is added to KeyInfo, typically use it, not the pub key.
+	 * @param docToSign document which will will be signed (whole).
+	 * @param insertBefore where to insert the dsig:Signature element
+	 * @param idAttribute what is the id attribute, which should be used as a reference. The root element
+	 * of the docToSign must possess this attribute.
+	 * @throws DSigException
+	 */
 	public void genEnvelopedSignature(PrivateKey privKey, PublicKey pubKey, 
-			X509Certificate []cert, Document docToSign, Node insertBefore) 
+			X509Certificate []cert, Document docToSign, Node insertBefore, IdAttribute idAttribute) 
 		throws DSigException
 	{
 		try
 		{
-			genEnvelopedSignatureInternal(privKey, pubKey, cert, docToSign, insertBefore);
+			genEnvelopedSignatureInternal(privKey, pubKey, cert, docToSign, insertBefore, idAttribute);
 		} catch (Exception e)
 		{
 			throw new DSigException("Creation of enveloped signature " +
@@ -120,7 +124,7 @@ public class DigSignatureUtil
 	}
 	
 	private void genEnvelopedSignatureInternal(PrivateKey privKey, PublicKey pubKey,  
-			X509Certificate []cert, Document docToSign, Node insertBefore) 
+			X509Certificate []cert, Document docToSign, Node insertBefore, IdAttribute idAttribute) 
 		throws MarshalException, XMLSignatureException,	NoSuchAlgorithmException, 
 		InvalidAlgorithmParameterException, KeyException, CertificateExpiredException, CertificateNotYetValidException
 	{
@@ -147,11 +151,13 @@ public class DigSignatureUtil
 			throw new KeyException("Unsupported private key algorithm " +
 				"(must be DSA or RSA) :" + privKey.getAlgorithm());
 
-		NamedNodeMap attrs = docToSign.getDocumentElement().getAttributes();
-		Node idNode = attrs.getNamedItem("ID");
-		String id = null;
-		if (idNode != null)
-			id = "#" + idNode.getNodeValue();
+		Element elToSign = docToSign.getDocumentElement();
+		
+		if (!elToSign.hasAttributeNS(idAttribute.getNamespace(), idAttribute.getLocalName()))
+			throw new IllegalArgumentException("The document to be signed doesn't contain the requested ID attribtue " + idAttribute);
+		String id = elToSign.getAttributeNS(idAttribute.getNamespace(), idAttribute.getLocalName());
+		if (id != null)
+			id = "#" + id;
 		
 		Reference ref = fac.newReference(id, 
 					digistMethod,
@@ -166,13 +172,13 @@ public class DigSignatureUtil
 
 		DOMSignContext dsc = null;
 		if (insertBefore == null)
-			dsc = new DOMSignContext(privKey, 
-				docToSign.getDocumentElement());
+			dsc = new DOMSignContext(privKey, elToSign);
 		else
-			dsc = new DOMSignContext(privKey, 
-					docToSign.getDocumentElement(), insertBefore);
+			dsc = new DOMSignContext(privKey, elToSign, insertBefore);
 		
-		setDefaultResolverAttributes(dsc, docToSign.getDocumentElement());
+		dsc.setIdAttributeNS(elToSign, idAttribute.getNamespace(), idAttribute.getLocalName());
+		
+		
 		//hack to overcome gateway/ActiveSOAP bugs with default prefixes...
 		// -> only relevant for gateway version < 6.3.0  
 		dsc.putNamespacePrefix(
@@ -208,12 +214,21 @@ public class DigSignatureUtil
 
 	}
 	
-	public boolean verifyEnvelopedSignature(Document signedDocument, PublicKey validatingKey) 
-		throws DSigException
+	/**
+	 * @param signedDocument document which contains signed data (not necessary the whole document 
+	 * need to be signed). 
+	 * @param shallBeSigned list of elements in the document which should be signed.
+	 * @param idAttribute what attribute holds information about element's identifier, which 
+	 * @param validatingKey key which shall be used for signature verification
+	 * @return true only if signature is valid
+	 * @throws DSigException
+	 */
+	public boolean verifyEnvelopedSignature(Document signedDocument, List<Element> shallBeSigned, 
+			IdAttribute idAttribute, PublicKey validatingKey) throws DSigException
 	{
 		try
 		{
-			return verifyEnvelopedSignatureInternal(signedDocument, validatingKey);
+			return verifyEnvelopedSignatureInternal(signedDocument, shallBeSigned, idAttribute, validatingKey);
 		} catch (Exception e)
 		{
 			throw new DSigException("Verification of enveloped signature " +
@@ -221,25 +236,38 @@ public class DigSignatureUtil
 		}
 	}	
 	
-	private boolean verifyEnvelopedSignatureInternal(Document signedDocument, 
-			PublicKey validatingKey) 
-		throws MarshalException, XMLSignatureException
+	private boolean verifyEnvelopedSignatureInternal(Document signedDocument, List<Element> shallBeSigned, 
+			IdAttribute idAttribute, PublicKey validatingKey) 
+			throws MarshalException, XMLSignatureException
 	{
 		NodeList nl = signedDocument.getElementsByTagNameNS(
 				XMLSignature.XMLNS, "Signature");
 		if (nl.getLength() == 0)
 			throw new XMLSignatureException("Document not signed");
+		if (nl.getLength() > 1)
+			throw new XMLSignatureException("Document contains more then one dsig:Signature element, " +
+					"this is not supported for enveloped signatures and might signal an attack or bug.");
 
-		return verifySignatureInternal(signedDocument, validatingKey, nl.item(0));
+		return verifySignatureInternal(signedDocument, shallBeSigned, idAttribute, validatingKey, nl.item(0));
 	}
 
-	public boolean verifyDetachedSignature(Document signedDocument, PublicKey validatingKey,
-			Node signatureNode) 
-		throws DSigException
+	/**
+	 * 
+	 * @param signedDocument document which contains signed data (not necessary the whole document 
+	 * need to be signed). 
+	 * @param shallBeSigned list of elements in the document which should be signed.
+	 * @param idAttribute what attribute holds information about element's identifier, which 
+	 * @param validatingKey key which shall be used for signature verification
+	 * @param signatureNode a node (which need not to be in the document) with signature.
+	 * @return true only if signature is valid
+	 * @throws DSigException
+	 */
+	public boolean verifyDetachedSignature(Document signedDocument, List<Element> shallBeSigned, 
+			IdAttribute idAttribute, PublicKey validatingKey, Node signatureNode) throws DSigException
 	{
 		try
 		{
-			return verifySignatureInternal(signedDocument, validatingKey, 
+			return verifySignatureInternal(signedDocument, shallBeSigned, idAttribute, validatingKey, 
 					signatureNode);
 		} catch (Exception e)
 		{
@@ -249,9 +277,9 @@ public class DigSignatureUtil
 	}	
 
 
-	private boolean verifySignatureInternal(Document signedDocument, 
-			PublicKey validatingKey, Node signatureNode) 
-		throws MarshalException, XMLSignatureException
+	private boolean verifySignatureInternal(Document signedDocument, List<Element> shallBeSigned, 
+			IdAttribute idAttribute, PublicKey validatingKey, Node signatureNode) 
+			throws MarshalException, XMLSignatureException
 	{
 		if (log.isTraceEnabled())
 			log.trace("Will verify signature of document:\n" + 
@@ -259,14 +287,14 @@ public class DigSignatureUtil
 
 		DOMValidateContext valContext = new DOMValidateContext(validatingKey,
 				signatureNode);
-		setDefaultResolverAttributes(valContext, signedDocument.getDocumentElement());
+		setResolverAttributes(valContext, signedDocument.getDocumentElement(), idAttribute);
 
 		XMLSignature signature = fac.unmarshalXMLSignature(valContext);
 		boolean coreValidity = signature.validate(valContext);
 
 		if (coreValidity == false) 
 			log.debug("Signature failed core validation");
-		if (coreValidity == false && log.isTraceEnabled()) 
+		if (coreValidity == false && log.isDebugEnabled()) 
 		{		
 			boolean sv = signature.getSignatureValue().validate(valContext);
 			log.debug("signature validation status: " + sv);
@@ -276,14 +304,26 @@ public class DigSignatureUtil
 				Reference ref = (Reference) i.next(); 
 				boolean refValid = ref.validate(valContext);
 
-				log.trace("ref["+j+"] validity status: " + refValid);
+				log.debug("ref["+j+"] validity status: " + refValid);
 				String s = Base64.encode(ref.getDigestValue());
-				log.trace("ref["+j+"] digest: " + s);
+				log.debug("ref["+j+"] digest: " + s);
 				s = Base64.encode(ref.getCalculatedDigestValue());
-				log.trace("ref["+j+"] calculated digest: " + s);
+				log.debug("ref["+j+"] calculated digest: " + s);
 			}
 		} 
-		return coreValidity;
+		if (!coreValidity)
+			return false;
+		
+		@SuppressWarnings("unchecked")
+		boolean everythingSigned = checkCompletness(signature.getSignedInfo().getReferences(), 
+				shallBeSigned, signedDocument, idAttribute);
+		if (!everythingSigned) 
+		{
+			log.debug("Signature is correct but some of the required elements are not signed");
+			return false;
+		}
+		
+		return true;
 	}
 
 	
@@ -317,13 +357,16 @@ public class DigSignatureUtil
 	}
 	
 	/**
-	 * Only searches in the element and its direct children. 
+	 * Recursively searches in the element and its children. 
 	 * @param cryptoContext
 	 * @param element
+	 * @param idAttribute
+	 * @throws XMLSignatureException 
 	 */
-	private static void setDefaultResolverAttributes(DOMCryptoContext cryptoContext, Element element)
+	private void setResolverAttributes(DOMCryptoContext cryptoContext, Element element, 
+			IdAttribute idAttribute) throws XMLSignatureException
 	{
-		checkElementForResolverAttributes(cryptoContext, element);
+		checkElementForIdAttribute(cryptoContext, element, idAttribute);
 		NodeList nodes = element.getChildNodes();
 		for (int i=0; i<nodes.getLength(); i++)
 		{
@@ -331,23 +374,68 @@ public class DigSignatureUtil
 			if (!(n instanceof Element))
 				continue;
 			Element e = (Element) n;
-			setDefaultResolverAttributes(cryptoContext, e);
+			setResolverAttributes(cryptoContext, e, idAttribute);
 		}
 	}
 	
-	private static void checkElementForResolverAttributes(DOMCryptoContext cryptoContext, Element element)
+	private void checkElementForIdAttribute(DOMCryptoContext cryptoContext, Element element, 
+			IdAttribute idAttribute) throws XMLSignatureException
 	{
-		for (int j=0; j<LOCAL_DSIG_REFERENCES_ATTR_NAME.length; j++)
+		if (element.hasAttributeNS(idAttribute.getNamespace(), idAttribute.getLocalName()))
 		{
-			if (element.hasAttributeNS(LOCAL_DSIG_REFERENCES_ATTR_NS[j], LOCAL_DSIG_REFERENCES_ATTR_NAME[j]))
-				cryptoContext.setIdAttributeNS(element, LOCAL_DSIG_REFERENCES_ATTR_NS[j], 
-						LOCAL_DSIG_REFERENCES_ATTR_NAME[j]);
-			if (element.hasAttribute(LOCAL_DSIG_REFERENCES_ATTR_NAME[j]))
-				cryptoContext.setIdAttributeNS(element, null, 
-						LOCAL_DSIG_REFERENCES_ATTR_NAME[j]);
+			String value = element.getAttributeNS(idAttribute.getNamespace(), idAttribute.getLocalName());
+			if (cryptoContext.getElementById(value) != null)
+			{
+				log.warn("The XML document contains more then one element with the same " +
+						"identifier " + value + ": " + element.getNodeName() + " and " + 
+						cryptoContext.getElementById(value).getNodeName() + 
+						". In case of signing this is a bug, in case of verification can mean that there is an XSW attack.");
+				throw new XMLSignatureException("The XML document contains more then one element with the same " +
+						"identifier " + value + ": " + element.getNodeName() + " and " + 
+						cryptoContext.getElementById(value).getNodeName() + 
+						". In case of signing this is a bug, in case of verification can mean that there is an XSW attack.");
+			}
+			cryptoContext.setIdAttributeNS(element, idAttribute.getNamespace(), idAttribute.getLocalName());
 		}
 	}
 
+	
+	public boolean checkCompletness(List<Reference> signedReferences, List<Element> shallBeSigned, 
+			Document signedDocument, IdAttribute idAttribute)
+	{
+		Set<String> signedIds = new HashSet<String>();
+		for (Reference ref: signedReferences)
+			signedIds.add(ref.getURI());
+
+		for (Element part: shallBeSigned)
+		{
+			log.trace("Required part: " + part.getTagName());
+			if (!checkIfNodeSigned(signedIds, part, idAttribute))
+				return false;
+		}
+		return true;
+	}
+	
+	private boolean checkIfNodeSigned(Set<String> signedIds, Element el, IdAttribute idAttribute)
+	{
+		if (!el.hasAttributeNS(idAttribute.getNamespace(), idAttribute.getLocalName()))
+		{
+			log.debug("Assuming that element {" + el.getNamespaceURI() + 
+					"}" + el.getLocalName() +
+					" is not signed as it doesn't have id attribute");
+			return false;
+		}
+		String idVal = el.getAttributeNS(idAttribute.getNamespace(), idAttribute.getLocalName());
+		String id = "#" + idVal;
+		if (signedIds.contains(id))
+				return true;
+		log.warn("Didn't find among signed references a required element: {"
+				+ el.getNamespaceURI() + "}" + el.getLocalName() + 
+				" with id " + id);
+		return false;
+	}
+
+	
 	public static String dumpDOMToString(Element node)
 	{
 		return dumpNodeToString(node);

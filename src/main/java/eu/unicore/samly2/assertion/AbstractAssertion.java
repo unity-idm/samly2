@@ -17,6 +17,7 @@ import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 
 import javax.xml.namespace.QName;
@@ -34,6 +35,7 @@ import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLParseException;
 import eu.unicore.security.dsig.DSigException;
 import eu.unicore.security.dsig.DigSignatureUtil;
+import eu.unicore.security.dsig.IdAttribute;
 import eu.unicore.security.dsig.Utils;
 
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
@@ -59,9 +61,10 @@ import xmlbeans.org.w3.x2000.x09.xmldsig.X509DataType;
  */
 public abstract class AbstractAssertion implements Serializable
 {
-       private static final long serialVersionUID=1L;
+	private static final long serialVersionUID=1L;
 
 	private static String ID_PREFIX = "SAMLY2lib_assert_";
+	public static final IdAttribute ASSERTION_ID_QNAME = new IdAttribute(null, "ID");
 	
 	protected AssertionType assertion;
 	private AssertionDocument assertionDoc;
@@ -404,7 +407,7 @@ public abstract class AbstractAssertion implements Serializable
 		}
 
 		sign.genEnvelopedSignature(pk, null, cert, 
-				docToSign, sibling);
+				docToSign, sibling, ASSERTION_ID_QNAME);
 		try
 		{
 			assertionDoc = AssertionDocument.Factory.parse(docToSign);
@@ -428,8 +431,9 @@ public abstract class AbstractAssertion implements Serializable
 		if (!isSigned())
 			return false;
 		DigSignatureUtil sign = new DigSignatureUtil();
-		return sign.verifyEnvelopedSignature(
-			(Document) getXML().getDomNode(), key);
+		Document doc = (Document) getXML().getDomNode();
+		return sign.verifyEnvelopedSignature(doc, 
+				Collections.singletonList(doc.getDocumentElement()), ASSERTION_ID_QNAME, key);
 	}
 	
 	public X509Certificate[] getIssuerFromSignature()

@@ -11,12 +11,14 @@ package eu.unicore.security.dsig;
 import java.io.FileInputStream;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 
+import eu.unicore.samly2.assertion.AbstractAssertion;
 import eu.unicore.samly2.assertion.Assertion;
 
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
@@ -61,7 +63,9 @@ public class AssertionSignatureChecker
 			//BigInteger expotent = new BigInteger("65537");
 			//PublicKey pubKey = new RSAPublicKeyImpl(modulus, expotent);
 			PublicKey pubKey = certChain[0].getPublicKey(); 
-			boolean res = dsigEngine.verifyEnvelopedSignature(doc, pubKey);
+			boolean res = dsigEngine.verifyEnvelopedSignature(doc, 
+					Collections.singletonList(doc.getDocumentElement()), 
+					AbstractAssertion.ASSERTION_ID_QNAME, pubKey);
 			System.out.println("Signature is valid: " + res);
 		} catch (Exception e)
 		{

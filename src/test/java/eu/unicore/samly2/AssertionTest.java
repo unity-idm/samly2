@@ -116,7 +116,7 @@ public class AssertionTest extends TestBase {
 
 	}
 
-	public void testSing() {
+	public void testSign() {
 		Assertion as = null;
 		try {
 			AssertionDocument doc = AssertionDocument.Factory.parse(new File(
