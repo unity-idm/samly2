@@ -244,9 +244,6 @@ public class DigSignatureUtil
 				XMLSignature.XMLNS, "Signature");
 		if (nl.getLength() == 0)
 			throw new XMLSignatureException("Document not signed");
-		if (nl.getLength() > 1)
-			throw new XMLSignatureException("Document contains more then one dsig:Signature element, " +
-					"this is not supported for enveloped signatures and might signal an attack or bug.");
 
 		return verifySignatureInternal(signedDocument, shallBeSigned, idAttribute, validatingKey, nl.item(0));
 	}
