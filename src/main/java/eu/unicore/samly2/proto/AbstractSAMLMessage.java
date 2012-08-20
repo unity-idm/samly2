@@ -20,6 +20,7 @@ import org.w3c.dom.NodeList;
 import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.security.dsig.DSigException;
 import eu.unicore.security.dsig.DigSignatureUtil;
+import eu.unicore.security.dsig.IdAttribute;
 
 
 /**
@@ -55,8 +56,9 @@ public abstract class AbstractSAMLMessage
 		if (!isSigned())
 			return false;
 		DigSignatureUtil sign = new DigSignatureUtil();
-
-		return sign.verifyEnvelopedSignature(doc, key);
+		if (!sign.verifyEnvelopedSignature(doc, key))
+			return false;
+		return sign.checkCompleteness(key, doc, new IdAttribute(null, "ID"), doc.getDocumentElement());
 	}
 	
 	protected Document signInt(PrivateKey pk, X509Certificate []cert) 

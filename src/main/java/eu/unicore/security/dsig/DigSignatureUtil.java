@@ -22,8 +22,10 @@ import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.xml.crypto.MarshalException;
@@ -333,4 +335,117 @@ public class DigSignatureUtil
         		return null;
 		}
 	}
+	
+	/**
+	 * @throws DSigException 
+	 * Checks if the 'element' element from the document contains the idAttribute, and the idAttribute is present
+	 * in the Signature References of the Signature contained in the document. It is also verified if the id 
+	 * attribute value is not duplicated anywhere in the document.
+	 * @param document
+	 * @param idAttribute
+	 * @param idAttributeNs
+	 * @param requiredElement
+	 * @return
+	 * @throws XMLSignatureException 
+	 * @throws  
+	 */
+	public boolean checkCompleteness(PublicKey key, Document document, IdAttribute idAttribute, Element requiredElement) 
+			throws DSigException
+	{
+		NodeList nl = document.getElementsByTagNameNS(
+				XMLSignature.XMLNS, "Signature");
+		if (nl.getLength() == 0)
+			throw new DSigException("Document not signed");
+		
+		DOMValidateContext valContext = new DOMValidateContext(key,
+				nl.item(0));
+
+		XMLSignature signature;
+		try
+		{
+			signature = fac.unmarshalXMLSignature(valContext);
+		} catch (MarshalException e)
+		{
+			throw new DSigException("Verification of enveloped signature " +
+					"failed", e);
+		}
+		@SuppressWarnings("unchecked")
+		List<Reference> references = signature.getSignedInfo().getReferences();
+		if (!checkCompletness(references, requiredElement, document, idAttribute))
+			return false;
+		
+		checkDuplicatedIds(new HashSet<String>(), document.getDocumentElement(), idAttribute);		
+		
+		return true;
+	}
+	
+	
+	private boolean checkCompletness(List<Reference> signedReferences, Element shallBeSigned, 
+			Document signedDocument, IdAttribute idAttribute)
+	{
+		Set<String> signedIds = new HashSet<String>();
+		for (Reference ref: signedReferences)
+			signedIds.add(ref.getURI());
+
+		log.trace("Required part: " + shallBeSigned.getTagName());
+		if (!checkIfNodeSigned(signedIds, shallBeSigned, idAttribute))
+			return false;
+		
+		return true;
+	}
+	
+	private boolean checkIfNodeSigned(Set<String> signedIds, Element el, IdAttribute idAttribute)
+	{
+		if (!el.hasAttributeNS(idAttribute.getNamespace(), idAttribute.getLocalName()))
+		{
+			log.debug("Assuming that element {" + el.getNamespaceURI() + 
+					"}" + el.getLocalName() +
+					" is not signed as it doesn't have id attribute");
+			return false;
+		}
+		String idVal = el.getAttributeNS(idAttribute.getNamespace(), idAttribute.getLocalName());
+		String id = "#" + idVal;
+		if (signedIds.contains(id))
+				return true;
+		log.warn("Didn't find among signed references a required element: {"
+				+ el.getNamespaceURI() + "}" + el.getLocalName() + 
+				" with id " + id);
+		return false;
+	}
+	
+	
+	private void checkDuplicatedIds(Set<String> ids, Element element, 
+			IdAttribute idAttribute) throws DSigException
+	{
+
+		if (element.hasAttributeNS(idAttribute.getNamespace(), idAttribute.getLocalName()))
+		{
+			String value = element.getAttributeNS(idAttribute.getNamespace(), idAttribute.getLocalName());
+			if (ids.contains(value))
+			{
+				log.warn("The XML document contains more then one element with the same " +
+						"identifier " + value + 
+						". In case of signing this is a bug, in case of verification can mean that there is an XSW attack.");
+				throw new DSigException("The XML document contains more then one element with the same " +
+						"identifier " + value +  
+						". In case of signing this is a bug, in case of verification can mean that there is an XSW attack.");
+			}
+			ids.add(value);
+		}
+
+		NodeList nodes = element.getChildNodes();
+		for (int i=0; i<nodes.getLength(); i++)
+		{
+			Node n = nodes.item(i);
+			if (!(n instanceof Element))
+				continue;
+			Element e = (Element) n;
+			checkDuplicatedIds(ids, e, idAttribute);
+		}
+	}
 }
+
+
+
+
+

@@ -34,6 +34,7 @@ import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLParseException;
 import eu.unicore.security.dsig.DSigException;
 import eu.unicore.security.dsig.DigSignatureUtil;
+import eu.unicore.security.dsig.IdAttribute;
 import eu.unicore.security.dsig.Utils;
 
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
@@ -426,8 +427,10 @@ public abstract class AbstractAssertion implements Serializable
 		if (!isSigned())
 			return false;
 		DigSignatureUtil sign = new DigSignatureUtil();
-		return sign.verifyEnvelopedSignature(
-			(Document) getXML().getDomNode(), key);
+		Document doc = (Document) getXML().getDomNode();
+		if (!sign.verifyEnvelopedSignature(doc, key))
+			return false;
+		return sign.checkCompleteness(key, doc, new IdAttribute(null, "ID"), doc.getDocumentElement());
 	}
 	
 	public X509Certificate[] getIssuerFromSignature()
