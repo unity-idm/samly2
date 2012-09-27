@@ -154,4 +154,40 @@ public class SAMLAttribute
 		return cur.getAttributeText(new QName(ns, name));
 	}
 
+	@Override
+	public int hashCode()
+	{
+		String nf1 = xml.getNameFormat();
+		if (nf1 == null)
+			nf1 = SAMLConstants.AFORMAT_UNSPEC;
+		return (xml.getName()+"-----!!!----"+nf1).hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SAMLAttribute other = (SAMLAttribute) obj;
+		if (xml == null)
+		{
+			return other.xml == null;
+		} else 
+		{
+			if (other.xml == null)
+				return false;
+			String nf1 = xml.getNameFormat();
+			if (nf1 == null)
+				nf1 = SAMLConstants.AFORMAT_UNSPEC;
+			String nf2 = other.xml.getNameFormat();
+			if (nf2 == null)
+				nf2 = SAMLConstants.AFORMAT_UNSPEC;
+			
+			return other.xml.getName().equals(xml.getName()) && nf2.equals(nf1);
+		}
+	}
 }

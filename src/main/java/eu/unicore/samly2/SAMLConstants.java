@@ -38,6 +38,7 @@ public class SAMLConstants
 	
 	public static final String AFORMAT_BASIC = SAML_P + "attrname-format:basic";
 	public static final String AFORMAT_URI = SAML_P + "attrname-format:uri";
+	public static final String AFORMAT_UNSPEC = SAML_P + "attrname-format:unspecified";
 	
 	public static final String STATUS_OK = STAT_P + "Success";
 	public static final String STATUS_REQUESTER = STAT_P + "Requester";
