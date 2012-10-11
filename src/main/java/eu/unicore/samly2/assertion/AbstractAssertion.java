@@ -62,6 +62,8 @@ import xmlbeans.org.w3.x2000.x09.xmldsig.X509DataType;
 public abstract class AbstractAssertion implements Serializable
 {
 	private static final long serialVersionUID=1L;
+	// 3 mins to cover minor clock skews
+	public static final int SAML_VALIDITY_GRACE_TIME = 180000;
 
 	private static String ID_PREFIX = "SAMLY2lib_assert_";
 	public static final IdAttribute ASSERTION_ID_QNAME = new IdAttribute(null, "ID");
@@ -297,9 +299,9 @@ public abstract class AbstractAssertion implements Serializable
 	public boolean checkTimeConditions(Date time)
 	{
 		long t = time.getTime();
-		if (getNotBefore() != null && getNotBefore().getTime() > t)
+		if (getNotBefore() != null && getNotBefore().getTime() > t+SAML_VALIDITY_GRACE_TIME)
 			return false;
-		if (getNotOnOrAfter() != null && getNotOnOrAfter().getTime() <= t)
+		if (getNotOnOrAfter() != null && getNotOnOrAfter().getTime() <= t-SAML_VALIDITY_GRACE_TIME)
 			return false;
 		return true;
 	}
