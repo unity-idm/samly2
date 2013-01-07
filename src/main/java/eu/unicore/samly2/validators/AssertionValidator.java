@@ -71,7 +71,6 @@ public class AssertionValidator
 		trustChecker.checkTrust(assertionDoc);
 		checkConditions(assertionXml);
 		checkSubject(assertionXml);
-		checkStatements(assertionXml);
 	}
 
 	protected void checkMandatoryElements(AssertionType assertion) throws SAMLValidationException
@@ -152,6 +151,11 @@ public class AssertionValidator
 		checkGenericConditions(conditions);
 	}
 	
+	/**
+	 * This method can be used by subclasses but is not invoked by defualt (it is not required by SAML spec)
+	 * @param assertion
+	 * @throws SAMLValidationException
+	 */
 	protected void checkStatements(AssertionType assertion) throws SAMLValidationException
 	{
 		int types = 0; 
@@ -208,7 +212,7 @@ public class AssertionValidator
 			throw new SAMLValidationException(msg + " is not yet valid, will be from " 
 				+ DATE_FORMATTER.format(notBefore.getTime()) + " and current time is " + DATE_FORMATTER.format(new Date()));
 		if (notOnOrAfter != null && now >= notOnOrAfter.getTimeInMillis()+samlValidityGraceTime)
-			throw new SAMLValidationException(msg + " was expired at " 
+			throw new SAMLValidationException(msg + " expired at " 
 				+ DATE_FORMATTER.format(notOnOrAfter.getTime()) + " and current time is " + DATE_FORMATTER.format(new Date()));
 	}
 }

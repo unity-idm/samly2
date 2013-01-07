@@ -49,6 +49,10 @@ public class SSOAuthnAssertionValidator extends AssertionValidator
 	{
 		super.validate(assertionDoc);
 		AssertionType assertionXml = assertionDoc.getAssertion();
+		
+		//0 - all statements of a single type
+		checkStatements(assertionXml);
+		
 		//1 - issuer format unspec or entity
 		NameIDType issuer = assertionXml.getIssuer();
 		if (issuer.getFormat() != null && !SAMLConstants.NFORMAT_ENTITY.equals(
