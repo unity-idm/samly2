@@ -19,11 +19,6 @@ public class Subject
 {
 	private SubjectType xml;
 	
-	public Subject(SubjectType xml)
-	{
-		this.xml = xml;
-	}
-	
 	public Subject(String value, String format)
 	{
 		xml = SubjectType.Factory.newInstance();

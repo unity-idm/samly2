@@ -9,9 +9,7 @@
 package eu.unicore.samly2.proto;
 
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.cert.X509Certificate;
-import java.util.Collections;
 
 import org.apache.xmlbeans.XmlObject;
 import org.w3c.dom.Document;
@@ -19,29 +17,35 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import eu.unicore.samly2.SAMLUtils;
+import eu.unicore.samly2.trust.SamlTrustChecker;
 import eu.unicore.security.dsig.DSigException;
 import eu.unicore.security.dsig.DigSignatureUtil;
-import eu.unicore.security.dsig.IdAttribute;
 
 
 /**
+ * Base class for creating SAML requests and responses.
  * @author K. Benedyczak
  */
-public abstract class AbstractSAMLMessage
+public abstract class AbstractSAMLMessage<T extends XmlObject>
 {
 	private static String ID_PREFIX = "SAMLY2lib_msg_";
-	public static final IdAttribute PROTOCOL_ID_QNAME = new IdAttribute(null, "ID");
 	
-	public abstract Document getDOM() throws DSigException;
-
 	public abstract void sign(PrivateKey pk, X509Certificate []cert) 
 		throws DSigException;
-	public abstract boolean isCorrectlySigned(PublicKey key) 
-		throws DSigException;
-	public abstract boolean isSigned();
-	public abstract XmlObject getDoc();
-
 	
+	protected T xmlDocuemnt;
+	
+	
+	public T getXMLBeanDoc()
+	{
+		return xmlDocuemnt;
+	}
+
+	public Document getDOM() throws DSigException
+	{
+		return SAMLUtils.getDOM(getXMLBeanDoc()); 
+	}
+
 	public String genID()
 	{
 		return SAMLUtils.genID(ID_PREFIX);
@@ -50,17 +54,6 @@ public abstract class AbstractSAMLMessage
 	public void sign(PrivateKey pk) throws DSigException 
 	{
 		sign(pk, null);
-	}
-	
-	protected boolean isCorrectlySigned(PublicKey key, Document doc) 
-		throws DSigException
-	{
-		if (!isSigned())
-			return false;
-		DigSignatureUtil sign = new DigSignatureUtil();
-
-		return sign.verifyEnvelopedSignature(doc, Collections.singletonList(doc.getDocumentElement()), 
-				PROTOCOL_ID_QNAME, key);
 	}
 	
 	protected Document signInt(PrivateKey pk, X509Certificate []cert) 
@@ -84,9 +77,7 @@ public abstract class AbstractSAMLMessage
 		}
 
 		sign.genEnvelopedSignature(pk, null, cert, 
-				docToSign, sibling, PROTOCOL_ID_QNAME);
+				docToSign, sibling, SamlTrustChecker.PROTOCOL_ID_QNAME);
 		return docToSign;
 	}
-	
-	public abstract X509Certificate[] getIssuerFromSignature();
 }

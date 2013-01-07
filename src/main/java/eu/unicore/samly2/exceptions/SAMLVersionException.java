@@ -1,24 +1,29 @@
 /*
- * Copyright (c) 2007, 2008 ICM Uniwersytet Warszawski All rights reserved.
- * See LICENCE file for licencing information.
- *
- * Created on Aug 21, 2007
- * Author: K. Benedyczak <golbi@mat.umk.pl>
+ * Copyright (c) 2012 ICM Uniwersytet Warszawski All rights reserved.
+ * See LICENCE file for licensing information.
  */
-
 package eu.unicore.samly2.exceptions;
 
 import eu.unicore.samly2.SAMLConstants;
 
 
 /**
+ * Signals problems in validation of SAML request.
+ * This extension of {@link SAMLValidationException} holds additionally the SAML error status
+ * and optionally substatus, so it can be used in SAML error response if needed.
  * @author K. Benedyczak
  */
-@SuppressWarnings("serial")
-public class SAMLVersionException extends SAMLProtocolException
+public class SAMLVersionException extends SAMLServerException
 {
-	public SAMLVersionException(String subCode, String msg)
+	private static final long serialVersionUID = 1L;
+
+	public SAMLVersionException(String message, SAMLConstants.SubStatus samlSubErrorId)
 	{
-		super(SAMLConstants.STATUS_VERSION_MISMATCH, subCode, msg);
+		super(SAMLConstants.Status.STATUS_VERSION_MISMATCH, samlSubErrorId, message);
+	}
+
+	public SAMLVersionException(String message)
+	{
+		super(SAMLConstants.Status.STATUS_VERSION_MISMATCH, message);
 	}
 }

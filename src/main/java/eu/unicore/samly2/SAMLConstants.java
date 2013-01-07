@@ -16,7 +16,7 @@ import javax.xml.namespace.QName;
 public class SAMLConstants
 {
 	private static final String SAML_P = "urn:oasis:names:tc:SAML:2.0:";
-	private static final String STAT_P = SAML_P + "status:";
+	public static final String STAT_P = SAML_P + "status:";
 	private static final String NAME_FORMAT11_P = 
 		"urn:oasis:names:tc:SAML:1.1:nameid-format:";
 	private static final String NAME_FORMAT20_P = 
@@ -40,20 +40,6 @@ public class SAMLConstants
 	public static final String AFORMAT_URI = SAML_P + "attrname-format:uri";
 	public static final String AFORMAT_UNSPEC = SAML_P + "attrname-format:unspecified";
 	
-	public static final String STATUS_OK = STAT_P + "Success";
-	public static final String STATUS_REQUESTER = STAT_P + "Requester";
-	public static final String STATUS_RESPONDER = STAT_P + "Responder";
-	public static final String STATUS_VERSION_MISMATCH = STAT_P + "VersionMismatch";
-	
-	public static final String STATUS2_UNKNOWN_PRINCIPIAL = STAT_P + "UnknownPrincipial";
-	public static final String STATUS2_AUTHN_FAILED = STAT_P + "AuthnFailed";
-	public static final String STATUS2_REQUEST_DENIED = STAT_P + "RequestDenied";	
-	public static final String STATUS2_INVALID_ATTR = STAT_P + "InvalidAttrNameOrValue";
-	public static final String STATUS2_REQUEST_UNSUPP = STAT_P + "RequestUnsupported";
-	public static final String STATUS2_INVALID_NAMEID_POLICY = STAT_P + "InvalidNameIDPolicy";
-	public static final String STATUS2_VER_TOO_HIGH = STAT_P + "RequestVersionTooHigh";
-	public static final String STATUS2_VER_TOO_LOW = STAT_P + "RequestVersionTooLow";
-
 	public static final String CONFIRMATION_SENDER_VOUCHES = SAML_P + "cm:sender-vouches";
 	public static final String CONFIRMATION_HOLDER_OF_KEY = SAML_P + "cm:holder-of-key";
 	public static final String CONFIRMATION_BEARER = SAML_P + "cm:bearer";
@@ -75,4 +61,65 @@ public class SAMLConstants
 	public static final QName ATTRIBUTE_SCOPE_XMLATTRIBUTE = new QName("urn:vo:SAML:2.0:attribute:ext", "attributeScope");
 	
 	public static enum AuthNClasses {NONE, TLS};
+	
+	public enum Status 
+	{
+		STATUS_OK(STAT_P + "Success"),
+		STATUS_REQUESTER(STAT_P + "Requester"),
+		STATUS_RESPONDER(STAT_P + "Responder"),
+		STATUS_VERSION_MISMATCH(STAT_P + "VersionMismatch");
+		
+		private String name;
+		
+		Status(String s)
+		{
+			this.name = s;
+		}
+		
+		public String toString()
+		{
+			return name;
+		}
+		
+		public static Status fromString(String arg)
+		{
+			for (Status value: Status.values())
+				if (arg.equals(value.name))
+					return value;
+			throw new IllegalArgumentException("Unknown status " + arg);
+		}
+	}
+	
+	public enum SubStatus 
+	{
+		STATUS2_UNKNOWN_PRINCIPIAL(STAT_P + "UnknownPrincipial"),
+		STATUS2_AUTHN_FAILED(STAT_P + "AuthnFailed"),
+		STATUS2_REQUEST_DENIED(STAT_P + "RequestDenied"),	
+		STATUS2_INVALID_ATTR(STAT_P + "InvalidAttrNameOrValue"),
+		STATUS2_REQUEST_UNSUPP(STAT_P + "RequestUnsupported"),
+		STATUS2_INVALID_NAMEID_POLICY(STAT_P + "InvalidNameIDPolicy"),
+		STATUS2_VER_TOO_HIGH(STAT_P + "RequestVersionTooHigh"),
+		STATUS2_VER_TOO_LOW(STAT_P + "RequestVersionTooLow");
+		
+		private String name;
+		
+		SubStatus(String s)
+		{
+			this.name = s;
+		}
+		
+		public String toString()
+		{
+			return name;
+		}
+		
+		public static SubStatus fromString(String arg)
+		{
+			for (SubStatus value: SubStatus.values())
+				if (arg.equals(value.name))
+					return value;
+			throw new IllegalArgumentException("Unknown substatus " + arg);
+		}
+	}
+
 }

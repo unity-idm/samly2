@@ -8,18 +8,14 @@
 
 package eu.unicore.samly2.proto;
 
-import java.security.cert.X509Certificate;
 import java.util.Calendar;
 
-import org.w3c.dom.Document;
+import org.apache.xmlbeans.XmlObject;
 
 import eu.unicore.samly2.SAMLConstants;
-import eu.unicore.samly2.SAMLUtils;
-import eu.unicore.samly2.elements.NameID;
-import eu.unicore.samly2.exceptions.SAMLParseException;
-import eu.unicore.samly2.exceptions.SAMLProtocolException;
-import eu.unicore.security.dsig.DSigException;
+import eu.unicore.samly2.exceptions.SAMLServerException;
 
+import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 import xmlbeans.org.oasis.saml2.protocol.StatusCodeType;
 import xmlbeans.org.oasis.saml2.protocol.StatusResponseType;
 import xmlbeans.org.oasis.saml2.protocol.StatusType;
@@ -27,23 +23,15 @@ import xmlbeans.org.oasis.saml2.protocol.StatusType;
 /**
  * @author K. Benedyczak
  */
-public abstract class AbstractStatusResponse extends AbstractSAMLMessage
+public abstract class AbstractStatusResponse<T extends XmlObject, C extends StatusResponseType> extends AbstractSAMLMessage<T>
 {
-	protected StatusResponseType xmlResp;
+	protected C xmlResp;
 	
-	protected AbstractStatusResponse()
+	protected void init(T srcDoc, C src, NameIDType issuer, String inResponseTo)
 	{
-	}
-	
-	protected AbstractStatusResponse(StatusResponseType src) throws SAMLParseException
-	{
+		xmlDocuemnt = srcDoc;
 		xmlResp = src;
-	}
-
-	protected void init(StatusResponseType src, NameID issuer, String inResponseTo)
-	{
-		xmlResp = src;
-		xmlResp.setIssuer(issuer.getXBean());
+		xmlResp.setIssuer(issuer);
 		xmlResp.setIssueInstant(Calendar.getInstance());
 		xmlResp.setID(genID());
 		xmlResp.setVersion(SAMLConstants.SAML2_VERSION);
@@ -51,92 +39,29 @@ public abstract class AbstractStatusResponse extends AbstractSAMLMessage
 			xmlResp.setInResponseTo(inResponseTo);
 	}
 
-	public void parse() throws SAMLParseException
+	public C getXMLBean()
 	{
-		if (xmlResp.getVersion() == null)
-			throw new SAMLParseException("No SAML version is set");
-		String ver = xmlResp.getVersion();
-		if (!ver.equals(SAMLConstants.SAML2_VERSION))
-			throw new SAMLParseException(
-					"Only SAML 2.0 version is supported");
-		
-		if (xmlResp.getID() == null)
-			throw new SAMLParseException("No ID is set");
-		if (xmlResp.getIssueInstant() == null)
-			throw new SAMLParseException("No IssueInstant is set");
-		if (xmlResp.getStatus() == null)
-			throw new SAMLParseException("No Status is set");
+		return xmlResp;
 	}
 	
-	protected StatusType getOKStatus()
+	public static StatusType createOKStatus()
 	{
 		StatusType ok = StatusType.Factory.newInstance();
 		StatusCodeType okCode = ok.addNewStatusCode();
-		okCode.setValue(SAMLConstants.STATUS_OK);
+		okCode.setValue(SAMLConstants.Status.STATUS_OK.toString());
 		return ok;
 	}
 
-	protected StatusType getErrorStatus(SAMLProtocolException e)
+	public static StatusType createErrorStatus(SAMLServerException e)
 	{
 		StatusType error = StatusType.Factory.newInstance();
 		StatusCodeType errorCode = error.addNewStatusCode();
-		errorCode.setValue(e.getCode());
-		if (e.getSubCode() != null)
-			errorCode.addNewStatusCode().setValue(e.getSubCode());
+		errorCode.setValue(e.getSamlErrorId().toString());
+		if (e.getSamlSubErrorId() != null)
+			errorCode.addNewStatusCode().setValue(e.getSamlSubErrorId().toString());
 		if (e.getMessage() != null)
 			error.setStatusMessage(e.getMessage());
 		return error;
-	}
-
-	public boolean isSigned()
-	{
-		if (xmlResp.getSignature() == null 
-				|| xmlResp.getSignature().isNil())
-			return false;
-		else return true;
-	}
-	
-	public Document getDOM() throws DSigException
-	{
-		return SAMLUtils.getDOM(getDoc());
-	}
-	
-	public X509Certificate[] getIssuerFromSignature()
-	{
-		return SAMLUtils.getIssuerFromSignature(xmlResp.getSignature());
-	}
-	
-	public boolean isStatusOK()
-	{
-		StatusType status = xmlResp.getStatus();
-		if (status == null || status.getStatusCode() == null)
-			return false;
-		return status.getStatusCode().getValue().equals(SAMLConstants.STATUS_OK);
-	}
-	
-	public String getErrorStatus()
-	{
-		StatusType status = xmlResp.getStatus();
-		if (status == null || status.getStatusCode() == null)
-			return null;
-		return status.getStatusCode().getValue();
-	}
-	
-	public String getSubErrorStatus()
-	{
-		StatusType status = xmlResp.getStatus();
-		if (status == null || status.getStatusCode() == null ||
-				status.getStatusCode().getStatusCode() == null)
-			return null;
-		return status.getStatusCode().getStatusCode().getValue();
-	}
-	
-	public String getErrorMessage()
-	{
-		StatusType status = xmlResp.getStatus();
-		if (status == null || status.getStatusCode() == null)
-			return null;
-		return status.getStatusMessage();
 	}
 }
 

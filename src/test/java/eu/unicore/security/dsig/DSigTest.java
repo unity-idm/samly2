@@ -15,7 +15,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import eu.unicore.samly2.assertion.AbstractAssertion;
+import eu.unicore.samly2.trust.SamlTrustChecker;
 
 
 /**
@@ -34,10 +34,10 @@ public class DSigTest extends TestBase
 			Node n = doc.getDocumentElement().getChildNodes().item(1);
 			PublicKey pubKey = issuerCert1[0].getPublicKey();
 			dsigEngine.genEnvelopedSignature(privKey1, pubKey, issuerCert1, 
-				doc, n, AbstractAssertion.ASSERTION_ID_QNAME);
+				doc, n, SamlTrustChecker.ASSERTION_ID_QNAME);
 
 			assertTrue(dsigEngine.verifyEnvelopedSignature(doc, Collections.singletonList(doc.getDocumentElement()), 
-					AbstractAssertion.ASSERTION_ID_QNAME, pubKey));
+					SamlTrustChecker.ASSERTION_ID_QNAME, pubKey));
 			
 		} catch (Exception e)
 		{

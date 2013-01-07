@@ -17,11 +17,6 @@ public class NameIDPolicy
 {
 	private NameIDPolicyType xml;
 	
-	public NameIDPolicy(NameIDPolicyType xml)
-	{
-		this.xml = xml;
-	}
-	
 	public NameIDPolicy(String format)
 	{
 		xml = NameIDPolicyType.Factory.newInstance();

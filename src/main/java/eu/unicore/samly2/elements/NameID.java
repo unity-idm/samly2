@@ -17,11 +17,6 @@ public class NameID
 {
 	private NameIDType xml;
 	
-	public NameID(NameIDType xml)
-	{
-		this.xml = xml;
-	}
-	
 	public NameID(String value, String format)
 	{
 		xml = NameIDType.Factory.newInstance();

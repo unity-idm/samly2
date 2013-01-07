@@ -9,77 +9,47 @@
 package eu.unicore.samly2.proto;
 
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 
 import org.apache.xmlbeans.XmlException;
 import org.w3c.dom.Document;
 
-import eu.unicore.samly2.elements.NameID;
-import eu.unicore.samly2.exceptions.SAMLProtocolException;
 import eu.unicore.security.dsig.DSigException;
 
+import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 import xmlbeans.org.oasis.saml2.protocol.AuthnRequestDocument;
+import xmlbeans.org.oasis.saml2.protocol.AuthnRequestType;
 import xmlbeans.org.oasis.saml2.protocol.NameIDPolicyType;
 
 /**
- * SAML AuthenticationRequest representation.
+ * SAML AuthenticationRequest creation utility.
  * @author golbi
  */
-public class AuthnRequest extends AbstractRequest
+public class AuthnRequest extends AbstractRequest<AuthnRequestDocument, AuthnRequestType>
 {
-	private AuthnRequestDocument xbdoc;
-
-	public AuthnRequest(AuthnRequestDocument src) throws SAMLProtocolException
+	public AuthnRequest(NameIDType issuer)
 	{
-		super(src.getAuthnRequest());
-		xbdoc = src;
-		parse();
-	}
-
-	public AuthnRequest(NameID issuer)
-	{
-		xbdoc = AuthnRequestDocument.Factory.newInstance();
-		init(xbdoc.addNewAuthnRequest(), issuer);
+		AuthnRequestDocument xbdoc = AuthnRequestDocument.Factory.newInstance();
+		init(xbdoc, xbdoc.addNewAuthnRequest(), issuer);
 	}
 
 	public void setFormat(String format)
 	{
-		NameIDPolicyType policy = xbdoc.getAuthnRequest().addNewNameIDPolicy();
+		NameIDPolicyType policy = getXMLBean().addNewNameIDPolicy();
 		policy.setFormat(format);
 	}
 	
-	public void setConsumerURL(String consumerURL)
-	{
-		xbdoc.getAuthnRequest().setAssertionConsumerServiceURL(consumerURL);
-	}
-	
-	@Override
-	public AuthnRequestDocument getDoc()
-	{
-		return xbdoc;
-	}
-
-	@Override
-	public boolean isCorrectlySigned(PublicKey key) 
-		throws DSigException
-	{
-		return isCorrectlySigned(key, (Document) xbdoc.getDomNode());
-	}
-
-	@Override
 	public void sign(PrivateKey pk, X509Certificate[] cert) 
 		throws DSigException
 	{
 		Document doc = signInt(pk, cert);
 		try
 		{
-			xbdoc = AuthnRequestDocument.Factory.parse(doc);
-			xmlReq = xbdoc.getAuthnRequest();
+			xmlDocuemnt = AuthnRequestDocument.Factory.parse(doc);
+			xmlReq = xmlDocuemnt.getAuthnRequest();
 		} catch (XmlException e)
 		{
 			throw new DSigException("Parsing signed document failed", e);
 		}
 	}
-	
 }

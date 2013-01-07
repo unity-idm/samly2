@@ -1,59 +1,99 @@
 package eu.unicore.samly2;
 
+import org.apache.xmlbeans.XmlObject;
+
+import xmlbeans.org.oasis.saml2.protocol.RequestAbstractType;
+import xmlbeans.org.oasis.saml2.protocol.StatusResponseType;
+
 import eu.unicore.samly2.SAMLConstants;
+import eu.unicore.samly2.assertion.Assertion;
 import eu.unicore.samly2.elements.NameID;
 import eu.unicore.samly2.elements.NameIDPolicy;
+import eu.unicore.samly2.elements.SAMLAttribute;
 import eu.unicore.samly2.elements.Subject;
-import eu.unicore.samly2.exceptions.SAMLParseException;
-import eu.unicore.samly2.exceptions.SAMLProtocolException;
+import eu.unicore.samly2.exceptions.SAMLValidationException;
+import eu.unicore.samly2.proto.AssertionResponse;
 import eu.unicore.samly2.proto.AttributeQuery;
 import eu.unicore.samly2.proto.AuthnRequest;
 import eu.unicore.samly2.proto.NameIDMappingRequest;
 import eu.unicore.samly2.proto.NameIDMappingResponse;
+import eu.unicore.samly2.trust.StrictSamlTrustChecker;
 import eu.unicore.security.dsig.DSigException;
 import eu.unicore.security.dsig.TestBase;
 
+/**
+ * Tests utility classes which are creating SAML protocol messages.
+ * @author K. Benedyczak
+ */
 public class ProtoTest extends TestBase {
 
+	private void sigCheck(XmlObject doc, RequestAbstractType req)
+	{
+		StrictSamlTrustChecker checker = new StrictSamlTrustChecker();
+		checker.addTrustedIssuer(issuerDN1, issuerCert1[0].getPublicKey());
+		try
+		{
+			checker.checkTrust(doc, req);
+		} catch (SAMLValidationException e)
+		{
+			e.printStackTrace();
+			fail("Signature verification failed " + e);
+		}
+	}
+
+	private void sigCheck(XmlObject doc, StatusResponseType req)
+	{
+		StrictSamlTrustChecker checker = new StrictSamlTrustChecker();
+		checker.addTrustedIssuer(issuerDN1, issuerCert1[0].getPublicKey());
+		try
+		{
+			checker.checkTrust(doc, req);
+		} catch (SAMLValidationException e)
+		{
+			e.printStackTrace();
+			fail("Signature verification failed " + e);
+		}
+	}
+	
 	public void testAttrQuery() {
 		String subject = "C=PL,ST=Kujawsko-Pomorskie,L=Torun,O=UW,OU=ICM,CN=Krzysztof Benedyczak,1.2.840.113549.1.9.1=#1610676f6c6269406d61742e756d6b2e706c";
 
-		NameID name = new NameID(issuerDN1, SAMLConstants.NFORMAT_DN);
+		NameID issuer = new NameID(issuerDN1, SAMLConstants.NFORMAT_DN);
 		Subject sub = new Subject(subject, SAMLConstants.NFORMAT_DN);
 
-		AttributeQuery query = new AttributeQuery(name, sub);
-		assertNotNull(query.getID());
-		assertTrue(name.getXBean().xmlText().equals(
-				query.getIssuer().getXBean().xmlText()));
-		assertTrue(sub.getXBean().xmlText().equals(
-				query.getSubject().getXBean().xmlText()));
+		AttributeQuery query = new AttributeQuery(issuer.getXBean(), sub.getXBean());
 
+		SAMLAttribute at = new SAMLAttribute("at1", SAMLConstants.AFORMAT_URI);
+		query.setAttributes(new SAMLAttribute[]{at});
 		try {
 			query.sign(privKey1, issuerCert1);
 		} catch (DSigException e) {
 			e.printStackTrace();
 			fail("Cannot sign AttributeQuery");
 		}
-		assertTrue(query.isSigned());
-		try {
-			assertTrue(query.isCorrectlySigned(issuerCert1[0].getPublicKey()));
-		} catch (DSigException e) {
-			e.printStackTrace();
-			fail("Cannot check AttributeQuery signature");
-		}
 
+		sigCheck(query.getXMLBeanDoc(), query.getXMLBean());
+		assertNotNull(query.getXMLBean());
+		assertNotNull(query.getXMLBeanDoc());
+		assertTrue(issuer.getXBean().getFormat().equals(
+				query.getXMLBean().getIssuer().getFormat()));
+		assertTrue(issuer.getXBean().getStringValue().equals(
+				query.getXMLBean().getIssuer().getStringValue()));
+		assertTrue(sub.getXBean().getNameID().getStringValue().equals(
+				query.getXMLBean().getSubject().getNameID().getStringValue()));
+		assertEquals(1, query.getXMLBean().sizeOfAttributeArray());
 	}
 
 	public void testAuthnRequest() {
 
 		NameID name = new NameID(issuerDN1, SAMLConstants.NFORMAT_DN);
 
-		AuthnRequest req = new AuthnRequest(name);
-		assertNotNull(req.getID());
-		req.setConsumerURL("example.com");
+		AuthnRequest req = new AuthnRequest(name.getXBean());
+		assertNotNull(req.getXMLBean());
+		assertNotNull(req.getXMLBeanDoc());
+		req.setFormat("format");
 
-		assertEquals("example.com", req.getDoc().getAuthnRequest()
-				.getAssertionConsumerServiceURL());
+		assertEquals("format", req.getXMLBean().getNameIDPolicy().getFormat());
 
 		try {
 			req.sign(privKey1, issuerCert1);
@@ -61,14 +101,8 @@ public class ProtoTest extends TestBase {
 			e.printStackTrace();
 			fail("Cannot sign AuthnRequest");
 		}
-		assertTrue(req.isSigned());
-		try {
-			assertTrue(req.isCorrectlySigned(issuerCert1[0].getPublicKey()));
-		} catch (DSigException e) {
-			e.printStackTrace();
-			fail("Cannot check AuthnRequest signature");
-		}
 
+		sigCheck(req.getXMLBeanDoc(), req.getXMLBean());
 	}
 
 	public void testNameIdMapReq() {
@@ -77,16 +111,8 @@ public class ProtoTest extends TestBase {
 				SAMLConstants.NFORMAT_EMAIL);
 		NameIDPolicy policy = new NameIDPolicy(SAMLConstants.NFORMAT_UNSPEC);
 
-		NameIDMappingRequest req = new NameIDMappingRequest(name, mapname,
-				policy);
-
-		try {
-			req.parse();
-		} catch (SAMLProtocolException e) {
-			e.printStackTrace();
-			fail("Cannot parse correct NameIDMappingRequest");
-		}
-		assertTrue(true);
+		NameIDMappingRequest req = new NameIDMappingRequest(name.getXBean(), mapname.getXBean(),
+				policy.getXBean());
 
 		try {
 			req.sign(privKey1, issuerCert1);
@@ -94,29 +120,34 @@ public class ProtoTest extends TestBase {
 			e.printStackTrace();
 			fail("Cannot sign NameIDMappingRequest");
 		}
-		assertTrue(req.isSigned());
-		try {
-			assertTrue(req.isCorrectlySigned(issuerCert1[0].getPublicKey()));
-		} catch (DSigException e) {
-			e.printStackTrace();
-			fail("Cannot check NameIDMappingRequest signature");
-		}
-
+		sigCheck(req.getXMLBeanDoc(), req.getXMLBean());
 	}
 
 	public void testNameIdMapResp() {
 		NameID name = new NameID(issuerDN1, SAMLConstants.NFORMAT_DN);
 		NameID mapname = new NameID("test@test.com",
 				SAMLConstants.NFORMAT_EMAIL);
-		NameIDMappingResponse resp = new NameIDMappingResponse(name,
-				"example.com", mapname);
+		NameIDMappingResponse resp = new NameIDMappingResponse(name.getXBean(),
+				"example.com", mapname.getXBean());
+		
 		try {
-			resp.parse();
-		} catch (SAMLParseException e1) {
-			e1.printStackTrace();
-			fail("Cannot parse correct NameIDMappingResponse");
+
+			resp.sign(privKey1, issuerCert1);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Cannot sign NameIDMappingResponse");
 		}
-		assertTrue(true);
+
+		sigCheck(resp.getXMLBeanDoc(), resp.getXMLBean());
+	}
+
+	public void testAssertionResp() {
+		NameID issuer = new NameID(issuerDN1, SAMLConstants.NFORMAT_DN);
+
+		AssertionResponse resp = new AssertionResponse(issuer.getXBean(), "1234");
+		Assertion as = new Assertion();
+		as.addAttribute(new SAMLAttribute("a", "b"));
+		resp.addAssertion(as);
 
 		try {
 
@@ -126,14 +157,12 @@ public class ProtoTest extends TestBase {
 			fail("Cannot sign NameIDMappingResponse");
 		}
 
-		assertTrue(resp.isSigned());
-		try {
-			assertTrue(resp.isCorrectlySigned(issuerCert1[0].getPublicKey()));
-		} catch (DSigException e) {
-			e.printStackTrace();
-			fail("Cannot check NameIDMappingResponse signature");
-		}
-
+		sigCheck(resp.getXMLBeanDoc(), resp.getXMLBean());
+		assertEquals(issuerDN1, resp.getXMLBean().getIssuer().getStringValue());
+		assertEquals(1, resp.getXMLBean().sizeOfAssertionArray());
+		assertEquals(1, resp.getXMLBean().getAssertionArray(0).sizeOfAttributeStatementArray());
+		assertEquals(1, resp.getXMLBean().getAssertionArray(0).getAttributeStatementArray(0).sizeOfAttributeArray());
+		assertEquals("a", resp.getXMLBean().getAssertionArray(0).getAttributeStatementArray(0).getAttributeArray(0).getName());
 	}
 
 }

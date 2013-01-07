@@ -18,8 +18,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 
-import eu.unicore.samly2.assertion.AbstractAssertion;
-import eu.unicore.samly2.assertion.Assertion;
+import eu.unicore.samly2.assertion.AssertionParser;
+import eu.unicore.samly2.trust.SamlTrustChecker;
 
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 
@@ -51,7 +51,7 @@ public class AssertionSignatureChecker
 			DigSignatureUtil dsigEngine = new DigSignatureUtil();
 			Document doc = checker.readDoc(null);
 			AssertionDocument asXDoc = AssertionDocument.Factory.parse(doc);
-			Assertion assertion = new Assertion(asXDoc);
+			AssertionParser assertion = new AssertionParser(asXDoc);
 			X509Certificate []certChain = assertion.getIssuerFromSignature();
 			if (certChain == null || certChain.length == 0)
 			{
@@ -65,7 +65,7 @@ public class AssertionSignatureChecker
 			PublicKey pubKey = certChain[0].getPublicKey(); 
 			boolean res = dsigEngine.verifyEnvelopedSignature(doc, 
 					Collections.singletonList(doc.getDocumentElement()), 
-					AbstractAssertion.ASSERTION_ID_QNAME, pubKey);
+					SamlTrustChecker.ASSERTION_ID_QNAME, pubKey);
 			System.out.println("Signature is valid: " + res);
 		} catch (Exception e)
 		{

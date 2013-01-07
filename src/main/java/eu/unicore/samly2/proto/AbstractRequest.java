@@ -8,105 +8,43 @@
 
 package eu.unicore.samly2.proto;
 
-import java.security.cert.X509Certificate;
 import java.util.Calendar;
 
 import org.apache.xmlbeans.XmlObject;
-import org.w3c.dom.Document;
 
 import eu.unicore.samly2.SAMLConstants;
-import eu.unicore.samly2.SAMLUtils;
-import eu.unicore.samly2.elements.NameID;
-import eu.unicore.samly2.exceptions.SAMLProtocolException;
-import eu.unicore.samly2.exceptions.SAMLRequestException;
-import eu.unicore.samly2.exceptions.SAMLVersionException;
-import eu.unicore.security.dsig.DSigException;
 
+import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 import xmlbeans.org.oasis.saml2.protocol.ExtensionsType;
 import xmlbeans.org.oasis.saml2.protocol.RequestAbstractType;
 
 /**
+ * Utility making creation of requests easier.
  * @author K. Benedyczak
  */
-public abstract class AbstractRequest extends AbstractSAMLMessage
+public abstract class AbstractRequest<T extends XmlObject, C extends RequestAbstractType> 
+		extends AbstractSAMLMessage<T>
 {
-	protected RequestAbstractType xmlReq;
+	protected C xmlReq;
 
-	protected AbstractRequest()
+	protected void init(T srcDoc, C src, NameIDType issuer)
 	{
-	}
-	
-	protected AbstractRequest(RequestAbstractType src)
-	{
+		xmlDocuemnt = srcDoc;
 		xmlReq = src;
-	}
-
-	protected void init(RequestAbstractType src, NameID issuer)
-	{
-		xmlReq = src;
-		xmlReq.setIssuer(issuer.getXBean());
+		xmlReq.setIssuer(issuer);
 		xmlReq.setIssueInstant(Calendar.getInstance());
 		xmlReq.setID(genID());
 		xmlReq.setVersion(SAMLConstants.SAML2_VERSION);
 	}
 	
-
-	public void parse() throws SAMLProtocolException
-	{
-		if (xmlReq.getVersion() == null)
-			throw new SAMLVersionException(null, "No SAML version is set");
-		String ver = xmlReq.getVersion();
-		if (!ver.equals(SAMLConstants.SAML2_VERSION))
-			throw new SAMLVersionException(null, 
-				"Only SAML 2.0 version is supported");
-		if (xmlReq.getID() == null)
-			throw new SAMLRequestException(null, "No ID is set");
-		if (xmlReq.getIssueInstant() == null)
-			throw new SAMLRequestException(null, "No IssueInstant is set");
-	}
-
-	public String getID()
-	{
-		return xmlReq.getID();
-	}
-	
-	public NameID getIssuer()
-	{
-		return new NameID(xmlReq.getIssuer());
-	}
-	
-	public XmlObject getXMLBean()
+	public C getXMLBean()
 	{
 		return xmlReq;
-	}
-	
-	public ExtensionsType getExtensions()
-	{
-		return xmlReq.getExtensions();
 	}
 	
 	public void setExtensions(XmlObject ext)
 	{
 		ExtensionsType exts = xmlReq.addNewExtensions();
 		exts.set(ext);
-	}
-	
-	public Document getDOM() throws DSigException
-	{
-		return SAMLUtils.getDOM(getDoc()); 
-	}
-	
-	public boolean isSigned()
-	{
-		if (xmlReq.getSignature() == null 
-				|| xmlReq.getSignature().isNil())
-			return false;
-		else return true;
-	}
-	
-	
-	public X509Certificate[] getIssuerFromSignature()
-	{
-		return SAMLUtils.getIssuerFromSignature(xmlReq.getSignature());
 	}
 }
