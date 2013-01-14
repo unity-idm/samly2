@@ -13,6 +13,7 @@ import java.util.Collections;
 
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.protocol.ResponseDocument;
+import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.assertion.AssertionParser;
 import eu.unicore.samly2.trust.StrictSamlTrustChecker;
@@ -80,7 +81,7 @@ public class SAMLXSWAttackTest extends TestCase
 		AssertionParser parser = new AssertionParser(xmlRespDoc.getResponse().getAssertionArray(0));
 		X509Certificate[] issuersCC = parser.getIssuerFromSignature();
 		StrictSamlTrustChecker trustChecker = new StrictSamlTrustChecker();
-		trustChecker.addTrustedIssuer("http://localhost:9443", Collections.singletonList(issuersCC[0].getPublicKey()));
+		trustChecker.addTrustedIssuer("http://localhost:9443", SAMLConstants.NFORMAT_ENTITY, Collections.singletonList(issuersCC[0].getPublicKey()));
 		
 		
 		try

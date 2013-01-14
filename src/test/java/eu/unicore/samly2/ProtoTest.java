@@ -30,7 +30,7 @@ public class ProtoTest extends TestBase {
 	private void sigCheck(XmlObject doc, RequestAbstractType req)
 	{
 		StrictSamlTrustChecker checker = new StrictSamlTrustChecker();
-		checker.addTrustedIssuer(issuerDN1, issuerCert1[0].getPublicKey());
+		checker.addTrustedIssuer(issuerDN1, SAMLConstants.NFORMAT_DN, issuerCert1[0].getPublicKey());
 		try
 		{
 			checker.checkTrust(doc, req);
@@ -44,7 +44,7 @@ public class ProtoTest extends TestBase {
 	private void sigCheck(XmlObject doc, StatusResponseType req)
 	{
 		StrictSamlTrustChecker checker = new StrictSamlTrustChecker();
-		checker.addTrustedIssuer(issuerDN1, issuerCert1[0].getPublicKey());
+		checker.addTrustedIssuer(issuerDN1, SAMLConstants.NFORMAT_DN, issuerCert1[0].getPublicKey());
 		try
 		{
 			checker.checkTrust(doc, req);

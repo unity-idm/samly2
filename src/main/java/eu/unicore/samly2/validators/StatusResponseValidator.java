@@ -45,7 +45,7 @@ public class StatusResponseValidator
 		checkMandatoryElements(responseXml);
 		
 		String inResponseTo = responseXml.getInResponseTo(); 
-		if (inResponseTo != null && !inResponseTo.equals(requestId))
+		if (requestId != null && inResponseTo != null && !inResponseTo.equals(requestId))
 			throw new SAMLValidationException("InResponseTo value " + inResponseTo
 					+ " is not matching expected requestId: " + requestId);
 

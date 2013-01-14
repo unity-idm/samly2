@@ -34,6 +34,14 @@ public class SSOAuthnRequestValidator extends AbstractRequestValidator
 		AuthnRequestType authnRequest = authenticationRequestDoc.getAuthnRequest();
 		super.validate(authenticationRequestDoc, authnRequest);
 		
+		validateIssuer(authnRequest);
+		
+		if (requireSignature && (authnRequest.getSignature() == null || authnRequest.getSignature().isNil()))
+			throw new SAMLRequesterException(SAMLConstants.SubStatus.STATUS2_REQUEST_DENIED, "The request is not signed");
+	}
+	
+	protected void validateIssuer(AuthnRequestType authnRequest) throws SAMLServerException
+	{
 		NameIDType issuer = authnRequest.getIssuer();
 		if (issuer == null)
 			throw new SAMLRequesterException("Issuer of SAML request must be present in SSO AuthN");
@@ -41,8 +49,5 @@ public class SSOAuthnRequestValidator extends AbstractRequestValidator
 			throw new SAMLRequesterException("Issuer of SAML request must be of Entity type in SSO AuthN. It is: " + issuer.getFormat());
 		if (issuer.getStringValue() == null)
 			throw new SAMLRequesterException("Issuer value of SAML request must be present in SSO AuthN");
-			
-		if (requireSignature && (authnRequest.getSignature() == null || authnRequest.getSignature().isNil()))
-			throw new SAMLRequesterException(SAMLConstants.SubStatus.STATUS2_REQUEST_DENIED, "The request is not signed");
 	}
 }

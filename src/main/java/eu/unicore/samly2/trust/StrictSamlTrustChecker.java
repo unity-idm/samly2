@@ -34,16 +34,18 @@ public class StrictSamlTrustChecker extends DsigSamlTrustCheckerBase
 {
 	protected Map<String, List<PublicKey>> trustedIssuers = new HashMap<String, List<PublicKey>>();
 	
-	public void addTrustedIssuer(String samlId, PublicKey trustedKey)
+	public void addTrustedIssuer(String samlId, String type, PublicKey trustedKey)
 	{
-		addTrustedIssuer(samlId, Collections.singletonList(trustedKey));
+		addTrustedIssuer(samlId, type, Collections.singletonList(trustedKey));
 	}
 	
-	public void addTrustedIssuer(String samlId, List<PublicKey> trustedKeys)
+	public void addTrustedIssuer(String samlId, String type, List<PublicKey> trustedKeys)
 	{
 		if (trustedKeys == null || trustedKeys.size() == 0)
 			throw new IllegalArgumentException("Must have a non empty set of trusted keys");
-		trustedIssuers.put(samlId, trustedKeys);
+		if (SAMLConstants.NFORMAT_DN.equals(type))
+			samlId = X500NameUtils.getComparableForm(samlId);
+		trustedIssuers.put(type+"--_--"+samlId, trustedKeys);
 	}
 
 	@Override
@@ -75,22 +77,8 @@ public class StrictSamlTrustChecker extends DsigSamlTrustCheckerBase
 	
 	protected List<PublicKey> getPublicKeys(NameIDType issuer) throws SAMLValidationException
 	{
-		String key = issuer.getStringValue();
+		String key = getIssuerKey(issuer);
 		List<PublicKey> trustedKeys = trustedIssuers.get(key);
-		if (trustedKeys == null && issuer.getFormat().equals(SAMLConstants.NFORMAT_DN))
-		{
-			for (String trusted: trustedIssuers.keySet())
-			{
-				try
-				{
-					if (X500NameUtils.equal(key, trusted))
-					{
-						trustedKeys = trustedIssuers.get(trusted);
-						break;
-					}
-				} catch(IllegalArgumentException e) {/*ignored*/}
-			}
-		}
 		if (trustedKeys == null)
 			throw new SAMLValidationException("The issuer of the SAML artifact " +
 					"is not trusted: " + issuer.getStringValue());
@@ -99,14 +87,15 @@ public class StrictSamlTrustChecker extends DsigSamlTrustCheckerBase
 	
 	protected String getIssuerKey(NameIDType issuer) throws SAMLValidationException
 	{
-		if (issuer.getFormat() == null ||
-				issuer.getFormat().equals(SAMLConstants.NFORMAT_ENTITY) || 
-				issuer.getFormat().equals(SAMLConstants.NFORMAT_PERSISTENT) ||
-				issuer.getFormat().equals(SAMLConstants.NFORMAT_UNSPEC) ||
-				issuer.getFormat().equals(SAMLConstants.NFORMAT_EMAIL))
-			return issuer.getStringValue();
+		String format = issuer.getFormat();
+		if (format == null ||
+				format.equals(SAMLConstants.NFORMAT_ENTITY) || 
+				format.equals(SAMLConstants.NFORMAT_PERSISTENT) ||
+				format.equals(SAMLConstants.NFORMAT_UNSPEC) ||
+				format.equals(SAMLConstants.NFORMAT_EMAIL))
+			return format + "--_--" + issuer.getStringValue();
 		if (issuer.getFormat().equals(SAMLConstants.NFORMAT_DN))
-			return X500NameUtils.getComparableForm(issuer.getStringValue());
+			return format + "--_--" + X500NameUtils.getComparableForm(issuer.getStringValue());
 		throw new SAMLValidationException("Issuer name format is unknown: " + issuer.getFormat());
 	}
 }

@@ -67,7 +67,7 @@ public class AssertionTest extends TestBase {
 		assertTrue(assertion.isSigned());
 		
 		StrictSamlTrustChecker checker = new StrictSamlTrustChecker();
-		checker.addTrustedIssuer("foo", issuerCert1[0].getPublicKey());
+		checker.addTrustedIssuer("foo", SAMLConstants.NFORMAT_ENTITY, issuerCert1[0].getPublicKey());
 		try
 		{
 			checker.checkTrust(assertion.getXMLBeanDoc());
