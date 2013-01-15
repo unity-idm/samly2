@@ -11,6 +11,7 @@ import java.util.List;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import eu.emi.security.authn.x509.ValidationResult;
 import eu.emi.security.authn.x509.X509CertChainValidator;
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.unicore.samly2.SAMLUtils;
@@ -54,19 +55,10 @@ public class PKISamlTrustChecker extends DsigSamlTrustCheckerBase
 			throw new SAMLValidationException("Issuer certificate is not " +
 					"set - it is impossible to verify the signature.");
 		
-		X509Certificate[] trustedIssuers = validator.getTrustedIssuers();
-		boolean found = false;
-		for (X509Certificate trusted: trustedIssuers)
-		{
-			if (trusted.equals(issuerCC[0]))
-			{
-				found = true;
-				break;
-			}
-		}
-		if (!found)
+		ValidationResult result = validator.validate(issuerCC);
+		if (!result.isValid())
 			throw new SAMLValidationException(
-				"Issuer is not among trusted ones: " +
+				"Issuer certificate is not issued by a trusted CA: " +
 				X500NameUtils.getReadableForm(issuerCC[0].getSubjectX500Principal()));
 		
 		return issuerCC[0].getPublicKey();

@@ -100,8 +100,11 @@ public class StatusResponseValidator
 		}
 		if (status.getStatusMessage() != null)
 			msg.append(" Message: " + status.getStatusMessage());
-		throw new SAMLServerException(SAMLConstants.Status.fromString(statusValue), 
+		if (subCode != null && subCode.getValue() != null)
+			throw new SAMLServerException(SAMLConstants.Status.fromString(statusValue), 
 				SAMLConstants.SubStatus.fromString(subCode.getValue()), msg.toString());
+		else
+			throw new SAMLServerException(SAMLConstants.Status.fromString(statusValue), msg.toString());
 	}	
 	
 }
