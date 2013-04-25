@@ -37,7 +37,7 @@ import eu.unicore.samly2.trust.SamlTrustChecker;
  * <ul>
  * <li> assertion MUST possess a subject. SAML allows for no subject in assertion but meaning
  * of such assertion is undefined. We don't support such assertions.
- * <li> if consumerSamlName or sonsumerEndpointUri parameters are null, then audienceRestriction
+ * <li> if consumerSamlName or consumerEndpointUri parameters are null, then audienceRestriction
  * or subject's confirmation recipient (respectively) are not checked. This is against SAML specification.
  * </ul>
  * @author K. Benedyczak
