@@ -35,6 +35,12 @@ import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
 public abstract class DsigSamlTrustCheckerBase implements SamlTrustChecker
 {
 	@Override
+	public boolean isSignatureRequired()
+	{
+		return true;
+	}
+	
+	@Override
 	public void checkTrust(AssertionDocument assertionDoc) throws SAMLValidationException
 	{
 		AssertionType assertion = assertionDoc.getAssertion();

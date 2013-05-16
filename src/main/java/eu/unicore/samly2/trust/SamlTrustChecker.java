@@ -28,4 +28,6 @@ public interface SamlTrustChecker
 	public void checkTrust(XmlObject responseDoc, StatusResponseType response) throws SAMLValidationException;
 
 	public void checkTrust(XmlObject requestDoc, RequestAbstractType request) throws SAMLValidationException;
+	
+	public boolean isSignatureRequired();
 }

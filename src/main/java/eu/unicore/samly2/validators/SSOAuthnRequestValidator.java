@@ -19,14 +19,10 @@ import xmlbeans.org.oasis.saml2.protocol.AuthnRequestType;
  */
 public class SSOAuthnRequestValidator extends AbstractRequestValidator
 {
-	protected boolean requireSignature;
-	
 	public SSOAuthnRequestValidator(String consumerEndpointUri, SamlTrustChecker trustChecker,
-			long requestValidity, ReplayAttackChecker replayChecker,
-			boolean requireSignature)
+			long requestValidity, ReplayAttackChecker replayChecker)
 	{
 		super(consumerEndpointUri, trustChecker, requestValidity, replayChecker);
-		this.requireSignature = requireSignature;
 	}
 
 	public void validate(AuthnRequestDocument authenticationRequestDoc) throws SAMLServerException
@@ -36,7 +32,8 @@ public class SSOAuthnRequestValidator extends AbstractRequestValidator
 		
 		validateIssuer(authnRequest);
 		
-		if (requireSignature && (authnRequest.getSignature() == null || authnRequest.getSignature().isNil()))
+		if (trustChecker.isSignatureRequired() && 
+				(authnRequest.getSignature() == null || authnRequest.getSignature().isNil()))
 			throw new SAMLRequesterException(SAMLConstants.SubStatus.STATUS2_REQUEST_DENIED, "The request is not signed");
 	}
 	

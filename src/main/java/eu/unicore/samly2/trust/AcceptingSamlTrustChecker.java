@@ -37,4 +37,10 @@ public class AcceptingSamlTrustChecker implements SamlTrustChecker
 	public void checkTrust(XmlObject requestDoc, RequestAbstractType request) throws SAMLValidationException
 	{
 	}
+
+	@Override
+	public boolean isSignatureRequired()
+	{
+		return false;
+	}
 }

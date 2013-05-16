@@ -60,6 +60,14 @@ public class SAMLConstants
 	public static final QName SCOPE_TYPE_XMLATTRIBUTE = new QName("urn:vo:SAML:2.0:attribute:ext", "scopeType");
 	public static final QName ATTRIBUTE_SCOPE_XMLATTRIBUTE = new QName("urn:vo:SAML:2.0:attribute:ext", "attributeScope");
 	
+	public static final String SAML_AC_UNSPEC = "urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified";
+	
+	//standard SAML POST binding name - SAML request is encoded in this field
+	public static final String REQ_SAML_REQUEST = "SAMLRequest";
+	//relay state
+	public static final String RELAY_STATE = "RelayState";
+
+	
 	public static enum AuthNClasses {NONE, TLS};
 	
 	public enum Status 
