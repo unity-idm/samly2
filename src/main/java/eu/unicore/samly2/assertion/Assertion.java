@@ -293,6 +293,11 @@ public class Assertion extends AssertionParser implements Serializable
 
 	public void addAttribute(SAMLAttribute at)
 	{
+		addAttribute(at.getXBean());
+	}
+	
+	public void addAttribute(AttributeType at)
+	{
 		if (assertion.getAttributeStatementArray() == null ||
 				assertion.getAttributeStatementArray().length == 0)
 			assertion.addNewAttributeStatement();
@@ -300,7 +305,7 @@ public class Assertion extends AssertionParser implements Serializable
 		AttributeStatementType attrStatement = assertion.getAttributeStatementArray(0);
 		
 		AttributeType added = attrStatement.addNewAttribute();
-		added.set(at.getXBean());
+		added.set(at);
 	}
 	
 	public void addAuthStatement(Calendar authTime, AuthnContextType ctx, 
