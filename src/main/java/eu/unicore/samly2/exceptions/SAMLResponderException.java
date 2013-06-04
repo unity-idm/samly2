@@ -17,31 +17,31 @@ public class SAMLResponderException extends SAMLServerException
 
 	public SAMLResponderException(String message, Throwable cause)
 	{
-		super(SAMLConstants.Status.STATUS_REQUESTER, message, cause);
+		super(SAMLConstants.Status.STATUS_RESPONDER, message, cause);
 	}
 
 	public SAMLResponderException(String message)
 	{
-		super(SAMLConstants.Status.STATUS_REQUESTER, message);
+		super(SAMLConstants.Status.STATUS_RESPONDER, message);
 	}
 
 	public SAMLResponderException(Throwable cause)
 	{
-		super(SAMLConstants.Status.STATUS_REQUESTER, cause);
+		super(SAMLConstants.Status.STATUS_RESPONDER, cause);
 	}
 
 	public SAMLResponderException(SAMLConstants.SubStatus samlSubErrorId, String message, Throwable cause)
 	{
-		super(SAMLConstants.Status.STATUS_REQUESTER, samlSubErrorId, message, cause);
+		super(SAMLConstants.Status.STATUS_RESPONDER, samlSubErrorId, message, cause);
 	}
 
 	public SAMLResponderException(SAMLConstants.SubStatus samlSubErrorId, String message)
 	{
-		super(SAMLConstants.Status.STATUS_REQUESTER, samlSubErrorId, message);
+		super(SAMLConstants.Status.STATUS_RESPONDER, samlSubErrorId, message);
 	}
 
 	public SAMLResponderException(SAMLConstants.SubStatus samlSubErrorId, Throwable cause)
 	{
-		super(SAMLConstants.Status.STATUS_REQUESTER, samlSubErrorId, cause);
+		super(SAMLConstants.Status.STATUS_RESPONDER, samlSubErrorId, cause);
 	}
 }
