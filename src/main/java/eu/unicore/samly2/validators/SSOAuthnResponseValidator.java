@@ -134,7 +134,7 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 		asValidator.validate(assertionDoc);
 		AssertionType assertion = assertionDoc.getAssertion();
 		NameIDType asIssuer = assertion.getIssuer();
-		if (asIssuer.getFormat() != null && !asIssuer.equals(SAMLConstants.NFORMAT_ENTITY))
+		if (asIssuer.getFormat() != null && !asIssuer.getFormat().equals(SAMLConstants.NFORMAT_ENTITY))
 			throw new SAMLValidationException("Issuer of assertion must be of Entity type in SSO AuthN. It is: " + asIssuer.getFormat());
 		if (binding == SAMLBindings.HTTP_POST && 
 				(assertion.getSignature() == null || assertion.getSignature().isNil()))
