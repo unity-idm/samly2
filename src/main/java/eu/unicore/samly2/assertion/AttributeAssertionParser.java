@@ -14,7 +14,6 @@ import java.util.List;
 import eu.unicore.samly2.attrprofile.ParsedAttribute;
 import eu.unicore.samly2.attrprofile.SAMLAttributeProfile;
 import eu.unicore.samly2.attrprofile.SAMLDefaultAttributeProfile;
-import eu.unicore.samly2.elements.SAMLAttribute;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.AssertionType;
@@ -64,11 +63,10 @@ public class AttributeAssertionParser extends AssertionParser
 	 * Returns the only attribute in the assertion. If the assertion contains more then one attribute 
 	 * an exception is thrown. If there is no attribute then null is returned.
 	 * @param whose
-	 * @param attribute
 	 * @return
 	 * @throws SAMLValidationException
 	 */
-	public ParsedAttribute getAttribute(SAMLAttribute attribute) 
+	public ParsedAttribute getAttribute() 
 		throws SAMLValidationException
 	{
 		List<ParsedAttribute> list = getAttributesGeneric();
@@ -84,9 +82,30 @@ public class AttributeAssertionParser extends AssertionParser
 		return getAttributesGeneric();
 	}
 	
+	/**
+	 * @param name
+	 * @return the first attribute with the given name found. There may be more then one attribute 
+	 * with the same name, if there are more then one AttributeStatements. Null is returned when there is no 
+	 * such attribute. 
+	 * @throws SAMLValidationException
+	 */
+	public ParsedAttribute getAttribute(String name) throws SAMLValidationException
+	{
+		for (AttributeStatementType as: assertion.getAttributeStatementArray())
+		{
+			for (AttributeType xmlAttr: as.getAttributeArray())
+			{
+				if (name.equals(xmlAttr.getName()))
+				{
+					SAMLAttributeProfile profile = getBestProfile(xmlAttr);
+					return profile.map(xmlAttr);
+				}
+			}
+		}
+		return null;
+	}
 	
-	protected List<ParsedAttribute> getAttributesGeneric()
-			throws SAMLValidationException
+	protected List<ParsedAttribute> getAttributesGeneric() throws SAMLValidationException
 	{
 		List<ParsedAttribute> ret = new ArrayList<ParsedAttribute>();
 		for (AttributeStatementType as: assertion.getAttributeStatementArray())
