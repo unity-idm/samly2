@@ -37,6 +37,8 @@ public class StatusResponseValidator
 	{
 		this.consumerEndpointUri = consumerEndpointUri;
 		this.requestId = requestId;
+		if (trustChecker == null)
+			throw new IllegalArgumentException("The SAMLTrustChecker can not be null");
 		this.trustChecker = trustChecker;
 	}
 	

@@ -9,8 +9,7 @@ import eu.unicore.samly2.SAMLConstants;
 
 /**
  * Signals problems in validation of SAML request.
- * This extension of {@link SAMLValidationException} holds additionally the SAML error status
- * and optionally substatus, so it can be used in SAML error response if needed.
+ * This exception covers a situation when SAML request is of version unsupported by the server.
  * @author K. Benedyczak
  */
 public class SAMLVersionException extends SAMLServerException

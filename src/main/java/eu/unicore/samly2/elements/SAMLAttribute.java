@@ -20,6 +20,7 @@ import xmlbeans.org.oasis.saml2.assertion.AttributeType;
 import xmlbeans.pl.edu.icm.samlvo.attrext.ScopedStringAttributeValueType;
 
 /**
+ * Simplifies creation of AttributeType.
  * @author K. Benedyczak
  */
 public class SAMLAttribute
@@ -33,17 +34,24 @@ public class SAMLAttribute
 
 	public SAMLAttribute(String name, String nameFormat)
 	{
-		this(name, nameFormat, null, null, null);
+		this(name, nameFormat, null);
 	}
-	
-	public SAMLAttribute(String name, String nameFormat, String xacmlType, 
-			String scopingType, String friendlyName)
+
+	public SAMLAttribute(String name, String nameFormat, String friendlyName)
 	{
 		xml = AttributeType.Factory.newInstance();
 		xml.setName(name);
 		xml.setNameFormat(nameFormat);
 		if (friendlyName != null)
 			xml.setFriendlyName(friendlyName);
+	}
+
+	
+	@Deprecated
+	public SAMLAttribute(String name, String nameFormat, String xacmlType, 
+			String scopingType, String friendlyName)
+	{
+		this(name, nameFormat, friendlyName);
 		if (scopingType != null)
 			setScopingType(scopingType);
 		if (xacmlType != null)
@@ -60,36 +68,42 @@ public class SAMLAttribute
 		return xml.getFriendlyName();
 	}
 	
+	@Deprecated
 	public void setScopingType(String type)
 	{
 		insertAttribute(SAMLConstants.SCOPE_TYPE_XMLATTRIBUTE.getLocalPart(),
 				SAMLConstants.SCOPE_TYPE_XMLATTRIBUTE.getNamespaceURI(), type);
 	}
 
+	@Deprecated
 	public String getScopingType()
 	{
 		return readAttribute(SAMLConstants.SCOPE_TYPE_XMLATTRIBUTE.getLocalPart(),
 				SAMLConstants.SCOPE_TYPE_XMLATTRIBUTE.getNamespaceURI());
 	}
 
+	@Deprecated
 	public void setAttributeWideScope(String scope)
 	{
 		insertAttribute(SAMLConstants.ATTRIBUTE_SCOPE_XMLATTRIBUTE.getLocalPart(),
 				SAMLConstants.ATTRIBUTE_SCOPE_XMLATTRIBUTE.getNamespaceURI(), scope);
 	}
 
+	@Deprecated
 	public String getAttributeWideScope()
 	{
 		return readAttribute(SAMLConstants.ATTRIBUTE_SCOPE_XMLATTRIBUTE.getLocalPart(),
 				SAMLConstants.ATTRIBUTE_SCOPE_XMLATTRIBUTE.getNamespaceURI());
 	}
 	
+	@Deprecated
 	public void setXACMLDataType(String type)
 	{
 		insertAttribute(SAMLConstants.XACMLDT.getLocalPart(),
 				SAMLConstants.XACMLDT.getNamespaceURI(), type);
 	}
 
+	@Deprecated
 	public String getXACMLDataType()
 	{
 		return readAttribute(SAMLConstants.XACMLDT.getLocalPart(),
@@ -104,6 +118,7 @@ public class SAMLAttribute
 		o.set(s);
 	}
 
+	@Deprecated
 	public void addScopedStringAttributeValue(String value, String scope)
 	{
 		XmlObject o = xml.addNewAttributeValue();

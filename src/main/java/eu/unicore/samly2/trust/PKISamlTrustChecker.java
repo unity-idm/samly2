@@ -65,6 +65,12 @@ public class PKISamlTrustChecker extends DsigSamlTrustCheckerBase
 	}
 	
 	@Override
+	public boolean isSignatureRequired()
+	{
+		return !allowUnsigned;
+	}
+	
+	@Override
 	protected void isCorrectlySigned(Document doc, PublicKey key, SignatureType signature, 
 			List<Element> shallBeSigned, 
 			IdAttribute idAttribute) throws SAMLValidationException

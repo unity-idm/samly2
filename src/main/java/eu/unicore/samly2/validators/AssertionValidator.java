@@ -39,6 +39,9 @@ import eu.unicore.samly2.trust.SamlTrustChecker;
  * of such assertion is undefined. We don't support such assertions.
  * <li> if consumerSamlName or consumerEndpointUri parameters are null, then audienceRestriction
  * or subject's confirmation recipient (respectively) are not checked. This is against SAML specification.
+ * <li> inResponseTo in subject confirmation is required when requestId is set (i.e. we are not checking an 
+ * unsolicited response) and when the subject confirmation is bearer. This is a flexible interpretation of SAML
+ * standard which is bit vague wrt inResponseToChecking, what is defined in various profiles, core spec etc. 
  * </ul>
  * @author K. Benedyczak
  */
@@ -122,11 +125,21 @@ public class AssertionValidator
 				continue;
 			}
 			
-			if (requestId != null && !requestId.equals(confData.getInResponseTo()))
+			if (requestId != null)
 			{
-				errors.addConfirmationError(i, "InResponseTo (" + confData.getInResponseTo() + 
+				if (!confData.isSetInResponseTo() && 
+						SAMLConstants.CONFIRMATION_BEARER.equals(confirmation.getMethod()))
+				{
+					errors.addConfirmationError(i, "InResponseTo is not set for an assertion with " +
+							"a bearer confirmation, and an expected requestId is " + requestId);
+					continue;
+				}
+				if (confData.isSetInResponseTo() && !requestId.equals(confData.getInResponseTo()))
+				{
+					errors.addConfirmationError(i, "InResponseTo (" + confData.getInResponseTo() + 
 						") is not equal to expected request id which was " + requestId);
-				continue;
+					continue;
+				}
 			}
 			foundValid = true;
 			i++;

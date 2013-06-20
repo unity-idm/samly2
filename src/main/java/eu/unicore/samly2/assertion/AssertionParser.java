@@ -59,14 +59,44 @@ public class AssertionParser implements Serializable
 		this.assertion = assertion;
 	}
 
+	/**
+	 * Use {@link #getIssuerName()}.
+	 * @return
+	 */
+	@Deprecated
 	public String getIssuerDN()
 	{
 		return assertion.getIssuer().getStringValue();
 	}
+	
+	public String getIssuerName()
+	{
+		return assertion.getIssuer().getStringValue();
+	}
 
+	/**
+	 * Use {@link #getSubjectName()}
+	 * @return
+	 */
+	@Deprecated
 	public String getSubjectDN()
 	{
+		return getSubjectName();
+	}
+
+	public String getSubjectName()
+	{
 		return assertion.getSubject().getNameID().getStringValue();
+	}
+	
+	public String getIssuerNameFormat()
+	{
+		return assertion.getIssuer().getFormat();
+	}
+
+	public String getSubjectNameFormat()
+	{
+		return assertion.getSubject().getNameID().getFormat();
 	}
 	
 	public boolean isSigned()

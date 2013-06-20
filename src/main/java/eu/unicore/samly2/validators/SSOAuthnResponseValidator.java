@@ -22,6 +22,10 @@ import xmlbeans.org.oasis.saml2.protocol.ResponseType;
 /**
  * Validates SAML Response, obtained after the SAML Authentication request. 
  * The response is checked in accordance to the SSO profile. 
+ * <p>
+ * Note: it is not clearly defined in SSO profile whether InResponseTo must be defined 
+ * and set for all assertions. We do require it for all assertions where subject confirmation 
+ * is bearer. This rule always includes the authentication assertion, which must have the bearer confirmation.
  * 
  * @author K. Benedyczak
  */
@@ -79,7 +83,7 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 		SSOAuthnAssertionValidator authnAsValidator = new SSOAuthnAssertionValidator(consumerSamlName, consumerEndpointUri, 
 				requestId, samlValidityGraceTime, trustChecker, replayChecker, binding);
 		AssertionValidator asValidator = new AssertionValidator(consumerSamlName, consumerEndpointUri, 
-				requestId, samlValidityGraceTime, trustChecker);
+				null, samlValidityGraceTime, trustChecker);
 		for (AssertionDocument assertionDoc: assertions)
 		{
 			AssertionType assertion = assertionDoc.getAssertion();
