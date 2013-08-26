@@ -11,7 +11,6 @@ import java.util.List;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import eu.emi.security.authn.x509.ValidationResult;
 import eu.emi.security.authn.x509.X509CertChainValidator;
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.unicore.samly2.SAMLUtils;
@@ -26,28 +25,25 @@ import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
  * SAML assertion, request or response.
  * <p>
  * The process is based on checking of the digital signature. 
- * It is performed using a certificate validator. SAML request is considered trusted,
- * if it is correctly signed, there is issuer's certificate in signature and this certificate is trusted.
- * This class can be configured to accepted unsigned documents too.
- * <p>
- * Note that this is going to work when the validator's truststore contains certificates of CAs issuing
- * certificates of SAML issuers. This won't accept SAML issuers whose certificates are put to the 
- * validator's truststore, as according to X.509 path validation, such situation is invalid. If the latter
- * result is desired use {@link TruststoreBasedSamlTrustChecker}.
+ * SAML request is considered trusted, if it is correctly signed, there is issuer's certificate 
+ * in signature and this certificate is among trust anchors of a validator used to bootstrap 
+ * the checker. This class is very similar to {@link StrictSamlTrustChecker}, but the trusted issuers
+ * list is retrieved for each validation, therefore it can be modified at runtime when underlying validator's 
+ * truststore is updated. This class can be configured to accepted unsigned documents too.
  * @author K. Benedyczak
  */
-public class PKISamlTrustChecker extends DsigSamlTrustCheckerBase
+public class TruststoreBasedSamlTrustChecker extends DsigSamlTrustCheckerBase
 {
 	protected X509CertChainValidator validator;
 	protected boolean allowUnsigned;
 
-	public PKISamlTrustChecker(X509CertChainValidator validator, boolean allowUnsigned)
+	public TruststoreBasedSamlTrustChecker(X509CertChainValidator validator, boolean allowUnsigned)
 	{
 		this.validator = validator;
 		this.allowUnsigned = allowUnsigned;
 	}
 
-	public PKISamlTrustChecker(X509CertChainValidator validator)
+	public TruststoreBasedSamlTrustChecker(X509CertChainValidator validator)
 	{
 		this(validator, false);
 	}
@@ -59,15 +55,14 @@ public class PKISamlTrustChecker extends DsigSamlTrustCheckerBase
 		if (issuerCC == null)
 			throw new SAMLValidationException("Issuer certificate is not " +
 					"set - it is impossible to verify the signature.");
-		
-		ValidationResult result = validator.validate(issuerCC);
-		if (!result.isValid())
-			throw new SAMLValidationException(
-				"Issuer certificate is not issued by a trusted CA: " +
-				X500NameUtils.getReadableForm(issuerCC[0].getSubjectX500Principal()) + 
-				" Cause: " + result.toShortString());
-		
-		return issuerCC[0].getPublicKey();
+		X509Certificate issuerC = issuerCC[0];
+		X509Certificate[] trustedIssuers = validator.getTrustedIssuers();
+		for (X509Certificate trusted: trustedIssuers)
+			if (trusted.equals(issuerC))
+				return issuerC.getPublicKey();
+		throw new SAMLValidationException(
+			"Issuer certificate is not issued by a trusted CA: " +
+			X500NameUtils.getReadableForm(issuerC.getSubjectX500Principal()));
 	}
 	
 	@Override
