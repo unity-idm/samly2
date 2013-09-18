@@ -48,7 +48,7 @@ public interface SAMLAttributeProfile
 	
 	/**
 	 * Performs a mapping to the SAML attribute. Implementations should assume that name is set,
-	 * and at least string or object values are set. If both are set then the profile is free to choose a prefered 
+	 * and at least string or object values are set. If both are set then the profile is free to choose a preferred 
 	 * version as input.
 	 * @param attr
 	 * @return

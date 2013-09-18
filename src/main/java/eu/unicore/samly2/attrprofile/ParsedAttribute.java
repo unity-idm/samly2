@@ -4,6 +4,7 @@
  */
 package eu.unicore.samly2.attrprofile;
 
+import java.io.Serializable;
 import java.util.List;
 
 import xmlbeans.org.oasis.saml2.assertion.AttributeType;
@@ -22,7 +23,7 @@ import xmlbeans.org.oasis.saml2.assertion.AttributeType;
  * 
  * @author K. Benedyczak
  */
-public class ParsedAttribute
+public class ParsedAttribute implements Serializable
 {
 	private String name;
 	private String description;
@@ -53,6 +54,7 @@ public class ParsedAttribute
 	public ParsedAttribute(String name)
 	{
 		this.name = name;
+		this.dataType = String.class;
 	}
 
 	public String getName()
@@ -82,6 +84,8 @@ public class ParsedAttribute
 
 	public void setValues(List<String> stringValues, List<?> objectValues)
 	{
+		if (stringValues == null)
+			throw new IllegalArgumentException("String representation of values must be always provided");
 		this.stringValues = stringValues;
 		this.objectValues = objectValues;
 	}
