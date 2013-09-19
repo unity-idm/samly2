@@ -4,6 +4,7 @@
  */
 package eu.unicore.samly2.attrprofile;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -130,7 +131,7 @@ public class UVOSAttributeProfile implements SAMLAttributeProfile
 	 * 
 	 * @author K. Benedyczak
 	 */
-	public static class ScopedStringValue
+	public static class ScopedStringValue implements Serializable
 	{
 		private String scope;
 		private String xacmlType;
