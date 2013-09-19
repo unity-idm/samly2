@@ -30,12 +30,20 @@ public interface SAMLAttributeProfile
 	public int EXPLICIT_SUPPORT = 100;
 	
 	/**
-	 * Checks if the attribute is supported.
+	 * Checks if the XML attribute is supported.
 	 * @param xmlAttr SAML attribute
 	 * @return >= 0 if the attribute is supported (higher number means higher 
 	 * probability that the attribute is matching the profile), <0 if not supported. 
 	 */
 	public int isSupported(AttributeType xmlAttr);
+
+	/**
+	 * Checks if the parsed attribute is supported.
+	 * @param attr SAML attribute
+	 * @return >= 0 if the attribute is supported (higher number means higher 
+	 * probability that the attribute is matching the profile), <0 if not supported. 
+	 */
+	public int isSupported(ParsedAttribute attr);
 	
 	/**
 	 * Performs the mapping.

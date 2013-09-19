@@ -12,8 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import eu.unicore.samly2.attrprofile.ParsedAttribute;
+import eu.unicore.samly2.attrprofile.ProfilesManager;
 import eu.unicore.samly2.attrprofile.SAMLAttributeProfile;
-import eu.unicore.samly2.attrprofile.SAMLDefaultAttributeProfile;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.AssertionType;
@@ -29,34 +29,25 @@ import xmlbeans.org.oasis.saml2.assertion.AttributeType;
 public class AttributeAssertionParser extends AssertionParser
 {
 	private static final long serialVersionUID=1L;
-	private List<SAMLAttributeProfile> profiles;
+	private ProfilesManager profilesManager = new ProfilesManager();
 	
 	protected AttributeAssertionParser()
 	{
-		init();
 	}
 	
 	public AttributeAssertionParser(AssertionDocument doc)
 	{
 		super(doc);
-		init();
 	}
 
 	public AttributeAssertionParser(AssertionType assertion)
 	{
 		super(assertion);
-		init();
-	}
-	
-	private void init()
-	{
-		profiles = new ArrayList<SAMLAttributeProfile>(4);
-		profiles.add(new SAMLDefaultAttributeProfile());
 	}
 	
 	public void addProfile(SAMLAttributeProfile profile)
 	{
-		profiles.add(profile);
+		profilesManager.addProfile(profile);
 	}
 	
 	/**
@@ -97,7 +88,7 @@ public class AttributeAssertionParser extends AssertionParser
 			{
 				if (name.equals(xmlAttr.getName()))
 				{
-					SAMLAttributeProfile profile = getBestProfile(xmlAttr);
+					SAMLAttributeProfile profile = profilesManager.getBestProfile(xmlAttr);
 					return profile.map(xmlAttr);
 				}
 			}
@@ -117,24 +108,8 @@ public class AttributeAssertionParser extends AssertionParser
 	{
 		for (AttributeType xmlAttr: xmlAttrs)
 		{
-			SAMLAttributeProfile profile = getBestProfile(xmlAttr);
+			SAMLAttributeProfile profile = profilesManager.getBestProfile(xmlAttr);
 			target.add(profile.map(xmlAttr));
 		}
-	}
-	
-	protected SAMLAttributeProfile getBestProfile(AttributeType a)
-	{
-		int rank = -1;
-		SAMLAttributeProfile selected = null;
-		for (SAMLAttributeProfile profile: profiles)
-		{
-			int cur = profile.isSupported(a); 
-			if (cur > rank)
-			{
-				rank = cur;
-				selected = profile;
-			}
-		}
-		return selected;
 	}
 }

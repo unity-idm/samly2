@@ -40,7 +40,13 @@ public class SAMLDefaultAttributeProfile implements SAMLAttributeProfile
 		
 		return -1;
 	}
-
+	
+	@Override
+	public int isSupported(ParsedAttribute attr)
+	{
+		return DEFAULT_SUPPORT;
+	}
+	
 	@Override
 	public ParsedAttribute map(AttributeType xmlAttr)
 	{

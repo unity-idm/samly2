@@ -6,7 +6,9 @@ package eu.unicore.samly2.attrprofile;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlObject;
@@ -15,6 +17,7 @@ import org.apache.xmlbeans.XmlString;
 import xmlbeans.org.oasis.saml2.assertion.AttributeType;
 import xmlbeans.pl.edu.icm.samlvo.attrext.ScopedStringAttributeValueType;
 import eu.unicore.samly2.SAMLConstants;
+import eu.unicore.samly2.elements.SAMLAttribute;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 
 /**
@@ -27,6 +30,15 @@ import eu.unicore.samly2.exceptions.SAMLValidationException;
  */
 public class UVOSAttributeProfile implements SAMLAttributeProfile
 {
+
+	@Override
+	public int isSupported(ParsedAttribute attr)
+	{
+		if (attr.getDataType().isAssignableFrom(ScopedStringValue.class))
+			return EXPLICIT_SUPPORT;
+		return -1;
+	}
+	
 	@Override
 	public int isSupported(AttributeType xmlAttr)
 	{
@@ -119,10 +131,19 @@ public class UVOSAttributeProfile implements SAMLAttributeProfile
 		return new ScopedStringValue(scope, xacmlType, svalue);
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public AttributeType map(ParsedAttribute attr) throws SAMLValidationException
 	{
-		throw new RuntimeException("NOT implemented");
+		SAMLAttribute helper = new SAMLAttribute(attr.getName(), null, attr.getDescription());
+		helper.setScopingType(SAMLConstants.SCOPE_TYPE_ATTRIBUTE);
+		for (Object v: attr.getObjectValues())
+		{
+			ScopedStringValue sv = (ScopedStringValue) v;
+			helper.addScopedStringAttributeValue(sv.getValue(), sv.getScope());
+			helper.setXACMLDataType(sv.getXacmlType());
+		}
+		return helper.getXBean();
 	}
 
 	/**
@@ -158,5 +179,68 @@ public class UVOSAttributeProfile implements SAMLAttributeProfile
 		{
 			return xacmlType;
 		}
+	}
+	
+	
+	/**
+	 * All UVOS scoped attributes are removed and instead a list of attributes is added, each with
+	 * the same scope. 
+	 * @param from
+	 * @return
+	 */
+	public static List<ParsedAttribute> splitByScopes(List<ParsedAttribute> from)
+	{
+		List<ParsedAttribute> ret = new ArrayList<ParsedAttribute>(from.size() * 3);
+		for (int i=from.size() - 1; i >= 0; i--)
+		{
+			ParsedAttribute a = from.get(i);
+			if (a.getDataType().isAssignableFrom(UVOSAttributeProfile.ScopedStringValue.class)) 
+			{
+				List<ParsedAttribute> byScope = splitByScopes(a);
+				ret.addAll(byScope);
+			} else
+			{
+				ret.add(a);
+			}
+		}
+		return ret;
+	}
+	
+	
+	/**
+	 * The argument must be attribute with {@link ScopedStringValue}s. A list is returned, 
+	 * where each entry has a subset of values of the original attribute. Each attribute returned
+	 * has values on one scope only. 
+	 * @param pa
+	 * @return
+	 */
+	private static List<ParsedAttribute> splitByScopes(ParsedAttribute pa)
+	{
+		Map<String, List<ScopedStringValue>> valuesByScope = new HashMap<String, List<ScopedStringValue>>();
+		for (int j=0; j<pa.getObjectValues().size(); j++)
+		{
+			ScopedStringValue value = (ScopedStringValue) pa.getObjectValues().get(j);
+			String scope = value.getScope();
+			List<ScopedStringValue> values = valuesByScope.get(scope);
+			if (values == null)
+			{
+				values = new ArrayList<ScopedStringValue>();
+				valuesByScope.put(scope, values);
+			}
+			values.add(value);
+		}
+		List<ParsedAttribute> ret = new ArrayList<ParsedAttribute>(valuesByScope.keySet().size());
+		for (Map.Entry<String, List<ScopedStringValue>> entry: valuesByScope.entrySet())
+		{
+			ParsedAttribute a = new ParsedAttribute(pa.getName());
+			a.setDataType(a.getDataType());
+			a.setDescription(a.getDescription());
+			List<String> valsAsString = new ArrayList<String>(entry.getValue().size());
+			for (ScopedStringValue hl: entry.getValue())
+				valsAsString.add(hl.getValue());
+			a.setValues(valsAsString, entry.getValue());
+			ret.add(a);
+		}
+		return ret;
 	}
 }
