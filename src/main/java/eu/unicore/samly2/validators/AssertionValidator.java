@@ -18,6 +18,7 @@ import xmlbeans.org.oasis.saml2.assertion.SubjectConfirmationDataType;
 import xmlbeans.org.oasis.saml2.assertion.SubjectConfirmationType;
 import xmlbeans.org.oasis.saml2.assertion.SubjectType;
 
+import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.samly2.trust.SamlTrustChecker;
@@ -217,12 +218,17 @@ public class AssertionValidator
 				throw new SAMLValidationException("Assertion has wrong audience restriction: " +
 						"no audiences defined inside");
 			boolean found = false;
-			for (String audience: audiences)
-				if (consumerSamlNames.contains(audience))
-				{
-					found = true;
+			for (String tested: audiences)
+			{
+				for (String allowed: consumerSamlNames)
+					if (audienceMatching(allowed, tested))
+					{
+						found = true;
+						break;
+					}
+				if (found)
 					break;
-				}
+			}
 			if (!found)
 				throw new SAMLValidationException("Assertion audience restriction doesn't include any of this service identifiers: "
 						+ consumerSamlNames.toString() +" Audience is restricted to: " + restriction.xmlText());
@@ -230,6 +236,27 @@ public class AssertionValidator
 		
 	}
 
+	/**
+	 * This is tricky: we can have DNs so equality test must be done properly, but we can URIs also...
+	 * @param audience
+	 * @param tested
+	 * @return
+	 */
+	protected boolean audienceMatching(String audience, String tested)
+	{
+		if (audience.equals(tested))
+			return true;
+		try
+		{
+			if (X500NameUtils.equal(audience, tested))
+				return true;
+		} catch (Exception e)
+		{
+			//fine - not DNs
+		}
+		return false;
+	}
+	
 	protected void checkTimeBounds(String msg, Calendar notBefore, Calendar notOnOrAfter) throws SAMLValidationException
 	{
 		long now = System.currentTimeMillis();
