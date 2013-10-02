@@ -21,12 +21,16 @@ import xmlbeans.org.oasis.saml2.assertion.SubjectType;
 /**
  * Implements validation of the authentication assertions, according to the
  * SSO SAML authentication profile.
+ * <p>
+ * Note: this validator can be configured not to require missing inResponseTo 
+ * if requestId is set to null. By default this is not enabled.
  * @author K. Benedyczak
  */
 public class SSOAuthnAssertionValidator extends AssertionValidator
 {
 	protected ReplayAttackChecker replayChecker;
 	protected SAMLBindings binding;
+	protected boolean laxInResponseToChecking = false;
 	
 	/**
 	 * @param consumerSamlName
@@ -44,6 +48,16 @@ public class SSOAuthnAssertionValidator extends AssertionValidator
 		this.binding = binding;
 	}
 
+	/**
+	 * @param beLax if true then if requestId passed to constructor was null, no inResponseTo 
+	 * checking will be performed. Otherwise the validated assertion must not have the inResponseTo attribute set
+	 * as SAML specs suggest.
+	 */
+	public void setLaxInResponseToChecking(boolean beLax)
+	{
+		this.laxInResponseToChecking = beLax;
+	}
+	
 	@Override
 	public void validate(AssertionDocument assertionDoc) throws SAMLValidationException
 	{
@@ -109,7 +123,7 @@ public class SSOAuthnAssertionValidator extends AssertionValidator
 			if (confData.getNotBefore() != null)
 				throw new SAMLValidationSoftException("Bearer subject confirmation must not have notBefore defined");
 
-			if (requestId == null && confData.isSetInResponseTo())
+			if (requestId == null && confData.isSetInResponseTo() && !laxInResponseToChecking)
 				throw new SAMLValidationSoftException("InResponseTo present, while it was expected to have an unsolicited response");
 			return confData.getNotOnOrAfter();
 		}

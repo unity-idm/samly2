@@ -7,6 +7,8 @@ package eu.unicore.samly2.validators;
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.AssertionType;
@@ -43,6 +45,9 @@ import eu.unicore.samly2.trust.SamlTrustChecker;
  * unsolicited response) and when the subject confirmation is bearer. This is a flexible interpretation of SAML
  * standard which is bit vague wrt inResponseToChecking, what is defined in various profiles, core spec etc. 
  * </ul>
+ * <p>
+ * This class allows for setting more then one allowed SAML consumer name.
+ * 
  * @author K. Benedyczak
  */
 public class AssertionValidator
@@ -51,7 +56,7 @@ public class AssertionValidator
 	private static final DateFormat DATE_FORMATTER = DateFormat.getDateTimeInstance(
 			DateFormat.MEDIUM, DateFormat.MEDIUM);
 	
-	protected String consumerSamlName;
+	protected Set<String> consumerSamlNames;
 	protected String consumerEndpointUri;
 	protected String requestId;
 	protected long samlValidityGraceTime;
@@ -60,11 +65,18 @@ public class AssertionValidator
 	public AssertionValidator(String consumerSamlName, String consumerEndpointUri, String requestId, 
 			long samlValidityGraceTime, SamlTrustChecker trustChecker)
 	{
-		this.consumerSamlName = consumerSamlName;
+		this.consumerSamlNames = new HashSet<String>();
+		if (consumerSamlName != null)
+			this.consumerSamlNames.add(consumerSamlName);
 		this.consumerEndpointUri = consumerEndpointUri;
 		this.requestId = requestId;
 		this.samlValidityGraceTime = samlValidityGraceTime;
 		this.trustChecker = trustChecker;
+	}
+	
+	public void addConsumerSamlNameAlias(String alias)
+	{
+		this.consumerSamlNames.add(alias);
 	}
 	
 	public void validate(AssertionDocument assertionDoc) throws SAMLValidationException
@@ -196,7 +208,7 @@ public class AssertionValidator
 	
 	protected void checkAudienceRestriction(AudienceRestrictionType[] audienceRest) throws SAMLValidationException
 	{
-		if (audienceRest == null || audienceRest.length == 0 || consumerSamlName == null)
+		if (audienceRest == null || audienceRest.length == 0 || consumerSamlNames.isEmpty())
 			return;
 		for (AudienceRestrictionType restriction: audienceRest)
 		{
@@ -206,14 +218,14 @@ public class AssertionValidator
 						"no audiences defined inside");
 			boolean found = false;
 			for (String audience: audiences)
-				if (audience.equals(consumerSamlName))
+				if (consumerSamlNames.contains(audience))
 				{
 					found = true;
 					break;
 				}
 			if (!found)
-				throw new SAMLValidationException("Assertion audience restriction doesn't include this service identifier: "
-						+ consumerSamlName +" Audience is restricted to: " + restriction.xmlText());
+				throw new SAMLValidationException("Assertion audience restriction doesn't include any of this service identifiers: "
+						+ consumerSamlNames.toString() +" Audience is restricted to: " + restriction.xmlText());
 		}
 		
 	}
