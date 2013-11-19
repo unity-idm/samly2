@@ -35,6 +35,7 @@ import eu.unicore.security.dsig.DSigException;
 import eu.unicore.security.dsig.DigSignatureUtil;
 
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
+import xmlbeans.org.oasis.saml2.assertion.AssertionType;
 import xmlbeans.org.oasis.saml2.assertion.AttributeStatementType;
 import xmlbeans.org.oasis.saml2.assertion.AttributeType;
 import xmlbeans.org.oasis.saml2.assertion.AuthnContextType;
@@ -65,7 +66,7 @@ public class Assertion extends AssertionParser implements Serializable
 	public Assertion()
 	{
 		assertionDoc = AssertionDocument.Factory.newInstance();
-		assertion = assertionDoc.addNewAssertion();
+		AssertionType assertion = assertionDoc.addNewAssertion();
 		assertion.setVersion(SAMLConstants.SAML2_VERSION);
 		assertion.setIssueInstant(Calendar.getInstance());
 		assertion.setID(SAMLUtils.genID(ID_PREFIX));
@@ -84,7 +85,7 @@ public class Assertion extends AssertionParser implements Serializable
 		NameIDType issuerN = NameIDType.Factory.newInstance();
 		issuerN.setFormat(SAMLConstants.NFORMAT_DN);
 		issuerN.setStringValue(dn);
-		assertion.setIssuer(issuerN);
+		assertionDoc.getAssertion().setIssuer(issuerN);
 	}
 
 	public void setIssuer(String value, String format)
@@ -92,7 +93,7 @@ public class Assertion extends AssertionParser implements Serializable
 		NameIDType issuer = NameIDType.Factory.newInstance();
 		issuer.setStringValue(value);
 		issuer.setFormat(format);
-		assertion.setIssuer(issuer);
+		assertionDoc.getAssertion().setIssuer(issuer);
 	}
 	
 	public void setX509Subject(String subjectName)
@@ -104,14 +105,14 @@ public class Assertion extends AssertionParser implements Serializable
 
 		SubjectType subjectT = SubjectType.Factory.newInstance();
 		subjectT.setNameID(subjectN);
-		assertion.setSubject(subjectT);
+		assertionDoc.getAssertion().setSubject(subjectT);
 	}
 
 	public void setSubject(NameIDType subject)
 	{
 		SubjectType subjectT = SubjectType.Factory.newInstance();
 		subjectT.setNameID(subject);
-		assertion.setSubject(subjectT);
+		assertionDoc.getAssertion().setSubject(subjectT);
 	}
 
 	public void setSubject(SubjectType subject)
@@ -126,9 +127,9 @@ public class Assertion extends AssertionParser implements Serializable
 		//assertion.setSubject(subject);
 		
 		//---- hack start
-		if (assertion.isSetSubject())
-			assertion.unsetSubject();
-		SubjectType added = assertion.addNewSubject();
+		if (assertionDoc.getAssertion().isSetSubject())
+			assertionDoc.getAssertion().unsetSubject();
+		SubjectType added = assertionDoc.getAssertion().addNewSubject();
 		if (subject.isSetNameID())
 			added.setNameID(subject.getNameID());
 		if (subject.isSetEncryptedID())
@@ -155,7 +156,7 @@ public class Assertion extends AssertionParser implements Serializable
 	private void setConfirmation(X509Certificate[] certificates, String method) 
 		throws CertificateEncodingException
 	{
-		SubjectType subject = assertion.getSubject();
+		SubjectType subject = assertionDoc.getAssertion().getSubject();
 		SubjectConfirmationType confirmation = subject.addNewSubjectConfirmation();
 		confirmation.setMethod(method);
 		KeyInfoConfirmationDataType confirData = 
@@ -168,14 +169,14 @@ public class Assertion extends AssertionParser implements Serializable
 	
 	public void updateIssueTime()
 	{
-		assertion.setIssueInstant(Calendar.getInstance());		
+		assertionDoc.getAssertion().setIssueInstant(Calendar.getInstance());		
 	}
 
 	protected ConditionsType getOrCreateConditions()
 	{
-		ConditionsType conditions = assertion.getConditions();
+		ConditionsType conditions = assertionDoc.getAssertion().getConditions();
 		if (conditions == null)
-			return assertion.addNewConditions();
+			return assertionDoc.getAssertion().addNewConditions();
 		return conditions;
 	}
 	
@@ -288,7 +289,6 @@ public class Assertion extends AssertionParser implements Serializable
 		{
 			throw new DSigException("Parsing signed document failed", e);
 		}
-		assertion = assertionDoc.getAssertion();
 	}
 
 	public void addAttribute(SAMLAttribute at)
@@ -298,11 +298,11 @@ public class Assertion extends AssertionParser implements Serializable
 	
 	public void addAttribute(AttributeType at)
 	{
-		if (assertion.getAttributeStatementArray() == null ||
-				assertion.getAttributeStatementArray().length == 0)
-			assertion.addNewAttributeStatement();
+		if (assertionDoc.getAssertion().getAttributeStatementArray() == null ||
+				assertionDoc.getAssertion().getAttributeStatementArray().length == 0)
+			assertionDoc.getAssertion().addNewAttributeStatement();
 		
-		AttributeStatementType attrStatement = assertion.getAttributeStatementArray(0);
+		AttributeStatementType attrStatement = assertionDoc.getAssertion().getAttributeStatementArray(0);
 		
 		AttributeType added = attrStatement.addNewAttribute();
 		added.set(at);
@@ -312,10 +312,10 @@ public class Assertion extends AssertionParser implements Serializable
 			String sessionIdx, Calendar sessionEnd, 
 			SubjectLocalityType subjectLocation)
 	{
-		if (assertion.getAuthnStatementArray() == null || 
-				assertion.getAuthnStatementArray().length == 0)
-			assertion.addNewAuthnStatement();
-		AuthnStatementType authStatement = assertion.getAuthnStatementArray(0);
+		if (assertionDoc.getAssertion().getAuthnStatementArray() == null || 
+				assertionDoc.getAssertion().getAuthnStatementArray().length == 0)
+			assertionDoc.getAssertion().addNewAuthnStatement();
+		AuthnStatementType authStatement = assertionDoc.getAssertion().getAuthnStatementArray(0);
 		authStatement.setAuthnInstant(authTime);
 		authStatement.setAuthnContext(ctx);
 		if (sessionIdx != null)

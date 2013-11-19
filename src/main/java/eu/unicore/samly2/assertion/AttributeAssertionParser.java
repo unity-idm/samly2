@@ -82,7 +82,7 @@ public class AttributeAssertionParser extends AssertionParser
 	 */
 	public ParsedAttribute getAttribute(String name) throws SAMLValidationException
 	{
-		for (AttributeStatementType as: assertion.getAttributeStatementArray())
+		for (AttributeStatementType as: assertionDoc.getAssertion().getAttributeStatementArray())
 		{
 			for (AttributeType xmlAttr: as.getAttributeArray())
 			{
@@ -99,7 +99,7 @@ public class AttributeAssertionParser extends AssertionParser
 	protected List<ParsedAttribute> getAttributesGeneric() throws SAMLValidationException
 	{
 		List<ParsedAttribute> ret = new ArrayList<ParsedAttribute>();
-		for (AttributeStatementType as: assertion.getAttributeStatementArray())
+		for (AttributeStatementType as: assertionDoc.getAssertion().getAttributeStatementArray())
 			parseAttributes(ret, as.getAttributeArray());
 		return ret; 
 	}

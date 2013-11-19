@@ -39,7 +39,6 @@ public class AssertionParser implements Serializable
 {
 	private static final long serialVersionUID=1L;
 
-	protected AssertionType assertion;
 	protected AssertionDocument assertionDoc;
 	
 	protected AssertionParser()
@@ -49,14 +48,12 @@ public class AssertionParser implements Serializable
 	public AssertionParser(AssertionDocument doc)
 	{
 		assertionDoc = doc;
-		assertion = assertionDoc.getAssertion();
 	}
 
 	public AssertionParser(AssertionType assertion)
 	{
 		assertionDoc = AssertionDocument.Factory.newInstance();
 		assertionDoc.setAssertion(assertion);
-		this.assertion = assertion;
 	}
 
 	/**
@@ -66,12 +63,12 @@ public class AssertionParser implements Serializable
 	@Deprecated
 	public String getIssuerDN()
 	{
-		return assertion.getIssuer().getStringValue();
+		return assertionDoc.getAssertion().getIssuer().getStringValue();
 	}
 	
 	public String getIssuerName()
 	{
-		return assertion.getIssuer().getStringValue();
+		return assertionDoc.getAssertion().getIssuer().getStringValue();
 	}
 
 	/**
@@ -86,17 +83,17 @@ public class AssertionParser implements Serializable
 
 	public String getSubjectName()
 	{
-		return assertion.getSubject().getNameID().getStringValue();
+		return assertionDoc.getAssertion().getSubject().getNameID().getStringValue();
 	}
 	
 	public String getIssuerNameFormat()
 	{
-		return assertion.getIssuer().getFormat();
+		return assertionDoc.getAssertion().getIssuer().getFormat();
 	}
 
 	public String getSubjectNameFormat()
 	{
-		return assertion.getSubject().getNameID().getFormat();
+		return assertionDoc.getAssertion().getSubject().getNameID().getFormat();
 	}
 	
 	public boolean isSigned()
@@ -109,12 +106,12 @@ public class AssertionParser implements Serializable
 	
 	public X509Certificate[] getIssuerFromSignature()
 	{
-		return SAMLUtils.getIssuerFromSignature(assertion.getSignature());
+		return SAMLUtils.getIssuerFromSignature(assertionDoc.getAssertion().getSignature());
 	}
 
 	public X509Certificate[] getSubjectFromConfirmation()
 	{
-		SubjectType subject = assertion.getSubject();
+		SubjectType subject = assertionDoc.getAssertion().getSubject();
 		if (subject == null)
 			return null;
 		SubjectConfirmationType[] tt = subject.getSubjectConfirmationArray();
@@ -155,12 +152,12 @@ public class AssertionParser implements Serializable
 
 	public AssertionType getXMLBean()
 	{
-		return assertion;
+		return assertionDoc.getAssertion();
 	}
 	
 	public int getProxyRestriction()
 	{
-		ConditionsType conditions = assertion.getConditions();
+		ConditionsType conditions = assertionDoc.getAssertion().getConditions();
 		if (conditions == null || conditions.sizeOfProxyRestrictionArray() == 0)
 			return -1;
 		return conditions.getProxyRestrictionArray(0).getCount().intValue();
@@ -168,14 +165,14 @@ public class AssertionParser implements Serializable
 	
 	public Date getNotBefore()
 	{
-		ConditionsType conditions = assertion.getConditions();
+		ConditionsType conditions = assertionDoc.getAssertion().getConditions();
 		Calendar c = conditions.getNotBefore();
 		return c == null ? null : c.getTime();
 	}
 
 	public Date getNotOnOrAfter()
 	{
-		ConditionsType conditions = assertion.getConditions();
+		ConditionsType conditions = assertionDoc.getAssertion().getConditions();
 		Calendar c = conditions.getNotOnOrAfter();
 		return c == null ? null : c.getTime();
 	}
