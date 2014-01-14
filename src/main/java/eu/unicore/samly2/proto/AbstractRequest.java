@@ -9,6 +9,7 @@
 package eu.unicore.samly2.proto;
 
 import java.util.Calendar;
+import java.util.TimeZone;
 
 import org.apache.xmlbeans.XmlObject;
 
@@ -32,7 +33,7 @@ public abstract class AbstractRequest<T extends XmlObject, C extends RequestAbst
 		xmlDocuemnt = srcDoc;
 		xmlReq = src;
 		xmlReq.setIssuer(issuer);
-		xmlReq.setIssueInstant(Calendar.getInstance());
+		xmlReq.setIssueInstant(Calendar.getInstance(TimeZone.getTimeZone("UTC")));
 		xmlReq.setID(genID());
 		xmlReq.setVersion(SAMLConstants.SAML2_VERSION);
 	}

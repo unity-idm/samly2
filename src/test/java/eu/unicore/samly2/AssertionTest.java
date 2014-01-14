@@ -41,6 +41,8 @@ public class AssertionTest extends TestBase {
 		assertEquals(new Date(4500), assertion.getNotOnOrAfter());
 		assertNotNull(assertion.getXMLBean());
 		assertNotNull(assertion.getXMLBeanDoc());
+		//JDK uses GMT by default, not UTC
+		assertEquals("GMT", assertion.getXMLBean().getIssueInstant().getTimeZone().getID());
 		assertEquals("foo", assertion.getXMLBean().getIssuer().getStringValue());
 		assertEquals(SAMLConstants.NFORMAT_ENTITY, assertion.getXMLBean().getIssuer().getFormat());
 		assertTrue(X500NameUtils.equal(subject1, assertion.getXMLBean().getSubject().getNameID().getStringValue()));

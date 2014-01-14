@@ -16,6 +16,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 import javax.xml.namespace.QName;
 
@@ -68,7 +69,7 @@ public class Assertion extends AssertionParser implements Serializable
 		assertionDoc = AssertionDocument.Factory.newInstance();
 		AssertionType assertion = assertionDoc.addNewAssertion();
 		assertion.setVersion(SAMLConstants.SAML2_VERSION);
-		assertion.setIssueInstant(Calendar.getInstance());
+		assertion.setIssueInstant(Calendar.getInstance(TimeZone.getTimeZone("UTC")));
 		assertion.setID(SAMLUtils.genID(ID_PREFIX));
 	}
 
@@ -169,7 +170,7 @@ public class Assertion extends AssertionParser implements Serializable
 	
 	public void updateIssueTime()
 	{
-		assertionDoc.getAssertion().setIssueInstant(Calendar.getInstance());		
+		assertionDoc.getAssertion().setIssueInstant(Calendar.getInstance(TimeZone.getTimeZone("UTC")));		
 	}
 
 	protected ConditionsType getOrCreateConditions()
@@ -182,7 +183,7 @@ public class Assertion extends AssertionParser implements Serializable
 	
 	public void setTimeConditions(Date notBefore, Date notOnOrAfter)
 	{
-		Calendar c = Calendar.getInstance();
+		Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 		ConditionsType conditions = getOrCreateConditions();
 		if (notBefore != null)
 		{
@@ -316,6 +317,7 @@ public class Assertion extends AssertionParser implements Serializable
 				assertionDoc.getAssertion().getAuthnStatementArray().length == 0)
 			assertionDoc.getAssertion().addNewAuthnStatement();
 		AuthnStatementType authStatement = assertionDoc.getAssertion().getAuthnStatementArray(0);
+		authTime.setTimeZone(TimeZone.getTimeZone("UTC"));
 		authStatement.setAuthnInstant(authTime);
 		authStatement.setAuthnContext(ctx);
 		if (sessionIdx != null)
