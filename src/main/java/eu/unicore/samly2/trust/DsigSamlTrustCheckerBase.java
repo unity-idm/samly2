@@ -29,7 +29,7 @@ import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
  * SAML assertion, request or response.
  * <p>
  * The process is based on checking of the digital signature. 
- * Usful for extending.
+ * Useful for extending.
  * @author K. Benedyczak
  */
 public abstract class DsigSamlTrustCheckerBase implements SamlTrustChecker

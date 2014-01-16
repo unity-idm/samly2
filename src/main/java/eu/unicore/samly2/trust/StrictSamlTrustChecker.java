@@ -43,9 +43,8 @@ public class StrictSamlTrustChecker extends DsigSamlTrustCheckerBase
 	{
 		if (trustedKeys == null || trustedKeys.size() == 0)
 			throw new IllegalArgumentException("Must have a non empty set of trusted keys");
-		if (SAMLConstants.NFORMAT_DN.equals(type))
-			samlId = X500NameUtils.getComparableForm(samlId);
-		trustedIssuers.put(type+"--_--"+samlId, trustedKeys);
+		String key = getIssuerKey(type, samlId);
+		trustedIssuers.put(key, trustedKeys);
 	}
 
 	@Override
@@ -77,7 +76,7 @@ public class StrictSamlTrustChecker extends DsigSamlTrustCheckerBase
 	
 	protected List<PublicKey> getPublicKeys(NameIDType issuer) throws SAMLValidationException
 	{
-		String key = getIssuerKey(issuer);
+		String key = getIssuerKey(issuer.getFormat(), issuer.getStringValue());
 		List<PublicKey> trustedKeys = trustedIssuers.get(key);
 		if (trustedKeys == null)
 			throw new SAMLValidationException("The issuer of the SAML artifact " +
@@ -85,17 +84,17 @@ public class StrictSamlTrustChecker extends DsigSamlTrustCheckerBase
 		return trustedKeys;
 	}
 	
-	protected String getIssuerKey(NameIDType issuer) throws SAMLValidationException
+	protected String getIssuerKey(String format, String value) throws IllegalArgumentException
 	{
-		String format = issuer.getFormat();
-		if (format == null ||
-				format.equals(SAMLConstants.NFORMAT_ENTITY) || 
+		if (format == null)
+			format = SAMLConstants.NFORMAT_ENTITY;
+		if (format.equals(SAMLConstants.NFORMAT_ENTITY) || 
 				format.equals(SAMLConstants.NFORMAT_PERSISTENT) ||
 				format.equals(SAMLConstants.NFORMAT_UNSPEC) ||
 				format.equals(SAMLConstants.NFORMAT_EMAIL))
-			return format + "--_--" + issuer.getStringValue();
-		if (issuer.getFormat().equals(SAMLConstants.NFORMAT_DN))
-			return format + "--_--" + X500NameUtils.getComparableForm(issuer.getStringValue());
-		throw new SAMLValidationException("Issuer name format is unknown: " + issuer.getFormat());
+			return format + "--_--" + value;
+		if (format.equals(SAMLConstants.NFORMAT_DN))
+			return format + "--_--" + X500NameUtils.getComparableForm(value);
+		throw new IllegalArgumentException("Issuer name format is unknown: " + format);
 	}
 }
