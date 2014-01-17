@@ -6,10 +6,13 @@ package eu.unicore.samly2.trust;
 
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.unicore.samly2.SAMLConstants;
@@ -32,7 +35,7 @@ import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
  */
 public class StrictSamlTrustChecker extends DsigSamlTrustCheckerBase
 {
-	protected Map<String, List<PublicKey>> trustedIssuers = new HashMap<String, List<PublicKey>>();
+	protected Map<String, Set<PublicKey>> trustedIssuers = new HashMap<String, Set<PublicKey>>();
 	
 	public void addTrustedIssuer(String samlId, String type, PublicKey trustedKey)
 	{
@@ -44,7 +47,13 @@ public class StrictSamlTrustChecker extends DsigSamlTrustCheckerBase
 		if (trustedKeys == null || trustedKeys.size() == 0)
 			throw new IllegalArgumentException("Must have a non empty set of trusted keys");
 		String key = getIssuerKey(type, samlId);
-		trustedIssuers.put(key, trustedKeys);
+		Set<PublicKey> current = trustedIssuers.get(key);
+		if (current == null)
+		{
+			current = new HashSet<PublicKey>();
+			trustedIssuers.put(key, current);
+		}
+		current.addAll(trustedKeys);
 	}
 
 	@Override
@@ -77,11 +86,11 @@ public class StrictSamlTrustChecker extends DsigSamlTrustCheckerBase
 	protected List<PublicKey> getPublicKeys(NameIDType issuer) throws SAMLValidationException
 	{
 		String key = getIssuerKey(issuer.getFormat(), issuer.getStringValue());
-		List<PublicKey> trustedKeys = trustedIssuers.get(key);
+		Set<PublicKey> trustedKeys = trustedIssuers.get(key);
 		if (trustedKeys == null)
 			throw new SAMLValidationException("The issuer of the SAML artifact " +
 					"is not trusted: " + issuer.getStringValue());
-		return trustedKeys;
+		return new ArrayList<PublicKey>(trustedKeys);
 	}
 	
 	protected String getIssuerKey(String format, String value) throws IllegalArgumentException
