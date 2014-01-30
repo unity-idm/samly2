@@ -9,6 +9,7 @@
 package eu.unicore.security.dsig;
 
 import java.io.FileInputStream;
+import java.io.OutputStreamWriter;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
@@ -16,6 +17,10 @@ import java.util.Collections;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.w3c.dom.Document;
 
 import eu.unicore.samly2.assertion.AssertionParser;
@@ -44,6 +49,11 @@ public class AssertionSignatureChecker
 	 */
 	public static void main(String[] args)
 	{
+		Logger.getRootLogger().setLevel(Level.TRACE);
+		ConsoleAppender ca = new ConsoleAppender(new PatternLayout("[%t] %-p %c: %x %m%n"));
+		ca.setImmediateFlush(true);
+		ca.setWriter(new OutputStreamWriter(System.out));
+		Logger.getRootLogger().addAppender(ca);
 		AssertionSignatureChecker checker;
 		try
 		{
@@ -63,7 +73,7 @@ public class AssertionSignatureChecker
 			//BigInteger expotent = new BigInteger("65537");
 			//PublicKey pubKey = new RSAPublicKeyImpl(modulus, expotent);
 			PublicKey pubKey = certChain[0].getPublicKey(); 
-			boolean res = dsigEngine.verifyEnvelopedSignature(doc, 
+			boolean res = dsigEngine.verifyEnvelopedSignature((Document) asXDoc.getDomNode(), 
 					Collections.singletonList(doc.getDocumentElement()), 
 					SamlTrustChecker.ASSERTION_ID_QNAME, pubKey);
 			System.out.println("Signature is valid: " + res);

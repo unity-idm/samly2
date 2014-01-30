@@ -109,9 +109,18 @@ public class SAMLUtils
 		return true;
 	}
 	
+	/**
+	 * Extracts assertions from the wrapping SAML response in a safe way. It is guaranteed that no link is preserved 
+	 * in the returned objects to the parameter object.
+	 * @param response
+	 * @return
+	 * @throws XmlException
+	 * @throws IOException
+	 */
 	public static AssertionDocument[] getAssertions(ResponseType response) 
 		throws XmlException, IOException
 	{
+		
  		Element node = (Element)response.getDomNode();
  		NodeList allChildren = node.getChildNodes();
 		NodeList asNodes = node.getElementsByTagNameNS(
@@ -121,6 +130,7 @@ public class SAMLUtils
 		List<AssertionDocument> ret = new ArrayList<AssertionDocument>(asNodes.getLength());
 		//work carefully: we only return Assertions which are direct children of the response,
 		//to make XML Dsig attacks more difficult
+		
 		for (int i=0; i<asNodes.getLength(); i++)
 		{
 			Node asNode = asNodes.item(i);
@@ -129,25 +139,16 @@ public class SAMLUtils
 				if (allChildren.item(j).equals(asNode))
 				{
 					AssertionDocument wrapper = AssertionDocument.Factory.parse(asNode);
-					ret.add(wrapper);
+					//this weird... however without this step (slooow) the returned object is incorrectly 
+					//handled in the signature chacking code... 
+					//though its XML text representation is fully correct even before this step.
+					//TODO a better (faster) approach should be used.
+					
+					AssertionDocument wrapper2 = AssertionDocument.Factory.parse(wrapper.xmlText());
+					ret.add(wrapper2);
 				}
 			}			
 		}
 		return ret.toArray(new AssertionDocument[ret.size()]);
-/*
- This version is faster however less safe - root Assertion element can get additional namespace
- declarations. Should not affect signature checking but to be 100% correct we parse from DOM as above.
-		AssertionType[] xmlAs = respXml.getAssertionArray();
-		if (xmlAs == null || xmlAs.length == 0)
-			return new Assertion[0];
-		Assertion []ret = new Assertion[xmlAs.length];
-		for (int i=0; i<ret.length; i++)
-		{
-			AssertionDocument wrapper = AssertionDocument.Factory.newInstance();
-			wrapper.setAssertion(xmlAs[i]);
-			ret[i] = new Assertion(wrapper);
-		}
-		return ret;
-*/
 	}
 }

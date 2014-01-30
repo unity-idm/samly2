@@ -33,7 +33,6 @@ import eu.unicore.samly2.trust.SamlTrustChecker;
  * <li> signature if required
  * <li> conditions if present
  * <li> subject's confirmation restrictions if present
- * <li> if all statements are of a single type
  * </ul>
  * <p>
  * The following deviations from the SAML 2.0 core specification are implemented:
@@ -175,29 +174,6 @@ public class AssertionValidator
 		checkTimeBounds("Assertion", conditions.getNotBefore(), conditions.getNotOnOrAfter());
 		checkAudienceRestriction(conditions.getAudienceRestrictionArray());
 		checkGenericConditions(conditions);
-	}
-	
-	/**
-	 * This method can be used by subclasses but is not invoked by defualt (it is not required by SAML spec)
-	 * @param assertion
-	 * @throws SAMLValidationException
-	 */
-	protected void checkStatements(AssertionType assertion) throws SAMLValidationException
-	{
-		int types = 0; 
-		if (assertion.getAttributeStatementArray() != null &&
-				assertion.getAttributeStatementArray().length > 0)
-			types++;
-		if (assertion.getAuthzDecisionStatementArray() != null &&
-				assertion.getAuthzDecisionStatementArray().length > 0)
-			types++;
-		if (assertion.getAuthnStatementArray() != null &&
-				assertion.getAuthnStatementArray().length > 0)
-			types++;
-		if (types > 1)
-			throw new SAMLValidationException("Assertions with different statement types are unsupported");
-		if (types == 0)
-			throw new SAMLValidationException("Assertions without any statement are unsupported");
 	}
 	
 	protected void checkGenericConditions(ConditionsType conditions) throws SAMLValidationException

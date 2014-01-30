@@ -37,6 +37,7 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 	protected SAMLBindings binding;
 	
 	protected List<AssertionDocument> authNAssertions;
+	protected List<AssertionDocument> attributeAssertions;
 	protected List<AssertionDocument> otherAssertions;
 	protected ErrorReasons reasons;
 	
@@ -60,6 +61,7 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 	{
 		authNAssertions = new ArrayList<AssertionDocument>();
 		otherAssertions = new ArrayList<AssertionDocument>();
+		attributeAssertions = new ArrayList<AssertionDocument>();
 		reasons = new ErrorReasons();
 		
 		ResponseType response = authenticationResponseDoc.getResponse();
@@ -89,7 +91,8 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 			AssertionType assertion = assertionDoc.getAssertion();
 			if (assertion.sizeOfAuthnStatementArray() > 0)
 				tryValidateAsAuthnAssertion(authnAsValidator, assertionDoc);
-			else
+			if (assertion.sizeOfStatementArray() > 0 || assertion.sizeOfAttributeStatementArray() > 0 ||
+					assertion.sizeOfAuthzDecisionStatementArray() > 0)
 				tryValidateAsGenericAssertion(asValidator, assertionDoc);
 
 			//asIssuer is not null (checked for all assertions) and has proper format 
@@ -109,14 +112,32 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 		}
 	}
 	
+	/**
+	 * @return list of assertions with at least one authnStatement
+	 */
 	public List<AssertionDocument> getAuthNAssertions()
 	{
 		return authNAssertions;
 	}
 
+	/**
+	 * @return list of assertions which has at least one statement other then authnStatement.
+	 * Note that this may overlap with assertions returned by {@link #getAuthNAssertions()} in case
+	 * when an assertion with statements of different types is received. 
+	 */
 	public List<AssertionDocument> getOtherAssertions()
 	{
 		return otherAssertions;
+	}
+
+	/**
+	 * @return list of assertions which has at least one statement other then authnStatement.
+	 * Note that this may overlap with assertions returned by {@link #getAuthNAssertions()} in case
+	 * when an assertion with statements of different types is received. 
+	 */
+	public List<AssertionDocument> getAttributeAssertions()
+	{
+		return attributeAssertions;
 	}
 
 	protected void tryValidateAsAuthnAssertion(SSOAuthnAssertionValidator authnAsValidator, 
@@ -145,5 +166,7 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 			throw new SAMLValidationException("Assertion is not signed in the SSO authN used over HTTP POST, while should be.");
 
 		otherAssertions.add(assertionDoc);
+		if (assertion.sizeOfAttributeStatementArray() > 0)
+			attributeAssertions.add(assertionDoc);
 	}
 }

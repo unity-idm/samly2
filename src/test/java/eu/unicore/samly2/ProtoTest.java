@@ -1,8 +1,12 @@
 package eu.unicore.samly2;
 
+import java.io.File;
+import java.security.cert.X509Certificate;
+
 import org.apache.xmlbeans.XmlObject;
 
 import xmlbeans.org.oasis.saml2.protocol.RequestAbstractType;
+import xmlbeans.org.oasis.saml2.protocol.ResponseDocument;
 import xmlbeans.org.oasis.saml2.protocol.StatusResponseType;
 
 import eu.unicore.samly2.SAMLConstants;
@@ -18,8 +22,11 @@ import eu.unicore.samly2.proto.AuthnRequest;
 import eu.unicore.samly2.proto.NameIDMappingRequest;
 import eu.unicore.samly2.proto.NameIDMappingResponse;
 import eu.unicore.samly2.trust.StrictSamlTrustChecker;
+import eu.unicore.samly2.validators.ReplayAttackChecker;
+import eu.unicore.samly2.validators.SSOAuthnResponseValidator;
 import eu.unicore.security.dsig.DSigException;
 import eu.unicore.security.dsig.TestBase;
+import eu.unicore.security.dsig.Utils;
 
 /**
  * Tests utility classes which are creating SAML protocol messages.
@@ -163,6 +170,23 @@ public class ProtoTest extends TestBase {
 		assertEquals(1, resp.getXMLBean().getAssertionArray(0).sizeOfAttributeStatementArray());
 		assertEquals(1, resp.getXMLBean().getAssertionArray(0).getAttributeStatementArray(0).sizeOfAttributeArray());
 		assertEquals("a", resp.getXMLBean().getAssertionArray(0).getAttributeStatementArray(0).getAttributeArray(0).getName());
+	}
+
+	public void testAuthnResp() throws Exception {
+		
+		ResponseDocument authenticationResponseDoc = ResponseDocument.Factory.parse(
+				new File("src/test/resources/responseDocSigned.xml"));
+		byte[][] certs = authenticationResponseDoc.getResponse().getSignature().getKeyInfo().getX509DataArray(0).getX509CertificateArray();
+		X509Certificate[] c = Utils.deserializeCertificateChain(certs);
+		StrictSamlTrustChecker trustChecker = new StrictSamlTrustChecker();
+		trustChecker.addTrustedIssuer("http://centos6-unity1:8080/simplesaml/saml2/idp/metadata.php", null, 
+				c[0].getPublicKey());
+		SSOAuthnResponseValidator validator = new SSOAuthnResponseValidator(null, null, 
+				"SAMLY2lib_msg_19155ef4173009c5b5d93ec3c07edcdc39d281b15cef0e28", 
+				36000000000L, trustChecker, new ReplayAttackChecker(), SAMLBindings.HTTP_POST);
+		
+		validator.validate(authenticationResponseDoc);
+		
 	}
 
 }
