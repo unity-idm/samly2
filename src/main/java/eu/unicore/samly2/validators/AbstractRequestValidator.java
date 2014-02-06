@@ -45,7 +45,7 @@ public class AbstractRequestValidator
 	{
 		try
 		{
-			this.responderEndpointUri = new URI(responderEndpointUri);
+			this.responderEndpointUri = normalizeUri(responderEndpointUri);
 		} catch (URISyntaxException e)
 		{
 			throw new IllegalArgumentException("responderURI '" + responderEndpointUri + 
@@ -67,12 +67,13 @@ public class AbstractRequestValidator
 			URI destinationUri;
 			try
 			{
-				destinationUri = new URI(destination);
+				destinationUri = normalizeUri(destination);
 			} catch (URISyntaxException e)
 			{
 				throw new SAMLRequesterException(SAMLConstants.SubStatus.STATUS2_REQUEST_DENIED, "Destination value " + destination
 						+ " is not a valid URI: " + e.toString());
 			}
+			
 			if (!destinationUri.equals(responderEndpointUri))
 				throw new SAMLRequesterException(SAMLConstants.SubStatus.STATUS2_REQUEST_DENIED, "Destination value " + destination
 					+ " is not matching the responder's URI: " + responderEndpointUri);
@@ -104,6 +105,17 @@ public class AbstractRequestValidator
 			throw new SAMLRequesterException(SAMLConstants.SubStatus.STATUS2_REQUEST_DENIED, 
 					e.getMessage());
 		}
+	}
+	
+	private URI normalizeUri(String uri) throws URISyntaxException
+	{
+		URI destinationUri = new URI(uri);
+		if ((destinationUri.getPort() == 443 && "https".equals(destinationUri.getScheme())) ||
+				(destinationUri.getPort() == 80 && "http".equals(destinationUri.getScheme())))
+			return new URI(destinationUri.getScheme(), destinationUri.getUserInfo(), 
+					destinationUri.getHost(), -1, destinationUri.getPath(), 
+					destinationUri.getQuery(), destinationUri.getFragment());
+		return destinationUri;
 	}
 	
 	protected void checkMandatoryElements(RequestAbstractType request) throws SAMLServerException
