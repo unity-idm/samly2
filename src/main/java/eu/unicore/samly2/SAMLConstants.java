@@ -46,6 +46,13 @@ public class SAMLConstants
 
 	public static final String SAML2_VERSION = "2.0";
 	
+	public static final String BINDING_SOAP = "urn:oasis:names:tc:SAML:2.0:bindings:SOAP";
+	public static final String BINDING_PAOS = "urn:oasis:names:tc:SAML:2.0:bindings:PAOS";
+	public static final String BINDING_HTTP_REDIRECT = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect";
+	public static final String BINDING_HTTP_POST = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST";
+	public static final String BINDING_ARTIFACT = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact";
+	public static final String BINDING_URI = "urn:oasis:names:tc:SAML:2.0:bindings:URI";
+	
 	//the rest is from different SAML profiles
 	
 	public static final QName XACMLDT = new QName(
