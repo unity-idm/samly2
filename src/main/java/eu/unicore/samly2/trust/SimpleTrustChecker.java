@@ -6,8 +6,10 @@ package eu.unicore.samly2.trust;
 
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
 import java.util.List;
 
+import org.apache.xmlbeans.XmlObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -38,6 +40,21 @@ public class SimpleTrustChecker extends DsigSamlTrustCheckerBase
 			throws SAMLValidationException
 	{
 		return issuerCert.getPublicKey();
+	}
+	
+	@Override
+	protected void checkCommon(XmlObject xmlbeansDoc, NameIDType issuer, 
+			SignatureType signature, IdAttribute idAttribute) throws SAMLValidationException
+	{
+		if ((signature == null || signature.isNil()) && !signatureOptional)
+			throw new SAMLValidationException("SAML document is not signed and the policy requires a signature");
+		PublicKey publicKey = establishKey(issuer, signature);
+		
+		Document doc = (Document) xmlbeansDoc.getDomNode();
+		isCorrectlySigned(doc, publicKey, 
+				signature, 
+				Collections.singletonList(doc.getDocumentElement()), 
+				idAttribute);
 	}
 	
 	@Override
