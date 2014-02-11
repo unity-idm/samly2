@@ -37,6 +37,7 @@ public class AssertionTest extends TestBase {
 			fail("Cannot create assertion: " + e);
 			return;
 		}
+		
 		assertEquals(new Date(1000), assertion.getNotBefore());
 		assertEquals(new Date(4500), assertion.getNotOnOrAfter());
 		assertNotNull(assertion.getXMLBean());

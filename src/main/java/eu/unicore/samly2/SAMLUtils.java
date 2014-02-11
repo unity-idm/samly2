@@ -9,6 +9,8 @@
 package eu.unicore.samly2;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
@@ -150,5 +152,17 @@ public class SAMLUtils
 			}			
 		}
 		return ret.toArray(new AssertionDocument[ret.size()]);
+	}
+	
+	
+	public static URI normalizeUri(String uri) throws URISyntaxException
+	{
+		URI destinationUri = new URI(uri);
+		if ((destinationUri.getPort() == 443 && "https".equals(destinationUri.getScheme())) ||
+				(destinationUri.getPort() == 80 && "http".equals(destinationUri.getScheme())))
+			return new URI(destinationUri.getScheme(), destinationUri.getUserInfo(), 
+					destinationUri.getHost(), -1, destinationUri.getPath(), 
+					destinationUri.getQuery(), destinationUri.getFragment());
+		return destinationUri;
 	}
 }

@@ -31,10 +31,6 @@ public class SSOAuthnRequestValidator extends AbstractRequestValidator
 		super.validate(authenticationRequestDoc, authnRequest);
 		
 		validateIssuer(authnRequest);
-		
-		if (trustChecker.isSignatureRequired() && 
-				(authnRequest.getSignature() == null || authnRequest.getSignature().isNil()))
-			throw new SAMLRequesterException(SAMLConstants.SubStatus.STATUS2_REQUEST_DENIED, "The request is not signed");
 	}
 	
 	protected void validateIssuer(AuthnRequestType authnRequest) throws SAMLServerException

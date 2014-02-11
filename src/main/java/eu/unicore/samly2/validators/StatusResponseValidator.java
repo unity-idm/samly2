@@ -59,8 +59,7 @@ public class StatusResponseValidator
 
 		checkStatus(responseXml);
 		
-		if (responseXml.getSignature() != null && !responseXml.getSignature().isNil())
-			trustChecker.checkTrust(wrappingDcoument, responseXml);
+		trustChecker.checkTrust(wrappingDcoument, responseXml);
 	}
 	
 	protected void checkMandatoryElements(StatusResponseType responseXml) throws SAMLValidationException

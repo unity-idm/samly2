@@ -10,6 +10,7 @@ import java.net.URISyntaxException;
 import org.apache.xmlbeans.XmlObject;
 
 import eu.unicore.samly2.SAMLConstants;
+import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLRequesterException;
 import eu.unicore.samly2.exceptions.SAMLServerException;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
@@ -45,7 +46,7 @@ public class AbstractRequestValidator
 	{
 		try
 		{
-			this.responderEndpointUri = normalizeUri(responderEndpointUri);
+			this.responderEndpointUri = SAMLUtils.normalizeUri(responderEndpointUri);
 		} catch (URISyntaxException e)
 		{
 			throw new IllegalArgumentException("responderURI '" + responderEndpointUri + 
@@ -67,7 +68,7 @@ public class AbstractRequestValidator
 			URI destinationUri;
 			try
 			{
-				destinationUri = normalizeUri(destination);
+				destinationUri = SAMLUtils.normalizeUri(destination);
 			} catch (URISyntaxException e)
 			{
 				throw new SAMLRequesterException(SAMLConstants.SubStatus.STATUS2_REQUEST_DENIED, "Destination value " + destination
@@ -78,18 +79,14 @@ public class AbstractRequestValidator
 				throw new SAMLRequesterException(SAMLConstants.SubStatus.STATUS2_REQUEST_DENIED, "Destination value " + destination
 					+ " is not matching the responder's URI: " + responderEndpointUri);
 		}
-		if (request.getSignature() != null && !request.getSignature().isNil())
+		try
 		{
-			try
-			{
-				trustChecker.checkTrust(wrappingDcoument, request);
-			} catch (SAMLValidationException e)
-			{
-				throw new SAMLRequesterException(SAMLConstants.SubStatus.STATUS2_REQUEST_DENIED,
-						e.getMessage(), e.getCause());
-			}
+			trustChecker.checkTrust(wrappingDcoument, request);
+		} catch (SAMLValidationException e)
+		{
+			throw new SAMLRequesterException(SAMLConstants.SubStatus.STATUS2_REQUEST_DENIED,
+					e.getMessage(), e);
 		}
-		
 		long maxTs = request.getIssueInstant().getTimeInMillis() + requestValidity;
 		if (maxTs < System.currentTimeMillis())
 			throw new SAMLRequesterException(SAMLConstants.SubStatus.STATUS2_REQUEST_DENIED, 
@@ -105,17 +102,6 @@ public class AbstractRequestValidator
 			throw new SAMLRequesterException(SAMLConstants.SubStatus.STATUS2_REQUEST_DENIED, 
 					e.getMessage());
 		}
-	}
-	
-	private URI normalizeUri(String uri) throws URISyntaxException
-	{
-		URI destinationUri = new URI(uri);
-		if ((destinationUri.getPort() == 443 && "https".equals(destinationUri.getScheme())) ||
-				(destinationUri.getPort() == 80 && "http".equals(destinationUri.getScheme())))
-			return new URI(destinationUri.getScheme(), destinationUri.getUserInfo(), 
-					destinationUri.getHost(), -1, destinationUri.getPath(), 
-					destinationUri.getQuery(), destinationUri.getFragment());
-		return destinationUri;
 	}
 	
 	protected void checkMandatoryElements(RequestAbstractType request) throws SAMLServerException

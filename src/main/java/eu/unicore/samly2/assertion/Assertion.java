@@ -323,7 +323,10 @@ public class Assertion extends AssertionParser implements Serializable
 		if (sessionIdx != null)
 			authStatement.setSessionIndex(sessionIdx);
 		if (sessionEnd != null)
+		{
+			sessionEnd.setTimeZone(TimeZone.getTimeZone("UTC"));			
 			authStatement.setSessionNotOnOrAfter(sessionEnd);
+		}
 		if (subjectLocation != null)
 			authStatement.setSubjectLocality(subjectLocation);
 	}
