@@ -29,7 +29,7 @@ import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
  * in signature and this certificate is among trust anchors of a validator used to bootstrap 
  * the checker. This class is very similar to {@link StrictSamlTrustChecker}, but the trusted issuers
  * list is retrieved for each validation, therefore it can be modified at runtime when underlying validator's 
- * truststore is updated. This class can be configured to accepted unsigned documents too.
+ * truststore is updated. This class can be configured to accept unsigned documents too.
  * @author K. Benedyczak
  */
 public class TruststoreBasedSamlTrustChecker extends DsigSamlTrustCheckerBase
@@ -39,11 +39,14 @@ public class TruststoreBasedSamlTrustChecker extends DsigSamlTrustCheckerBase
 
 	public TruststoreBasedSamlTrustChecker(X509CertChainValidator validator, boolean allowUnsigned)
 	{
+		super(false);
 		this.validator = validator;
 		this.allowUnsigned = allowUnsigned;
 	}
 
-	public TruststoreBasedSamlTrustChecker(X509CertChainValidator validator)
+	public TruststoreBasedSamlTrustChecker(X509CertChainValidator validator,
+			boolean requireForResponse, boolean requireForAssertion,
+			boolean requireForRequest)
 	{
 		this(validator, false);
 	}

@@ -34,6 +34,13 @@ import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
  */
 public abstract class DsigSamlTrustCheckerBase implements SamlTrustChecker
 {
+	private boolean requireForResponse;
+	
+	public DsigSamlTrustCheckerBase(boolean requireForResponse)
+	{
+		this.requireForResponse = requireForResponse;
+	}
+
 	@Override
 	public boolean isSignatureRequired()
 	{
@@ -50,6 +57,8 @@ public abstract class DsigSamlTrustCheckerBase implements SamlTrustChecker
 	@Override
 	public void checkTrust(XmlObject responseDoc, StatusResponseType response) throws SAMLValidationException
 	{
+		if (!requireForResponse)
+			return;
 		checkCommon(responseDoc, response.getIssuer(), response.getSignature(), PROTOCOL_ID_QNAME);
 	}
 
@@ -62,6 +71,8 @@ public abstract class DsigSamlTrustCheckerBase implements SamlTrustChecker
 	protected void checkCommon(XmlObject xmlbeansDoc, NameIDType issuer, 
 			SignatureType signature, IdAttribute idAttribute) throws SAMLValidationException
 	{
+		if (signature == null || signature.isNil())
+			throw new SAMLValidationException("SAML document is not signed and the policy requires a signature");
 		PublicKey publicKey = establishKey(issuer, signature);
 		
 		Document doc = (Document) xmlbeansDoc.getDomNode();
@@ -75,8 +86,6 @@ public abstract class DsigSamlTrustCheckerBase implements SamlTrustChecker
 			List<Element> shallBeSigned, 
 			IdAttribute idAttribute) throws SAMLValidationException
 	{
-		if (signature == null || signature.isNil())
-			throw new SAMLValidationException("XML document is not signed");
 		DigSignatureUtil sign;
 		try
 		{

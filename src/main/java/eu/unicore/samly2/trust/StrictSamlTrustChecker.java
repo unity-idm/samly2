@@ -37,6 +37,11 @@ public class StrictSamlTrustChecker extends DsigSamlTrustCheckerBase
 {
 	protected Map<String, Set<PublicKey>> trustedIssuers = new HashMap<String, Set<PublicKey>>();
 	
+	public StrictSamlTrustChecker()
+	{
+		super(false);
+	}
+
 	public void addTrustedIssuer(String samlId, String type, PublicKey trustedKey)
 	{
 		addTrustedIssuer(samlId, type, Collections.singletonList(trustedKey));

@@ -28,6 +28,7 @@ public class SimpleTrustChecker extends DsigSamlTrustCheckerBase
 
 	public SimpleTrustChecker(X509Certificate issuerCertificate, boolean signatureOptional)
 	{
+		super(false);
 		this.issuerCert = issuerCertificate;
 		this.signatureOptional = signatureOptional;
 	}

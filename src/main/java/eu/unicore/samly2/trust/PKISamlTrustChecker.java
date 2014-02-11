@@ -43,6 +43,7 @@ public class PKISamlTrustChecker extends DsigSamlTrustCheckerBase
 
 	public PKISamlTrustChecker(X509CertChainValidator validator, boolean allowUnsigned)
 	{
+		super(false);
 		this.validator = validator;
 		this.allowUnsigned = allowUnsigned;
 	}
