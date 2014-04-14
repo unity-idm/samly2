@@ -18,6 +18,7 @@ import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 import xmlbeans.org.oasis.saml2.protocol.AuthnRequestType;
 import xmlbeans.org.oasis.saml2.protocol.RequestAbstractType;
 import xmlbeans.org.oasis.saml2.protocol.StatusResponseType;
+import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
@@ -52,6 +53,12 @@ public class EnumeratedTrustChecker implements SamlTrustChecker
 			throw new IllegalArgumentException("Provided address is not a valid URI", e);
 		}
 	}
+
+	public void addTrustedDNIssuer(String entityDN, String endpointAddresses)
+	{
+		String dn = X500NameUtils.getComparableForm(entityDN);
+		addTrustedIssuer(dn, endpointAddresses);
+	}
 	
 	@Override
 	public void checkTrust(AssertionDocument assertionDoc) throws SAMLValidationException
@@ -71,10 +78,19 @@ public class EnumeratedTrustChecker implements SamlTrustChecker
 			throws SAMLValidationException
 	{
 		NameIDType issuer = request.getIssuer();
-		if (issuer.getFormat() != null && !issuer.getFormat().equals(SAMLConstants.NFORMAT_ENTITY))
-			throw new SAMLValidationException("Issuer name must be of " + SAMLConstants.NFORMAT_ENTITY +
-					" format");
-		Set<URI> addresses = trustedIssuers.get(issuer.getStringValue());
+		String issuerName;
+		try
+		{
+			if (issuer.getFormat() != null && issuer.getFormat().equals(SAMLConstants.NFORMAT_DN))
+				issuerName = X500NameUtils.getComparableForm(issuer.getStringValue());
+			else
+				issuerName = issuer.getStringValue();
+		} catch (Exception e)
+		{
+			throw new SAMLValidationException("The issuer name is misformatted", e);
+		}
+
+		Set<URI> addresses = trustedIssuers.get(issuerName);
 		if (addresses == null)
 			throw new SAMLValidationException("Issuer is not among trusted: " + issuer.getStringValue());
 		
