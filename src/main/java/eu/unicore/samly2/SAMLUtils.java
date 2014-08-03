@@ -211,7 +211,6 @@ public class SAMLUtils
 		
 		if (decryptionKey != null)
 		{
-			Collections.addAll(allAs, assertions);
 			for (EncryptedAssertionDocument encAssertion: encAssertions)
 			{
 				AssertionParser parser = new AssertionParser(encAssertion, decryptionKey);
