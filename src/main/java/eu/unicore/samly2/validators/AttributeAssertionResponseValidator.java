@@ -4,6 +4,7 @@
  */
 package eu.unicore.samly2.validators;
 
+import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,7 @@ public class AttributeAssertionResponseValidator extends StatusResponseValidator
 	protected String consumerSamlName;
 	protected long samlValidityGraceTime;
 	protected NameIDType requestedSubject;
+	protected PrivateKey decryptionKey;
 	
 	protected List<AssertionDocument> attributeAssertions;
 	
@@ -48,6 +50,15 @@ public class AttributeAssertionResponseValidator extends StatusResponseValidator
 		this.requestedSubject = requestedSubject;
 	}
 
+	public AttributeAssertionResponseValidator(String consumerSamlName, String consumerEndpointUri, 
+			String requestId, long samlValidityGraceTime, SamlTrustChecker trustChecker,
+			NameIDType requestedSubject, PrivateKey decryptionKey)
+	{
+		this(consumerSamlName, consumerEndpointUri, requestId, samlValidityGraceTime, 
+				trustChecker, requestedSubject);
+		this.decryptionKey = decryptionKey;
+	}
+	
 	public void validate(ResponseDocument attributeResponseDoc) throws SAMLValidationException
 	{
 		attributeAssertions = new ArrayList<AssertionDocument>();
@@ -61,10 +72,10 @@ public class AttributeAssertionResponseValidator extends StatusResponseValidator
 		if (issuer.getFormat() != null && !issuer.getFormat().equals(SAMLConstants.NFORMAT_ENTITY))
 			throw new SAMLValidationException("Issuer of SAML response must be of Entity type in SSO AuthN. It is: " + issuer.getFormat());
 
-		AssertionDocument[] assertions;
+		List<AssertionDocument> assertions;
 		try
 		{
-			assertions = SAMLUtils.getAssertions(response);
+			assertions = SAMLUtils.extractAllAssertions(response, decryptionKey);
 		} catch (Exception e)
 		{
 			throw new SAMLValidationException("XML handling problem during retrieval of response assertions", e);

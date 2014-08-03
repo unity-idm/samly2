@@ -9,7 +9,6 @@
 package eu.unicore.samly2.assertion;
 
 import java.io.Serializable;
-
 import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.security.cert.CertificateEncodingException;
@@ -27,14 +26,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import eu.emi.security.authn.x509.impl.X500NameUtils;
-import eu.unicore.samly2.SAMLConstants;
-import eu.unicore.samly2.SAMLUtils;
-import eu.unicore.samly2.elements.SAMLAttribute;
-import eu.unicore.samly2.trust.SamlTrustChecker;
-import eu.unicore.security.dsig.DSigException;
-import eu.unicore.security.dsig.DigSignatureUtil;
-
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.AssertionType;
 import xmlbeans.org.oasis.saml2.assertion.AttributeStatementType;
@@ -43,12 +34,22 @@ import xmlbeans.org.oasis.saml2.assertion.AuthnContextType;
 import xmlbeans.org.oasis.saml2.assertion.AuthnStatementType;
 import xmlbeans.org.oasis.saml2.assertion.ConditionAbstractType;
 import xmlbeans.org.oasis.saml2.assertion.ConditionsType;
+import xmlbeans.org.oasis.saml2.assertion.EncryptedAssertionDocument;
+import xmlbeans.org.oasis.saml2.assertion.EncryptedElementType;
 import xmlbeans.org.oasis.saml2.assertion.KeyInfoConfirmationDataType;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 import xmlbeans.org.oasis.saml2.assertion.SubjectConfirmationType;
 import xmlbeans.org.oasis.saml2.assertion.SubjectLocalityType;
 import xmlbeans.org.oasis.saml2.assertion.SubjectType;
 import xmlbeans.org.w3.x2000.x09.xmldsig.KeyInfoType;
+import eu.emi.security.authn.x509.impl.X500NameUtils;
+import eu.unicore.samly2.SAMLConstants;
+import eu.unicore.samly2.SAMLUtils;
+import eu.unicore.samly2.elements.SAMLAttribute;
+import eu.unicore.samly2.trust.SamlTrustChecker;
+import eu.unicore.security.dsig.DSigException;
+import eu.unicore.security.dsig.DigSignatureUtil;
+import eu.unicore.security.enc.EncryptionUtil;
 
 
 /**
@@ -292,6 +293,24 @@ public class Assertion extends AssertionParser implements Serializable
 		}
 	}
 
+	/**
+	 * Encrypt the assertion with a given public key (used to encrypt an actual, random symmetric 
+	 * encryption key). Encryption should be performed typically after signing the assertion.
+	 * @param pk
+	 * @param keySize key size: 128, 192 or 256 bit.
+	 * @throws Exception
+	 */
+	public EncryptedAssertionDocument encrypt(X509Certificate certificate, int keySize) throws Exception
+	{
+		EncryptionUtil encUtil = new EncryptionUtil();
+		Document toEnc = SAMLUtils.getDOM(assertionDoc);
+		Document encrypted = encUtil.encrypt(toEnc, certificate, 128);
+		EncryptedAssertionDocument retDoc = EncryptedAssertionDocument.Factory.newInstance();
+		EncryptedElementType cont = EncryptedElementType.Factory.parse(encrypted);
+		retDoc.setEncryptedAssertion(cont);
+		return retDoc;
+	}
+	
 	public void addAttribute(SAMLAttribute at)
 	{
 		addAttribute(at.getXBean());

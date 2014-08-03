@@ -9,23 +9,32 @@
 package eu.unicore.samly2.assertion;
 
 import java.io.Serializable;
-
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 
-import eu.unicore.samly2.SAMLUtils;
-import eu.unicore.samly2.validators.AssertionValidator;
-import eu.unicore.security.dsig.Utils;
+import org.w3c.dom.Document;
 
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.AssertionType;
 import xmlbeans.org.oasis.saml2.assertion.ConditionsType;
+import xmlbeans.org.oasis.saml2.assertion.EncryptedAssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.KeyInfoConfirmationDataType;
 import xmlbeans.org.oasis.saml2.assertion.SubjectConfirmationType;
 import xmlbeans.org.oasis.saml2.assertion.SubjectType;
 import xmlbeans.org.w3.x2000.x09.xmldsig.KeyInfoType;
 import xmlbeans.org.w3.x2000.x09.xmldsig.X509DataType;
+import eu.unicore.samly2.SAMLUtils;
+import eu.unicore.samly2.exceptions.SAMLValidationException;
+import eu.unicore.samly2.trust.SamlTrustChecker;
+import eu.unicore.samly2.validators.AssertionValidator;
+import eu.unicore.security.dsig.DSigException;
+import eu.unicore.security.dsig.DigSignatureUtil;
+import eu.unicore.security.dsig.Utils;
+import eu.unicore.security.enc.EncryptionUtil;
 
 
 /**
@@ -56,6 +65,20 @@ public class AssertionParser implements Serializable
 		assertionDoc.setAssertion(assertion);
 	}
 
+	/**
+	 * Decrypts encrypted assertion and setups the object
+	 * @param encryptedAssertion
+	 * @param decryptKey
+	 * @throws Exception
+	 */
+	public AssertionParser(EncryptedAssertionDocument encryptedAssertion, PrivateKey decryptKey) throws Exception
+	{
+		EncryptionUtil encUtil = new EncryptionUtil();
+		Document toDec = SAMLUtils.getDOM(encryptedAssertion.getEncryptedAssertion());
+		Document reverted = encUtil.decrypt(toDec, decryptKey);
+		assertionDoc = AssertionDocument.Factory.parse(reverted);
+	}
+	
 	/**
 	 * Use {@link #getIssuerName()}.
 	 * @return
@@ -103,6 +126,22 @@ public class AssertionParser implements Serializable
 			return false;
 		else return true;
 	}
+	
+	public void validateSignature(PublicKey key) throws SAMLValidationException
+	{
+		try
+		{
+			Document doc = getAsDOM();
+			DigSignatureUtil sign = new DigSignatureUtil();
+			if (!sign.verifyEnvelopedSignature(doc, Collections.singletonList(doc.getDocumentElement()),  
+					SamlTrustChecker.ASSERTION_ID_QNAME, key))
+				throw new SAMLValidationException("Signature is incorrect");
+		} catch (DSigException e)
+		{
+			throw new SAMLValidationException("Signature verification failed", e);
+		}
+	}
+
 	
 	public X509Certificate[] getIssuerFromSignature()
 	{
@@ -153,6 +192,11 @@ public class AssertionParser implements Serializable
 	public AssertionType getXMLBean()
 	{
 		return assertionDoc.getAssertion();
+	}
+	
+	public Document getAsDOM() throws DSigException
+	{
+		return SAMLUtils.getDOM(assertionDoc);
 	}
 	
 	public int getProxyRestriction()

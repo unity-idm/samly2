@@ -4,20 +4,21 @@
  */
 package eu.unicore.samly2.validators;
 
+import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.List;
 
+import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
+import xmlbeans.org.oasis.saml2.assertion.AssertionType;
+import xmlbeans.org.oasis.saml2.assertion.NameIDType;
+import xmlbeans.org.oasis.saml2.protocol.ResponseDocument;
+import xmlbeans.org.oasis.saml2.protocol.ResponseType;
 import eu.unicore.samly2.SAMLBindings;
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.samly2.exceptions.SAMLValidationSoftException;
 import eu.unicore.samly2.trust.SamlTrustChecker;
-import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
-import xmlbeans.org.oasis.saml2.assertion.AssertionType;
-import xmlbeans.org.oasis.saml2.assertion.NameIDType;
-import xmlbeans.org.oasis.saml2.protocol.ResponseDocument;
-import xmlbeans.org.oasis.saml2.protocol.ResponseType;
 
 /**
  * Validates SAML Response, obtained after the SAML Authentication request. 
@@ -35,6 +36,7 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 	protected String consumerSamlName;
 	protected long samlValidityGraceTime;
 	protected SAMLBindings binding;
+	protected PrivateKey decryptionKey;
 	
 	protected List<AssertionDocument> authNAssertions;
 	protected List<AssertionDocument> attributeAssertions;
@@ -57,6 +59,16 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 		this.binding = binding;
 	}
 
+	public SSOAuthnResponseValidator(String consumerSamlName, String consumerEndpointUri, 
+			String requestId, long samlValidityGraceTime, SamlTrustChecker trustChecker, 
+			ReplayAttackChecker replayChecker, SAMLBindings binding, PrivateKey decryptionKey)
+	{
+		this(consumerSamlName, consumerEndpointUri, requestId, samlValidityGraceTime, 
+				trustChecker, replayChecker, binding);
+		this.decryptionKey = decryptionKey;
+	}
+
+	
 	public void validate(ResponseDocument authenticationResponseDoc) throws SAMLValidationException
 	{
 		authNAssertions = new ArrayList<AssertionDocument>();
@@ -73,15 +85,17 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 			if (issuer.getFormat() != null && !issuer.getFormat().equals(SAMLConstants.NFORMAT_ENTITY))
 				throw new SAMLValidationException("Issuer of SAML response must be of Entity type in SSO AuthN. It is: " + issuer.getFormat());
 		}
-
-		AssertionDocument[] assertions;
+		
+		List<AssertionDocument> assertions;
 		try
 		{
-			assertions = SAMLUtils.getAssertions(response);
+			assertions = SAMLUtils.extractAllAssertions(response, decryptionKey);
 		} catch (Exception e)
 		{
 			throw new SAMLValidationException("XML handling problem during retrieval of response assertions", e);
 		}
+		
+
 		SSOAuthnAssertionValidator authnAsValidator = new SSOAuthnAssertionValidator(consumerSamlName, consumerEndpointUri, 
 				requestId, samlValidityGraceTime, trustChecker, replayChecker, binding);
 		AssertionValidator asValidator = new AssertionValidator(consumerSamlName, consumerEndpointUri, 

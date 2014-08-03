@@ -11,8 +11,10 @@ package eu.unicore.samly2;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -29,15 +31,16 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import eu.unicore.security.dsig.DSigException;
-import eu.unicore.security.dsig.Utils;
-
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
+import xmlbeans.org.oasis.saml2.assertion.EncryptedAssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 import xmlbeans.org.oasis.saml2.protocol.ResponseType;
 import xmlbeans.org.w3.x2000.x09.xmldsig.KeyInfoType;
 import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
 import xmlbeans.org.w3.x2000.x09.xmldsig.X509DataType;
+import eu.unicore.samly2.assertion.AssertionParser;
+import eu.unicore.security.dsig.DSigException;
+import eu.unicore.security.dsig.Utils;
 
 /**
  * Auxiliary static SAML helpers.
@@ -142,7 +145,7 @@ public class SAMLUtils
 				{
 					AssertionDocument wrapper = AssertionDocument.Factory.parse(asNode);
 					//this weird... however without this step (slooow) the returned object is incorrectly 
-					//handled in the signature chacking code... 
+					//handled in the signature checking code... 
 					//though its XML text representation is fully correct even before this step.
 					//TODO a better (faster) approach should be used.
 					
@@ -154,6 +157,77 @@ public class SAMLUtils
 		return ret.toArray(new AssertionDocument[ret.size()]);
 	}
 	
+	/**
+	 * Extracts encrypted assertions from the wrapping SAML response in a safe way. 
+	 * It is guaranteed that no link is preserved in the returned objects to the parameter object.
+	 * @param response
+	 * @return
+	 * @throws XmlException
+	 * @throws IOException
+	 */
+	public static EncryptedAssertionDocument[] getEncryptedAssertions(ResponseType response) 
+		throws XmlException, IOException
+	{
+		
+ 		Element node = (Element)response.getDomNode();
+ 		NodeList allChildren = node.getChildNodes();
+		NodeList asNodes = node.getElementsByTagNameNS(
+			SAMLConstants.ASSERTION_NS, "EncryptedAssertion");
+		if (asNodes == null || asNodes.getLength() == 0)
+			return new EncryptedAssertionDocument[0];
+		List<EncryptedAssertionDocument> ret = new ArrayList<EncryptedAssertionDocument>(asNodes.getLength());
+		for (int i=0; i<asNodes.getLength(); i++)
+		{
+			Node asNode = asNodes.item(i);
+			for (int j=0; j<allChildren.getLength(); j++)
+			{
+				if (allChildren.item(j).equals(asNode))
+				{
+					EncryptedAssertionDocument parsed = EncryptedAssertionDocument.Factory.parse(asNode); 
+					ret.add(parsed);
+				}
+			}			
+		}
+		return ret.toArray(new EncryptedAssertionDocument[ret.size()]);
+	}
+	
+	/**
+	 * Extracts all assertions from the response, decrypting those encrypted.
+	 * @param response
+	 * @param encryptionKey
+	 * @return
+	 * @throws Exception 
+	 */
+	public static List<AssertionDocument> extractAllAssertions(ResponseType response, PrivateKey decryptionKey) 
+			throws Exception
+	{
+		
+		AssertionDocument[] assertions = SAMLUtils.getAssertions(response);
+		EncryptedAssertionDocument[] encAssertions = getEncryptedAssertions(response);
+		List<AssertionDocument> allAs = new ArrayList<AssertionDocument>(assertions.length + 
+				encAssertions.length);
+
+		Collections.addAll(allAs, assertions);
+		
+		if (decryptionKey != null)
+		{
+			Collections.addAll(allAs, assertions);
+			for (EncryptedAssertionDocument encAssertion: encAssertions)
+			{
+				AssertionParser parser = new AssertionParser(encAssertion, decryptionKey);
+				//first we need to remove fragment
+				AssertionDocument wrapper = parser.getXMLBeanDoc();
+				AssertionDocument wrapper2 = AssertionDocument.Factory.newInstance(); 
+				wrapper2.setAssertion(wrapper.getAssertion());
+				
+				//TODO same as above - extra rewrap needed for signatures
+				AssertionDocument wrapper3 = AssertionDocument.Factory.parse(wrapper2.xmlText());
+				
+				allAs.add(wrapper3);
+			}
+		}
+		return allAs;
+	}
 	
 	public static URI normalizeUri(String uri) throws URISyntaxException
 	{
