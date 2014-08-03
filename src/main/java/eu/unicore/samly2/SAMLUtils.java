@@ -214,14 +214,9 @@ public class SAMLUtils
 			for (EncryptedAssertionDocument encAssertion: encAssertions)
 			{
 				AssertionParser parser = new AssertionParser(encAssertion, decryptionKey);
-				//first we need to remove fragment
 				AssertionDocument wrapper = parser.getXMLBeanDoc();
-				AssertionDocument wrapper2 = AssertionDocument.Factory.newInstance(); 
-				wrapper2.setAssertion(wrapper.getAssertion());
-				
 				//TODO same as above - extra rewrap needed for signatures
-				AssertionDocument wrapper3 = AssertionDocument.Factory.parse(wrapper2.xmlText());
-				
+				AssertionDocument wrapper3 = AssertionDocument.Factory.parse(wrapper.xmlText());
 				allAs.add(wrapper3);
 			}
 		}

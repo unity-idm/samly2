@@ -74,9 +74,9 @@ public class AssertionParser implements Serializable
 	public AssertionParser(EncryptedAssertionDocument encryptedAssertion, PrivateKey decryptKey) throws Exception
 	{
 		EncryptionUtil encUtil = new EncryptionUtil();
-		Document toDec = SAMLUtils.getDOM(encryptedAssertion.getEncryptedAssertion());
+		Document toDec = SAMLUtils.getDOM(encryptedAssertion);
 		Document reverted = encUtil.decrypt(toDec, decryptKey);
-		assertionDoc = AssertionDocument.Factory.parse(reverted);
+		assertionDoc = AssertionDocument.Factory.parse(reverted.getDocumentElement().getFirstChild());
 	}
 	
 	/**
