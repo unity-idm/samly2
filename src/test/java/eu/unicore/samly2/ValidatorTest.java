@@ -1,12 +1,19 @@
 package eu.unicore.samly2;
 
+import junit.framework.Assert;
+import xmlbeans.org.oasis.saml2.assertion.SubjectType;
 import eu.unicore.samly2.SAMLConstants;
+import eu.unicore.samly2.assertion.Assertion;
 import eu.unicore.samly2.elements.NameID;
 import eu.unicore.samly2.elements.SAMLAttribute;
 import eu.unicore.samly2.elements.Subject;
 import eu.unicore.samly2.exceptions.SAMLServerException;
+import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.samly2.proto.AttributeQuery;
+import eu.unicore.samly2.trust.AcceptingSamlTrustChecker;
+import eu.unicore.samly2.trust.SamlTrustChecker;
 import eu.unicore.samly2.trust.StrictSamlTrustChecker;
+import eu.unicore.samly2.validators.AssertionValidator;
 import eu.unicore.samly2.validators.AttributeQueryValidator;
 import eu.unicore.samly2.validators.ReplayAttackChecker;
 import eu.unicore.security.dsig.DSigException;
@@ -41,5 +48,24 @@ public class ValidatorTest extends TestBase {
 		AttributeQueryValidator validator = new AttributeQueryValidator("https://somehost/foo/bar", 
 				checker, 10000, new ReplayAttackChecker());
 		validator.validate(query.getXMLBeanDoc());
+	}
+	
+	public void emptySubjectDisallowed() throws SAMLServerException {
+		Assertion a = new Assertion();
+		SubjectType subject = SubjectType.Factory.newInstance();
+		a.getXMLBean().setSubject(subject);
+		a.setIssuer(issuerDN1, SAMLConstants.NFORMAT_DN);
+		SamlTrustChecker checker = new AcceptingSamlTrustChecker();
+		AssertionValidator validator = new AssertionValidator("https://somehost/foo/bar", 
+				"", "", 1000L, checker);
+		try
+		{
+			validator.validate(a.getXMLBeanDoc());
+			fail("Validation should fail");
+		} catch (SAMLValidationException e)
+		{
+			Assert.assertTrue(e.getMessage().contains("subject"));
+			Assert.assertTrue(e.getMessage().contains("NameID"));
+		}
 	}
 }
