@@ -36,6 +36,9 @@ public abstract class AbstractSubjectQueryValidator extends AbstractRequestValid
 		if (subject == null || subject.isNil())
 			throw new SAMLRequesterException("Subject can't be empty");
 		
+		if (subject.getNameID() == null || subject.getNameID().isNil())
+			throw new SAMLRequesterException("Only subjects with nameID are supported.");
+		
 		if (request.getIssuer() == null || request.getIssuer().isNil() || 
 				request.getIssuer().getStringValue() == null)
 			throw new SAMLRequesterException("Issuer must be present");
