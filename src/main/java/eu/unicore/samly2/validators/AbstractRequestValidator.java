@@ -23,7 +23,6 @@ import xmlbeans.org.oasis.saml2.protocol.RequestAbstractType;
  * Validates SAML RequestAbstractType, which is the base of all SAML requests. 
  * The SAML 2.0 core specification rules are checked. This class
  * is SAML profile/binding independent.
- * Signature is checked always when present, but its presence is not enforced.
  * <p>
  * Besides of SAML spec rules this class implements also additional checks:
  * <ul>

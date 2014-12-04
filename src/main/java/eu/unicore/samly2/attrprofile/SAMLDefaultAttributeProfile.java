@@ -81,7 +81,7 @@ public class SAMLDefaultAttributeProfile implements SAMLAttributeProfile
 	}
 
 	@Override
-	public AttributeType map(ParsedAttribute attr) throws SAMLValidationException
+	public AttributeType map(ParsedAttribute attr)
 	{
 		AttributeType ret = AttributeType.Factory.newInstance();
 		ret.setName(attr.getName());

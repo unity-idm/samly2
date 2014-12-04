@@ -19,7 +19,6 @@ import xmlbeans.org.oasis.saml2.protocol.StatusType;
  * Validates SAML StatusResponse, checking only the SAML 2.0 core specification rules. This class
  * is SAML profile/binding independent. It is useful for basic response checking in all SAML protocols
  * as all responses extend the StatusResponseType.
- * Signature is checked always when present, but its presence is not enforced.
  * <p>
  * Note: this class allows to pass null consumerEndpointUri. If so, then the response destination
  * is not checked, what is against SAML specification. 

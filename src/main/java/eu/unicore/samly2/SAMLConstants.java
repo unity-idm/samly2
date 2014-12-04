@@ -114,7 +114,9 @@ public class SAMLConstants
 		STATUS2_REQUEST_UNSUPP(STAT_P + "RequestUnsupported"),
 		STATUS2_INVALID_NAMEID_POLICY(STAT_P + "InvalidNameIDPolicy"),
 		STATUS2_VER_TOO_HIGH(STAT_P + "RequestVersionTooHigh"),
-		STATUS2_VER_TOO_LOW(STAT_P + "RequestVersionTooLow");
+		STATUS2_VER_TOO_LOW(STAT_P + "RequestVersionTooLow"),
+		STATUS2_PARTIAL_LOGOUT(STAT_P + "PartialLogout"),
+		STATUS2_NO_AUTHN_CONTEXT(STAT_P + "NoAuthnContext");
 		
 		private String name;
 		
