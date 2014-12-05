@@ -6,14 +6,13 @@ package eu.unicore.samly2.validators;
 
 import org.apache.xmlbeans.XmlObject;
 
-import eu.unicore.samly2.SAMLConstants;
-import eu.unicore.samly2.exceptions.SAMLServerException;
-import eu.unicore.samly2.exceptions.SAMLValidationException;
-import eu.unicore.samly2.trust.SamlTrustChecker;
-
 import xmlbeans.org.oasis.saml2.protocol.StatusCodeType;
 import xmlbeans.org.oasis.saml2.protocol.StatusResponseType;
 import xmlbeans.org.oasis.saml2.protocol.StatusType;
+import eu.unicore.samly2.SAMLConstants;
+import eu.unicore.samly2.exceptions.SAMLErrorResponseException;
+import eu.unicore.samly2.exceptions.SAMLValidationException;
+import eu.unicore.samly2.trust.SamlTrustChecker;
 
 /**
  * Validates SAML StatusResponse, checking only the SAML 2.0 core specification rules. This class
@@ -101,10 +100,11 @@ public class StatusResponseValidator
 		if (status.getStatusMessage() != null)
 			msg.append(" Message: " + status.getStatusMessage());
 		if (subCode != null && subCode.getValue() != null)
-			throw new SAMLServerException(SAMLConstants.Status.fromString(statusValue), 
+			throw new SAMLErrorResponseException(SAMLConstants.Status.fromString(statusValue), 
 				SAMLConstants.SubStatus.fromString(subCode.getValue()), msg.toString());
 		else
-			throw new SAMLServerException(SAMLConstants.Status.fromString(statusValue), msg.toString());
+			throw new SAMLErrorResponseException(SAMLConstants.Status.fromString(statusValue), 
+					msg.toString());
 	}	
 	
 }
