@@ -12,7 +12,6 @@ import java.io.Serializable;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 
@@ -210,14 +209,18 @@ public class AssertionParser implements Serializable
 	public Date getNotBefore()
 	{
 		ConditionsType conditions = assertionDoc.getAssertion().getConditions();
-		Calendar c = conditions.getNotBefore();
-		return c == null ? null : c.getTime();
+		if (conditions != null && conditions.getNotBefore() != null) {
+			return conditions.getNotBefore().getTime();
+		}
+		return null;
 	}
 
 	public Date getNotOnOrAfter()
 	{
 		ConditionsType conditions = assertionDoc.getAssertion().getConditions();
-		Calendar c = conditions.getNotOnOrAfter();
-		return c == null ? null : c.getTime();
+		if (conditions != null && conditions.getNotOnOrAfter() != null) {
+			return conditions.getNotOnOrAfter().getTime();
+		}
+		return null;
 	}
 }
