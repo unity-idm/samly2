@@ -183,7 +183,7 @@ public class ProtoTest extends TestBase {
 				c[0].getPublicKey());
 		SSOAuthnResponseValidator validator = new SSOAuthnResponseValidator(null, null, 
 				"SAMLY2lib_msg_19155ef4173009c5b5d93ec3c07edcdc39d281b15cef0e28", 
-				36000000000L, trustChecker, new ReplayAttackChecker(), SAMLBindings.HTTP_POST);
+				360000000000L, trustChecker, new ReplayAttackChecker(), SAMLBindings.HTTP_POST);
 		
 		validator.validate(authenticationResponseDoc);
 		
