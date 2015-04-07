@@ -14,14 +14,14 @@ import org.apache.xmlbeans.XmlAnySimpleType;
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlString;
 
-import eu.unicore.samly2.exceptions.SAMLValidationException;
-
 import xmlbeans.org.oasis.saml2.assertion.AttributeType;
+import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 
 /**
  * Default handler for simple attributes, intended to cover attributes
  * not handled by more specific profiles. Currently supports any attribute
- * with simple XSD type values or without values.
+ * with simple XSD type values or without values as well as the NameID attribute values used
+ * in MACEDir profile.
  * 
  * @author K. Benedyczak
  */
@@ -36,6 +36,9 @@ public class SAMLDefaultAttributeProfile implements SAMLAttributeProfile
 			return DEFAULT_SUPPORT;
 		
 		if (xmlVals[0] instanceof XmlAnySimpleType)
+			return DEFAULT_SUPPORT;
+		
+		if (xmlVals[0] instanceof NameIDType)
 			return DEFAULT_SUPPORT;
 		
 		return -1;
@@ -74,6 +77,9 @@ public class SAMLDefaultAttributeProfile implements SAMLAttributeProfile
 		if (value instanceof XmlAnySimpleType)
 		{
 			return ((XmlAnySimpleType)value).getStringValue();
+		} else 		if (value instanceof XmlAnySimpleType)
+		{
+			return ((NameIDType)value).getStringValue();
 		} else
 			throw new IllegalArgumentException("Unknown type of attribute " +
 					"value received for DefaultSAMLProfile, " +

@@ -11,14 +11,16 @@ package eu.unicore.samly2.assertion;
 import java.util.ArrayList;
 import java.util.List;
 
-import eu.unicore.samly2.attrprofile.ParsedAttribute;
-import eu.unicore.samly2.attrprofile.ProfilesManager;
-import eu.unicore.samly2.attrprofile.SAMLAttributeProfile;
-import eu.unicore.samly2.exceptions.SAMLValidationException;
+import org.apache.log4j.Logger;
+
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.AssertionType;
 import xmlbeans.org.oasis.saml2.assertion.AttributeStatementType;
 import xmlbeans.org.oasis.saml2.assertion.AttributeType;
+import eu.unicore.samly2.attrprofile.ParsedAttribute;
+import eu.unicore.samly2.attrprofile.ProfilesManager;
+import eu.unicore.samly2.attrprofile.SAMLAttributeProfile;
+import eu.unicore.samly2.exceptions.SAMLValidationException;
 
 
 /**
@@ -28,6 +30,7 @@ import xmlbeans.org.oasis.saml2.assertion.AttributeType;
  */
 public class AttributeAssertionParser extends AssertionParser
 {
+	private static final Logger log = Logger.getLogger(AttributeAssertionParser.class);
 	private static final long serialVersionUID=1L;
 	private ProfilesManager profilesManager = new ProfilesManager();
 	
@@ -109,7 +112,11 @@ public class AttributeAssertionParser extends AssertionParser
 		for (AttributeType xmlAttr: xmlAttrs)
 		{
 			SAMLAttributeProfile profile = profilesManager.getBestProfile(xmlAttr);
-			target.add(profile.map(xmlAttr));
+			if (profile != null)
+				target.add(profile.map(xmlAttr));
+			else
+				log.info("The SAML attribute " + xmlAttr.getName() + 
+						" will be ignored as there is no registered hadler for it.");
 		}
 	}
 }
