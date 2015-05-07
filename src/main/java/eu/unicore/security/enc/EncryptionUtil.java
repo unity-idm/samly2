@@ -12,6 +12,7 @@ import java.security.cert.X509Certificate;
 
 import javax.crypto.KeyGenerator;
 
+import org.apache.log4j.Logger;
 import org.apache.xml.security.encryption.EncryptedData;
 import org.apache.xml.security.encryption.EncryptedKey;
 import org.apache.xml.security.encryption.XMLCipher;
@@ -21,12 +22,17 @@ import org.apache.xml.security.utils.EncryptionConstants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import eu.unicore.security.dsig.DigSignatureUtil;
+
 /**
  * Support code for encrypting XML
  * @author K. Benedyczak
  */
 public class EncryptionUtil
 {
+	private static final Logger log = Logger.getLogger("unicore.security.enc." + 
+			EncryptionUtil.class.getSimpleName());
+
 	static
 	{
 		org.apache.xml.security.Init.init();	
@@ -43,7 +49,12 @@ public class EncryptionUtil
 		xmlCipher.init(XMLCipher.DECRYPT_MODE, null);
 		xmlCipher.setKEK(key);
 		
-		return xmlCipher.doFinal(xml, encryptedDataElement);
+		Document ret = xmlCipher.doFinal(xml, encryptedDataElement);
+		
+		if (log.isTraceEnabled())
+			log.trace("Decrypted document:\n" + DigSignatureUtil.dumpDOMToString(ret));
+		
+		return ret;
 	}
 
 	public Document encrypt(Document xml, X509Certificate encCertificate, int keySize) throws Exception
