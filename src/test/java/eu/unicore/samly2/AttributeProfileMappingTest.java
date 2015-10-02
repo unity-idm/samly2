@@ -4,15 +4,20 @@
  */
 package eu.unicore.samly2;
 
+import java.io.File;
+
+import junit.framework.TestCase;
+
 import org.apache.xmlbeans.XmlException;
 
 import xmlbeans.org.oasis.saml2.assertion.AttributeType;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
+import xmlbeans.org.oasis.saml2.protocol.ResponseDocument;
+import eu.unicore.samly2.assertion.AttributeAssertionParser;
 import eu.unicore.samly2.attrprofile.ParsedAttribute;
 import eu.unicore.samly2.attrprofile.ProfilesManager;
 import eu.unicore.samly2.attrprofile.SAMLAttributeProfile;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
-import junit.framework.TestCase;
 
 public class AttributeProfileMappingTest extends TestCase
 {
@@ -29,11 +34,22 @@ public class AttributeProfileMappingTest extends TestCase
 		NameIDType nameID = NameIDType.Factory.parse(NAMEID_ATTR);
 		at.addNewAttributeValue().set(nameID);
 		
+		System.out.println(at.xmlText());
+		
 		SAMLAttributeProfile prof = profilesManager.getBestProfile(at);
 		assertNotNull(prof);
 		assertTrue(prof.isSupported(at) >= 0);
 		ParsedAttribute mapped = prof.map(at);
 		assertEquals(1, mapped.getStringValues().size());
 		assertEquals("123asd", mapped.getStringValues().get(0));
+	}
+	
+	public void testPionierAssertion() throws Exception
+	{
+		ResponseDocument doc = ResponseDocument.Factory.parse(new File("src/test/resources/pionier id asercja.xml"));
+		
+		AttributeAssertionParser parser = new AttributeAssertionParser(doc.getResponse().getAssertionArray(0));
+		
+		System.out.println(parser.getAttributes());
 	}
 }

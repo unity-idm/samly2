@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.xmlbeans.XmlAnySimpleType;
+import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlString;
 
@@ -41,6 +42,13 @@ public class SAMLDefaultAttributeProfile implements SAMLAttributeProfile
 		if (xmlVals[0] instanceof NameIDType)
 			return DEFAULT_SUPPORT;
 		
+		try
+		{
+			NameIDType.Factory.parse(xmlVals[0].xmlText());
+			return DEFAULT_SUPPORT;
+		} catch (XmlException e)
+		{
+		}
 		return -1;
 	}
 	
@@ -77,13 +85,21 @@ public class SAMLDefaultAttributeProfile implements SAMLAttributeProfile
 		if (value instanceof XmlAnySimpleType)
 		{
 			return ((XmlAnySimpleType)value).getStringValue();
-		} else 		if (value instanceof XmlAnySimpleType)
+		} else 	if (value instanceof NameIDType)
 		{
 			return ((NameIDType)value).getStringValue();
 		} else
-			throw new IllegalArgumentException("Unknown type of attribute " +
+		{
+			try
+			{
+				return NameIDType.Factory.parse(value.xmlText()).getStringValue();
+			} catch (XmlException e)
+			{
+				throw new IllegalArgumentException("Unknown type of attribute " +
 					"value received for DefaultSAMLProfile, " +
 					"likely its a BUG, value " + value.xmlText());
+			}
+		}
 	}
 
 	@Override
