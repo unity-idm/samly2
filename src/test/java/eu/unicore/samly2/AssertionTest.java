@@ -10,12 +10,16 @@ import xmlbeans.org.oasis.saml2.assertion.AudienceRestrictionType;
 import xmlbeans.org.oasis.saml2.assertion.AuthnContextType;
 import xmlbeans.org.oasis.saml2.assertion.AuthnStatementType;
 import eu.emi.security.authn.x509.impl.X500NameUtils;
-import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.assertion.Assertion;
 import eu.unicore.samly2.assertion.AssertionParser;
+import eu.unicore.samly2.elements.NameID;
 import eu.unicore.samly2.elements.SAMLAttribute;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
+import eu.unicore.samly2.proto.AssertionResponse;
+import eu.unicore.samly2.trust.ResponseTrustCheckResult;
+import eu.unicore.samly2.trust.SimpleTrustChecker;
 import eu.unicore.samly2.trust.StrictSamlTrustChecker;
+import eu.unicore.samly2.trust.DsigSamlTrustCheckerBase.CheckingMode;
 import eu.unicore.security.dsig.TestBase;
 
 /**
@@ -25,12 +29,77 @@ import eu.unicore.security.dsig.TestBase;
 public class AssertionTest extends TestBase {
 	private String subject1 = "C=PL,ST=Kujawsko-Pomorskie,L=Torun,O=UW,OU=ICM,CN=Krzysztof Benedyczak,1.2.840.113549.1.9.1=#1610676f6c6269406d61742e756d6b2e706c";
 
+	public void testAssertionResp() throws SAMLValidationException {
+		NameID issuer = new NameID(issuerDN1, SAMLConstants.NFORMAT_DN);
+
+		AssertionResponse resp = new AssertionResponse(issuer.getXBean(), "1234");
+		Assertion as = new Assertion();
+		as.addAttribute(new SAMLAttribute("a", "b"));
+		resp.addAssertion(as);
+
+		try {
+
+			resp.sign(privKey1, issuerCert1);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Cannot sign NameIDMappingResponse");
+		}
+
+		//in the default mode should require signed assertion always
+		StrictSamlTrustChecker checker = new StrictSamlTrustChecker();
+		checker.addTrustedIssuer(issuerDN1, SAMLConstants.NFORMAT_DN, issuerCert1[0].getPublicKey());
+
+		ResponseTrustCheckResult checkTrust = checker.checkTrust(resp.getXMLBeanDoc(), resp.getXMLBean());
+		assertTrue(checkTrust.isTrustEstablished());
+		try
+		{
+	
+			checker.checkTrust(as.getXMLBeanDoc(), checkTrust);
+			fail("Should fail on unsigned assertion");
+		} catch (SAMLValidationException e)
+		{
+			//OK
+		}
+		
+		//in lax mode signed response should be enough
+		StrictSamlTrustChecker checker2 = new StrictSamlTrustChecker(CheckingMode.REQUIRE_SIGNED_RESPONSE_OR_ASSERTION);
+		checker2.addTrustedIssuer(issuerDN1, SAMLConstants.NFORMAT_DN, issuerCert1[0].getPublicKey());
+		ResponseTrustCheckResult checkTrust2 = checker2.checkTrust(resp.getXMLBeanDoc(), resp.getXMLBean());
+		assertTrue(checkTrust2.isTrustEstablished());
+		checker2.checkTrust(as.getXMLBeanDoc(), checkTrust2);
+	}
+
+	public void testOptionalSignature() throws SAMLValidationException {
+		NameID issuer = new NameID(issuerDN1, SAMLConstants.NFORMAT_DN);
+
+		AssertionResponse resp = new AssertionResponse(issuer.getXBean(), "1234");
+		Assertion as = new Assertion();
+		as.addAttribute(new SAMLAttribute("a", "b"));
+		resp.addAssertion(as);
+
+		SimpleTrustChecker checker = new SimpleTrustChecker(issuerCert1[0], true);
+		ResponseTrustCheckResult checkTrust = checker.checkTrust(resp.getXMLBeanDoc(), resp.getXMLBean());
+		assertFalse(checkTrust.isTrustEstablished());
+		checker.checkTrust(as.getXMLBeanDoc(), checkTrust);
+		
+		SimpleTrustChecker checker2 = new SimpleTrustChecker(issuerCert1[0], false);
+		ResponseTrustCheckResult checkTrust2 = checker2.checkTrust(resp.getXMLBeanDoc(), resp.getXMLBean());
+		assertFalse(checkTrust2.isTrustEstablished());
+		try
+		{
+			checker2.checkTrust(as.getXMLBeanDoc(), checkTrust2);
+			fail("Should fail on unsigned assertion");
+		} catch (SAMLValidationException e)
+		{
+			//OK
+		}
+	}
 	
 	public void testAssertionParser()
 	{
 		AssertionParser assertion;
 		try {
-			AssertionDocument adoc = create();
+			AssertionDocument adoc = create(true);
 			assertion = new AssertionParser(adoc);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -81,7 +150,7 @@ public class AssertionTest extends TestBase {
 		}
 	}
 	
-	private AssertionDocument create() throws Exception
+	private AssertionDocument create(boolean sign) throws Exception
 	{
 		Assertion assertion = new Assertion();
 		assertion.setIssuer("foo", SAMLConstants.NFORMAT_ENTITY);
@@ -102,7 +171,8 @@ public class AssertionTest extends TestBase {
 				"<Conditions xmlns=\"urn:oasis:names:tc:SAML:2.0:assertion\">empty</Conditions>");
 		assertion.addCustomCondition(cXml);
 		
-		assertion.sign(privKey1, issuerCert1);
+		if (sign)
+			assertion.sign(privKey1, issuerCert1);
 		
 		return assertion.getXMLBeanDoc();
 	}

@@ -61,13 +61,13 @@ public class EnumeratedTrustChecker implements SamlTrustChecker
 	}
 	
 	@Override
-	public void checkTrust(AssertionDocument assertionDoc) throws SAMLValidationException
+	public void checkTrust(AssertionDocument assertionDoc, ResponseTrustCheckResult rt) throws SAMLValidationException
 	{
 		throw new IllegalStateException("This trust checker should not be used for assertions validation");
 	}
 
 	@Override
-	public void checkTrust(XmlObject responseDoc, StatusResponseType response)
+	public ResponseTrustCheckResult checkTrust(XmlObject responseDoc, StatusResponseType response)
 			throws SAMLValidationException
 	{
 		throw new IllegalStateException("This trust checker should not be used for responses validation");
@@ -114,8 +114,8 @@ public class EnumeratedTrustChecker implements SamlTrustChecker
 	}
 
 	@Override
-	public boolean isSignatureRequired()
+	public void checkTrust(AssertionDocument assertionDoc) throws SAMLValidationException
 	{
-		return false;
+		checkTrust(assertionDoc, new ResponseTrustCheckResult(false));
 	}
 }

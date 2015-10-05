@@ -12,6 +12,7 @@ import xmlbeans.org.oasis.saml2.protocol.StatusType;
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.exceptions.SAMLErrorResponseException;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
+import eu.unicore.samly2.trust.ResponseTrustCheckResult;
 import eu.unicore.samly2.trust.SamlTrustChecker;
 
 /**
@@ -40,7 +41,8 @@ public class StatusResponseValidator
 		this.trustChecker = trustChecker;
 	}
 	
-	public void validate(XmlObject wrappingDcoument, StatusResponseType responseXml) throws SAMLValidationException
+	public ResponseTrustCheckResult validate(XmlObject wrappingDcoument, StatusResponseType responseXml) 
+			throws SAMLValidationException
 	{
 		checkMandatoryElements(responseXml);
 		
@@ -57,7 +59,7 @@ public class StatusResponseValidator
 
 		checkStatus(responseXml);
 		
-		trustChecker.checkTrust(wrappingDcoument, responseXml);
+		return trustChecker.checkTrust(wrappingDcoument, responseXml);
 	}
 	
 	protected void checkMandatoryElements(StatusResponseType responseXml) throws SAMLValidationException

@@ -34,45 +34,72 @@ import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
  */
 public abstract class DsigSamlTrustCheckerBase implements SamlTrustChecker
 {
-	private boolean requireForResponse;
+	public enum CheckingMode {REQUIRE_SIGNED_RESPONSE_OR_ASSERTION, REQUIRE_SIGNED_ASSERTION} 
+
+	private CheckingMode mode;
 	
-	public DsigSamlTrustCheckerBase(boolean requireForResponse)
+	public DsigSamlTrustCheckerBase(CheckingMode mode)
 	{
-		this.requireForResponse = requireForResponse;
+		this.mode = mode;
 	}
 
 	@Override
-	public boolean isSignatureRequired()
+	public void checkTrust(AssertionDocument assertionDoc, ResponseTrustCheckResult responseCheckResult) 
+			throws SAMLValidationException
 	{
-		return true;
+		AssertionType assertion = assertionDoc.getAssertion();
+		
+		if (mode == CheckingMode.REQUIRE_SIGNED_ASSERTION)
+			checkRequiredSignature(assertionDoc, assertion.getIssuer(), assertion.getSignature(), 
+					ASSERTION_ID_QNAME);
+		else
+			checkOptionalSignature(assertionDoc, assertion.getIssuer(), assertion.getSignature(), 
+					ASSERTION_ID_QNAME);
 	}
-	
+
 	@Override
 	public void checkTrust(AssertionDocument assertionDoc) throws SAMLValidationException
 	{
-		AssertionType assertion = assertionDoc.getAssertion();
-		checkCommon(assertionDoc, assertion.getIssuer(), assertion.getSignature(), ASSERTION_ID_QNAME);
+		checkTrust(assertionDoc, new ResponseTrustCheckResult(false));
 	}
-
+	
 	@Override
-	public void checkTrust(XmlObject responseDoc, StatusResponseType response) throws SAMLValidationException
+	public ResponseTrustCheckResult checkTrust(XmlObject responseDoc, StatusResponseType response) 
+			throws SAMLValidationException
 	{
-		if (!requireForResponse)
-			return;
-		checkCommon(responseDoc, response.getIssuer(), response.getSignature(), PROTOCOL_ID_QNAME);
+		SignatureType signature = response.getSignature();
+		if (signature == null || signature.isNil())
+			return new ResponseTrustCheckResult(false);
+		
+		checkSignature(responseDoc, response.getIssuer(), signature, PROTOCOL_ID_QNAME);
+		return new ResponseTrustCheckResult(true);
 	}
 
 	@Override
 	public void checkTrust(XmlObject requestDoc, RequestAbstractType request) throws SAMLValidationException
 	{
-		checkCommon(requestDoc, request.getIssuer(), request.getSignature(), PROTOCOL_ID_QNAME);
+		checkRequiredSignature(requestDoc, request.getIssuer(), request.getSignature(), PROTOCOL_ID_QNAME);
 	}
-	
-	protected void checkCommon(XmlObject xmlbeansDoc, NameIDType issuer, 
+
+	protected void checkRequiredSignature(XmlObject xmlbeansDoc, NameIDType issuer, 
 			SignatureType signature, IdAttribute idAttribute) throws SAMLValidationException
 	{
 		if (signature == null || signature.isNil())
 			throw new SAMLValidationException("SAML document is not signed and the policy requires a signature");
+		checkSignature(xmlbeansDoc, issuer, signature, idAttribute);
+	}
+
+	protected void checkOptionalSignature(XmlObject xmlbeansDoc, NameIDType issuer, 
+			SignatureType signature, IdAttribute idAttribute) throws SAMLValidationException
+	{
+		if (signature == null || signature.isNil())
+			return;
+		checkSignature(xmlbeansDoc, issuer, signature, idAttribute);
+	}
+	
+	protected void checkSignature(XmlObject xmlbeansDoc, NameIDType issuer, 
+			SignatureType signature, IdAttribute idAttribute) throws SAMLValidationException
+	{
 		PublicKey publicKey = establishKey(issuer, signature);
 		
 		Document doc = (Document) xmlbeansDoc.getDomNode();

@@ -10,6 +10,7 @@ import eu.unicore.samly2.SAMLBindings;
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.samly2.exceptions.SAMLValidationSoftException;
+import eu.unicore.samly2.trust.ResponseTrustCheckResult;
 import eu.unicore.samly2.trust.SamlTrustChecker;
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.AssertionType;
@@ -31,6 +32,14 @@ public class SSOAuthnAssertionValidator extends AssertionValidator
 	protected ReplayAttackChecker replayChecker;
 	protected SAMLBindings binding;
 	protected boolean laxInResponseToChecking = false;
+
+	public SSOAuthnAssertionValidator(String consumerSamlName, String consumerEndpointUri,
+			String requestId, long samlValidityGraceTime, SamlTrustChecker trustChecker,
+			ReplayAttackChecker replayChecker, SAMLBindings binding)
+	{
+		this(consumerSamlName, consumerEndpointUri, requestId, samlValidityGraceTime, trustChecker, 
+				replayChecker, binding, new ResponseTrustCheckResult(false));
+	}
 	
 	/**
 	 * @param consumerSamlName
@@ -41,9 +50,11 @@ public class SSOAuthnAssertionValidator extends AssertionValidator
 	 */
 	public SSOAuthnAssertionValidator(String consumerSamlName, String consumerEndpointUri,
 			String requestId, long samlValidityGraceTime, SamlTrustChecker trustChecker,
-			ReplayAttackChecker replayChecker, SAMLBindings binding)
+			ReplayAttackChecker replayChecker, SAMLBindings binding, 
+			ResponseTrustCheckResult responseTrustCheckResult)
 	{
-		super(consumerSamlName, consumerEndpointUri, requestId, samlValidityGraceTime, trustChecker);
+		super(consumerSamlName, consumerEndpointUri, requestId, samlValidityGraceTime, trustChecker,
+				responseTrustCheckResult);
 		this.replayChecker = replayChecker;
 		this.binding = binding;
 	}

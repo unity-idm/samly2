@@ -18,6 +18,7 @@ import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.samly2.exceptions.SAMLValidationSoftException;
+import eu.unicore.samly2.trust.ResponseTrustCheckResult;
 import eu.unicore.samly2.trust.SamlTrustChecker;
 
 /**
@@ -77,7 +78,7 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 		reasons = new ErrorReasons();
 		
 		ResponseType response = authenticationResponseDoc.getResponse();
-		super.validate(authenticationResponseDoc, response);
+		ResponseTrustCheckResult responseTrust = super.validate(authenticationResponseDoc, response);
 		
 		NameIDType issuer = response.getIssuer();
 		if (issuer != null)
@@ -96,10 +97,11 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 		}
 		
 
-		SSOAuthnAssertionValidator authnAsValidator = new SSOAuthnAssertionValidator(consumerSamlName, consumerEndpointUri, 
-				requestId, samlValidityGraceTime, trustChecker, replayChecker, binding);
+		SSOAuthnAssertionValidator authnAsValidator = new SSOAuthnAssertionValidator(consumerSamlName, 
+				consumerEndpointUri, requestId, samlValidityGraceTime, trustChecker, replayChecker, 
+				binding, responseTrust);
 		AssertionValidator asValidator = new AssertionValidator(consumerSamlName, consumerEndpointUri, 
-				null, samlValidityGraceTime, trustChecker);
+				null, samlValidityGraceTime, trustChecker, responseTrust);
 		for (AssertionDocument assertionDoc: assertions)
 		{
 			AssertionType assertion = assertionDoc.getAssertion();

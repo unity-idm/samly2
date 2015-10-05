@@ -21,6 +21,7 @@ import xmlbeans.org.oasis.saml2.assertion.SubjectType;
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
+import eu.unicore.samly2.trust.ResponseTrustCheckResult;
 import eu.unicore.samly2.trust.SamlTrustChecker;
 
 /**
@@ -61,10 +62,20 @@ public class AssertionValidator
 	protected String requestId;
 	protected long samlValidityGraceTime;
 	protected SamlTrustChecker trustChecker;
-	
+	private ResponseTrustCheckResult responseCheckResult;
+
 	public AssertionValidator(String consumerSamlName, String consumerEndpointUri, String requestId, 
 			long samlValidityGraceTime, SamlTrustChecker trustChecker)
 	{
+		this(consumerSamlName, consumerEndpointUri, requestId, samlValidityGraceTime, trustChecker, 
+				new ResponseTrustCheckResult(false));
+	}
+	
+	public AssertionValidator(String consumerSamlName, String consumerEndpointUri, String requestId, 
+			long samlValidityGraceTime, SamlTrustChecker trustChecker, 
+			ResponseTrustCheckResult responseCheckResult)
+	{
+		this.responseCheckResult = responseCheckResult;
 		this.consumerSamlNames = new HashSet<String>();
 		if (consumerSamlName != null)
 			this.consumerSamlNames.add(consumerSamlName);
@@ -83,7 +94,7 @@ public class AssertionValidator
 	{
 		AssertionType assertionXml = assertionDoc.getAssertion(); 
 		checkMandatoryElements(assertionXml);
-		trustChecker.checkTrust(assertionDoc);
+		trustChecker.checkTrust(assertionDoc, responseCheckResult);
 		checkConditions(assertionXml);
 		checkSubject(assertionXml);
 	}

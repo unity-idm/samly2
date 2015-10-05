@@ -6,20 +6,14 @@ package eu.unicore.samly2.trust;
 
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
-import java.util.List;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
+import xmlbeans.org.oasis.saml2.assertion.NameIDType;
+import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
 import eu.emi.security.authn.x509.ValidationResult;
 import eu.emi.security.authn.x509.X509CertChainValidator;
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
-import eu.unicore.security.dsig.IdAttribute;
-
-import xmlbeans.org.oasis.saml2.assertion.NameIDType;
-import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
 
 /**
  * Configures and performs checking whether consumer trusts the issuer of 
@@ -36,14 +30,14 @@ import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
  * result is desired use {@link TruststoreBasedSamlTrustChecker}.
  * @author K. Benedyczak
  */
-public class PKISamlTrustChecker extends DsigSamlTrustCheckerBase
+public class PKISamlTrustChecker extends OptionalDSigTrustChecker
 {
 	protected X509CertChainValidator validator;
 	protected boolean allowUnsigned;
 
 	public PKISamlTrustChecker(X509CertChainValidator validator, boolean allowUnsigned)
 	{
-		super(false);
+		super(CheckingMode.REQUIRE_SIGNED_ASSERTION, allowUnsigned);
 		this.validator = validator;
 		this.allowUnsigned = allowUnsigned;
 	}
@@ -69,21 +63,5 @@ public class PKISamlTrustChecker extends DsigSamlTrustCheckerBase
 				" Cause: " + result.toShortString());
 		
 		return issuerCC[0].getPublicKey();
-	}
-	
-	@Override
-	public boolean isSignatureRequired()
-	{
-		return !allowUnsigned;
-	}
-	
-	@Override
-	protected void isCorrectlySigned(Document doc, PublicKey key, SignatureType signature, 
-			List<Element> shallBeSigned, 
-			IdAttribute idAttribute) throws SAMLValidationException
-	{
-		if (allowUnsigned && (signature == null || signature.isNil()))
-			return;
-		super.isCorrectlySigned(doc, key, signature, shallBeSigned, idAttribute);
 	}
 }

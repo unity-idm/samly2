@@ -12,6 +12,7 @@ import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLRequesterException;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
+import eu.unicore.samly2.trust.ResponseTrustCheckResult;
 import eu.unicore.samly2.trust.SamlTrustChecker;
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.AssertionType;
@@ -64,7 +65,7 @@ public class AttributeAssertionResponseValidator extends StatusResponseValidator
 		attributeAssertions = new ArrayList<AssertionDocument>();
 		
 		ResponseType response = attributeResponseDoc.getResponse();
-		super.validate(attributeResponseDoc, response);
+		ResponseTrustCheckResult responseTrust = super.validate(attributeResponseDoc, response);
 		
 		NameIDType issuer = response.getIssuer();
 		if (issuer == null || issuer.isNil() || issuer.getStringValue() == null)
@@ -83,7 +84,7 @@ public class AttributeAssertionResponseValidator extends StatusResponseValidator
 		if (assertions == null)
 			throw new SAMLValidationException("SAML response doesn't contain any assertion");
 		AssertionValidator asValidator = new AssertionValidator(consumerSamlName, consumerEndpointUri, 
-				requestId, samlValidityGraceTime, trustChecker);
+				requestId, samlValidityGraceTime, trustChecker, responseTrust);
 		
 		for (AssertionDocument assertionDoc: assertions)
 		{

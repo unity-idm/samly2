@@ -20,14 +20,23 @@ import xmlbeans.org.oasis.saml2.protocol.StatusResponseType;
  */
 public interface SamlTrustChecker
 {
-	public static final IdAttribute PROTOCOL_ID_QNAME = new IdAttribute(null, "ID");
-	public static final IdAttribute ASSERTION_ID_QNAME = new IdAttribute(null, "ID");
+	static final IdAttribute PROTOCOL_ID_QNAME = new IdAttribute(null, "ID");
+	static final IdAttribute ASSERTION_ID_QNAME = new IdAttribute(null, "ID");
 
-	public void checkTrust(AssertionDocument assertionDoc) throws SAMLValidationException;
+	void checkTrust(AssertionDocument assertionDoc) throws SAMLValidationException;
 
-	public void checkTrust(XmlObject responseDoc, StatusResponseType response) throws SAMLValidationException;
+	/**
+	 * This method should be used to verify if the assertion is trusted, whenever the assertion is processed 
+	 * in the context of a response message which contain it.
+	 * @param assertionDoc
+	 * @param responseCheckResult
+	 * @throws SAMLValidationException
+	 */
+	void checkTrust(AssertionDocument assertionDoc, ResponseTrustCheckResult responseCheckResult) 
+			throws SAMLValidationException;
 
-	public void checkTrust(XmlObject requestDoc, RequestAbstractType request) throws SAMLValidationException;
-	
-	public boolean isSignatureRequired();
+	ResponseTrustCheckResult checkTrust(XmlObject responseDoc, StatusResponseType response) 
+			throws SAMLValidationException;
+
+	void checkTrust(XmlObject requestDoc, RequestAbstractType request) throws SAMLValidationException;
 }

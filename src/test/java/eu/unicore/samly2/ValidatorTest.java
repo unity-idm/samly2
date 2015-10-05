@@ -2,7 +2,6 @@ package eu.unicore.samly2;
 
 import junit.framework.Assert;
 import xmlbeans.org.oasis.saml2.assertion.SubjectType;
-import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.assertion.Assertion;
 import eu.unicore.samly2.elements.NameID;
 import eu.unicore.samly2.elements.SAMLAttribute;
@@ -57,7 +56,7 @@ public class ValidatorTest extends TestBase {
 		a.setIssuer(issuerDN1, SAMLConstants.NFORMAT_DN);
 		SamlTrustChecker checker = new AcceptingSamlTrustChecker();
 		AssertionValidator validator = new AssertionValidator("https://somehost/foo/bar", 
-				"", "", 1000L, checker);
+				"", "", 1000L, checker, null);
 		try
 		{
 			validator.validate(a.getXMLBeanDoc());

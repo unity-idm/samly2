@@ -7,7 +7,6 @@ package eu.unicore.samly2.trust;
 import org.apache.xmlbeans.XmlObject;
 
 import eu.unicore.samly2.exceptions.SAMLValidationException;
-
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.protocol.RequestAbstractType;
 import xmlbeans.org.oasis.saml2.protocol.StatusResponseType;
@@ -24,23 +23,27 @@ import xmlbeans.org.oasis.saml2.protocol.StatusResponseType;
 public class AcceptingSamlTrustChecker implements SamlTrustChecker
 {
 	@Override
-	public void checkTrust(AssertionDocument assertionDoc) throws SAMLValidationException
-	{
-	}
-
-	@Override
-	public void checkTrust(XmlObject responseDoc, StatusResponseType response) throws SAMLValidationException
-	{
-	}
-
-	@Override
 	public void checkTrust(XmlObject requestDoc, RequestAbstractType request) throws SAMLValidationException
 	{
 	}
 
 	@Override
-	public boolean isSignatureRequired()
+	public void checkTrust(AssertionDocument assertionDoc,
+			ResponseTrustCheckResult responseCheckResult)
+			throws SAMLValidationException
 	{
-		return false;
+	}
+
+	@Override
+	public ResponseTrustCheckResult checkTrust(XmlObject responseDoc,
+			StatusResponseType response) throws SAMLValidationException
+	{
+		return new ResponseTrustCheckResult(false);
+	}
+	
+	@Override
+	public void checkTrust(AssertionDocument assertionDoc) throws SAMLValidationException
+	{
+		checkTrust(assertionDoc, new ResponseTrustCheckResult(false));
 	}
 }

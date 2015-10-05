@@ -14,13 +14,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import xmlbeans.org.oasis.saml2.assertion.NameIDType;
+import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
-
-import xmlbeans.org.oasis.saml2.assertion.NameIDType;
-import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
 
 /**
  * Configures and performs checking whether consumer trusts the issuer of 
@@ -36,10 +35,15 @@ import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
 public class StrictSamlTrustChecker extends DsigSamlTrustCheckerBase
 {
 	protected Map<String, Set<PublicKey>> trustedIssuers = new HashMap<String, Set<PublicKey>>();
-	
+
 	public StrictSamlTrustChecker()
 	{
-		super(false);
+		this(CheckingMode.REQUIRE_SIGNED_ASSERTION);
+	}
+	
+	public StrictSamlTrustChecker(CheckingMode mode)
+	{
+		super(mode);
 	}
 
 	public void addTrustedIssuer(String samlId, String type, PublicKey trustedKey)
