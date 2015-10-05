@@ -33,7 +33,7 @@
 		<dependency>
 			<groupId>org.apache.santuario</groupId>
 			<artifactId>xmlsec</artifactId>
-			<version>1.5.7</version>
+			<version>1.5.8</version>
 		</dependency>
 		<!-- let's enforce newest commons logging for xmlsec -->
 		<dependency>
