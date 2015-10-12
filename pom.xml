@@ -14,8 +14,8 @@
 	</parent>
 	
 	<scm>
-		<connection>scm:svn:https://svn.code.sf.net/p/unicore/svn/securityFramework/samly2/trunk</connection>
-		<developerConnection>scm:svn:https://svn.code.sf.net/p/unicore/svn/securityFramework/samly2/trunk</developerConnection>
+		<connection>scm:git://git.code.sf.net/p/unicore/samly2</connection>
+		<developerConnection>scm:git:ssh://git.code.sf.net/p/unicore/samly2</developerConnection>
 	</scm>
 
 	<dependencies>
@@ -81,14 +81,6 @@
 					</xmlConfigs>
 					<noUpa>true</noUpa>
 					<outputJar>target/samly2Xbeans-${project.version}.jar</outputJar>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<configuration>
-					<descriptors>
-						<descriptor>src/assembly/assembly.xml</descriptor>
-					</descriptors>
 				</configuration>
 			</plugin>
 		</plugins>
