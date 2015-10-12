@@ -1,6 +1,9 @@
 package eu.unicore.samly2;
 
-import junit.framework.Assert;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
 import xmlbeans.org.oasis.saml2.assertion.SubjectType;
 import eu.unicore.samly2.assertion.Assertion;
 import eu.unicore.samly2.elements.NameID;
@@ -24,6 +27,7 @@ import eu.unicore.security.dsig.TestBase;
  */
 public class ValidatorTest extends TestBase {
 
+	@Test
 	public void testAttrQuery() throws SAMLServerException {
 		String subject = "C=PL,ST=Kujawsko-Pomorskie,L=Torun,O=UW,OU=ICM,CN=Krzysztof Benedyczak,1.2.840.113549.1.9.1=#1610676f6c6269406d61742e756d6b2e706c";
 
@@ -49,6 +53,7 @@ public class ValidatorTest extends TestBase {
 		validator.validate(query.getXMLBeanDoc());
 	}
 	
+	@Test
 	public void emptySubjectDisallowed() throws SAMLServerException {
 		Assertion a = new Assertion();
 		SubjectType subject = SubjectType.Factory.newInstance();
@@ -63,8 +68,8 @@ public class ValidatorTest extends TestBase {
 			fail("Validation should fail");
 		} catch (SAMLValidationException e)
 		{
-			Assert.assertTrue(e.getMessage().contains("subject"));
-			Assert.assertTrue(e.getMessage().contains("NameID"));
+			assertTrue(e.getMessage().contains("subject"));
+			assertTrue(e.getMessage().contains("NameID"));
 		}
 	}
 }

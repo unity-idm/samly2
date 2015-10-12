@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.xmlbeans.XmlOptions;
+import org.junit.Test;
 
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.EncryptedAssertionDocument;
@@ -24,6 +25,7 @@ import eu.unicore.security.dsig.TestBase;
 
 public class EncryptionTest extends TestBase
 {
+	@Test
 	public void testEncryption() throws Exception
 	{
 		Assertion tested = new Assertion();
@@ -48,6 +50,7 @@ public class EncryptionTest extends TestBase
 		aparser.validateSignature(issuerCert1[0].getPublicKey());
 	}
 	
+	@Test
 	public void testOfResponse() throws Exception
 	{
 		String respXml = FileUtils.readFileToString(new File("src/test/resources/encryptedResp.xml"));

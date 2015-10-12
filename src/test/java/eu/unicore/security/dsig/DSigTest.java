@@ -1,6 +1,8 @@
 package eu.unicore.security.dsig;
 
 
+import static org.junit.Assert.*;
+
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.KeyFactory;
@@ -11,6 +13,7 @@ import java.util.Collections;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -24,6 +27,7 @@ import eu.unicore.samly2.trust.SamlTrustChecker;
  */
 public class DSigTest extends TestBase
 {
+	@Test
 	public void testSignVerify()
 	{
 		try
@@ -47,6 +51,7 @@ public class DSigTest extends TestBase
 		assertTrue(true);
 	}
 	
+	@Test
 	public void testVerify()
 	{
 		try
@@ -73,6 +78,7 @@ public class DSigTest extends TestBase
 		assertTrue(true);
 	}
 	
+	@Test
 	public void testStandaloneCanonizer()
 	{
 		StandaloneCanonizer instance;

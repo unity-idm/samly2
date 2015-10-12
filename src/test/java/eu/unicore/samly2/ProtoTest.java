@@ -1,14 +1,16 @@
 package eu.unicore.samly2;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.security.cert.X509Certificate;
 
 import org.apache.xmlbeans.XmlObject;
+import org.junit.Test;
 
 import xmlbeans.org.oasis.saml2.protocol.RequestAbstractType;
 import xmlbeans.org.oasis.saml2.protocol.ResponseDocument;
 import xmlbeans.org.oasis.saml2.protocol.StatusResponseType;
-
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.assertion.Assertion;
 import eu.unicore.samly2.elements.NameID;
@@ -62,6 +64,7 @@ public class ProtoTest extends TestBase {
 		}
 	}
 	
+	@Test
 	public void testAttrQuery() {
 		String subject = "C=PL,ST=Kujawsko-Pomorskie,L=Torun,O=UW,OU=ICM,CN=Krzysztof Benedyczak,1.2.840.113549.1.9.1=#1610676f6c6269406d61742e756d6b2e706c";
 
@@ -91,6 +94,7 @@ public class ProtoTest extends TestBase {
 		assertEquals(1, query.getXMLBean().sizeOfAttributeArray());
 	}
 
+	@Test
 	public void testAuthnRequest() {
 
 		NameID name = new NameID(issuerDN1, SAMLConstants.NFORMAT_DN);
@@ -112,6 +116,7 @@ public class ProtoTest extends TestBase {
 		sigCheck(req.getXMLBeanDoc(), req.getXMLBean());
 	}
 
+	@Test
 	public void testNameIdMapReq() {
 		NameID name = new NameID(issuerDN1, SAMLConstants.NFORMAT_DN);
 		NameID mapname = new NameID("test@test.com",
@@ -130,6 +135,7 @@ public class ProtoTest extends TestBase {
 		sigCheck(req.getXMLBeanDoc(), req.getXMLBean());
 	}
 
+	@Test
 	public void testNameIdMapResp() {
 		NameID name = new NameID(issuerDN1, SAMLConstants.NFORMAT_DN);
 		NameID mapname = new NameID("test@test.com",
@@ -148,6 +154,7 @@ public class ProtoTest extends TestBase {
 		sigCheck(resp.getXMLBeanDoc(), resp.getXMLBean());
 	}
 
+	@Test
 	public void testAssertionResp() {
 		NameID issuer = new NameID(issuerDN1, SAMLConstants.NFORMAT_DN);
 
@@ -172,6 +179,7 @@ public class ProtoTest extends TestBase {
 		assertEquals("a", resp.getXMLBean().getAssertionArray(0).getAttributeStatementArray(0).getAttributeArray(0).getName());
 	}
 
+	@Test
 	public void testAuthnResp() throws Exception {
 		
 		ResponseDocument authenticationResponseDoc = ResponseDocument.Factory.parse(

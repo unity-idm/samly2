@@ -4,11 +4,14 @@
  */
 package eu.unicore.samly2;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 
-import junit.framework.TestCase;
-
 import org.apache.xmlbeans.XmlException;
+import org.junit.Test;
 
 import xmlbeans.org.oasis.saml2.assertion.AttributeType;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
@@ -19,13 +22,14 @@ import eu.unicore.samly2.attrprofile.ProfilesManager;
 import eu.unicore.samly2.attrprofile.SAMLAttributeProfile;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 
-public class AttributeProfileMappingTest extends TestCase
+public class AttributeProfileMappingTest
 {
 	public static final String NAMEID_ATTR = "<NameID "
 			+ "Format=\"urn:oasis:names:tc:SAML:2.0:nameid-format:persistent\" "
 			+ "NameQualifier=\"https://idp\" "
 			+ "SPNameQualifier=\"https://sp\">123asd</NameID>";
 	
+	@Test
 	public void testNameIDMapping() throws XmlException, SAMLValidationException
 	{
 		ProfilesManager profilesManager = new ProfilesManager();
@@ -44,6 +48,7 @@ public class AttributeProfileMappingTest extends TestCase
 		assertEquals("123asd", mapped.getStringValues().get(0));
 	}
 	
+	@Test
 	public void testPionierAssertion() throws Exception
 	{
 		ResponseDocument doc = ResponseDocument.Factory.parse(new File("src/test/resources/pionier id asercja.xml"));

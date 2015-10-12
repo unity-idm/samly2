@@ -1,13 +1,15 @@
 package eu.unicore.samly2;
 
-import org.apache.xmlbeans.XmlObject;
+import static org.junit.Assert.assertEquals;
 
-import junit.framework.TestCase;
-import eu.unicore.samly2.SAMLConstants;
+import org.apache.xmlbeans.XmlObject;
+import org.junit.Test;
+
 import eu.unicore.samly2.elements.SAMLAttribute;
 
-public class SAMLAttributeTest extends TestCase {
+public class SAMLAttributeTest {
 
+	@Test
 	public void testAttribute() {
 		SAMLAttribute attr = new SAMLAttribute(
 				"http://voms.forge.cnaf.infn.it/group",

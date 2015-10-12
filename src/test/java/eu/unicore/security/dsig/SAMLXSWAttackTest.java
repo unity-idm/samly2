@@ -8,8 +8,12 @@
 
 package eu.unicore.security.dsig;
 
+import static org.junit.Assert.fail;
+
 import java.security.cert.X509Certificate;
 import java.util.Collections;
+
+import org.junit.Test;
 
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.protocol.ResponseDocument;
@@ -17,9 +21,8 @@ import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.assertion.AssertionParser;
 import eu.unicore.samly2.trust.StrictSamlTrustChecker;
-import junit.framework.TestCase;
 
-public class SAMLXSWAttackTest extends TestCase
+public class SAMLXSWAttackTest
 {
 	/**
 	 * This one has the following structure:
@@ -30,6 +33,7 @@ public class SAMLXSWAttackTest extends TestCase
 	 * Should fail as id is duplicated and therefore it is not possible to determine which 
 	 * elements were really signed (and this is against spec).
 	 */
+	@Test
 	public void testWrongSignature1()
 	{
 		testResponseInternal("/signedResponse-xsw1.xml", false);
@@ -43,6 +47,7 @@ public class SAMLXSWAttackTest extends TestCase
 	 *
 	 * Should fail as the samly2 code should require that the root assertion element is signed.
 	 */
+	@Test
 	public void testWrongSignature2()
 	{
 		testResponseInternal("/signedResponse-xsw2.xml", false);
@@ -56,11 +61,13 @@ public class SAMLXSWAttackTest extends TestCase
 	 *    
 	 * Should fail as only one Signature element is allowed 
 	 */
+	@Test
 	public void testWrongSignature3()
 	{
 		testResponseInternal("/signedResponse-xsw3.xml", false);
 	}
 	
+	@Test
 	public void testResponse()
 	{
 		testResponseInternal("/signedResponse.xml", true);

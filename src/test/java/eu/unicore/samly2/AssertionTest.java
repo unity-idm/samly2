@@ -1,9 +1,16 @@
 package eu.unicore.samly2;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.xmlbeans.XmlObject;
+import org.junit.Test;
 
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.AudienceRestrictionType;
@@ -16,10 +23,10 @@ import eu.unicore.samly2.elements.NameID;
 import eu.unicore.samly2.elements.SAMLAttribute;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.samly2.proto.AssertionResponse;
+import eu.unicore.samly2.trust.DsigSamlTrustCheckerBase.CheckingMode;
 import eu.unicore.samly2.trust.ResponseTrustCheckResult;
 import eu.unicore.samly2.trust.SimpleTrustChecker;
 import eu.unicore.samly2.trust.StrictSamlTrustChecker;
-import eu.unicore.samly2.trust.DsigSamlTrustCheckerBase.CheckingMode;
 import eu.unicore.security.dsig.TestBase;
 
 /**
@@ -29,6 +36,7 @@ import eu.unicore.security.dsig.TestBase;
 public class AssertionTest extends TestBase {
 	private String subject1 = "C=PL,ST=Kujawsko-Pomorskie,L=Torun,O=UW,OU=ICM,CN=Krzysztof Benedyczak,1.2.840.113549.1.9.1=#1610676f6c6269406d61742e756d6b2e706c";
 
+	@Test
 	public void testAssertionResp() throws SAMLValidationException {
 		NameID issuer = new NameID(issuerDN1, SAMLConstants.NFORMAT_DN);
 
@@ -69,6 +77,7 @@ public class AssertionTest extends TestBase {
 		checker2.checkTrust(as.getXMLBeanDoc(), checkTrust2);
 	}
 
+	@Test
 	public void testOptionalSignature() throws SAMLValidationException {
 		NameID issuer = new NameID(issuerDN1, SAMLConstants.NFORMAT_DN);
 
@@ -95,6 +104,7 @@ public class AssertionTest extends TestBase {
 		}
 	}
 	
+	@Test
 	public void testAssertionParser()
 	{
 		AssertionParser assertion;
