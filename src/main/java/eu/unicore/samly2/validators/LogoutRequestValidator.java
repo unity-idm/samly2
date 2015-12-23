@@ -9,7 +9,6 @@ import java.util.Calendar;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 import xmlbeans.org.oasis.saml2.protocol.LogoutRequestDocument;
 import xmlbeans.org.oasis.saml2.protocol.LogoutRequestType;
-import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.exceptions.SAMLRequesterException;
 import eu.unicore.samly2.exceptions.SAMLServerException;
 import eu.unicore.samly2.trust.SamlTrustChecker;
@@ -48,9 +47,12 @@ public class LogoutRequestValidator extends AbstractRequestValidator
 		NameIDType issuer = logoutRequest.getIssuer();
 		if (issuer == null)
 			throw new SAMLRequesterException("Issuer of SAML request must be present in SLO");
-		if (issuer.getFormat() != null && !issuer.getFormat().equals(SAMLConstants.NFORMAT_ENTITY))
+/* Actually this test should be enabled here. But with it UNICORE services won't be able to use SLO. 
+ * This check lift should be in the unicore module. But require tons of code, and this simple patch here 
+ * shouldn't break anything.
+ * 		if (issuer.getFormat() != null && !issuer.getFormat().equals(SAMLConstants.NFORMAT_ENTITY))
 			throw new SAMLRequesterException("Issuer of SAML request must be of Entity type in SLO. "
-					+ "It is: " + issuer.getFormat());
+					+ "It is: " + issuer.getFormat());*/
 		if (issuer.getStringValue() == null)
 			throw new SAMLRequesterException("Issuer of SAML request value must be present in SLO");
 	}
