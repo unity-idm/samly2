@@ -16,6 +16,7 @@
 	<scm>
 		<connection>scm:git://git.code.sf.net/p/unicore/samly2</connection>
 		<developerConnection>scm:git:ssh://git.code.sf.net/p/unicore/samly2</developerConnection>
+		<tag>HEAD</tag>
 	</scm>
 
 	<dependencies>
