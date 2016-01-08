@@ -1,7 +1,9 @@
 package eu.unicore.security.dsig;
 
 
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -18,7 +20,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import eu.unicore.samly2.trust.SamlTrustChecker;
+import eu.unicore.samly2.SAMLConstants;
 
 
 /**
@@ -28,7 +30,7 @@ import eu.unicore.samly2.trust.SamlTrustChecker;
 public class DSigTest extends TestBase
 {
 	@Test
-	public void testSignVerify()
+	public void signedDocumentSignatureIsVerified()
 	{
 		try
 		{
@@ -38,21 +40,22 @@ public class DSigTest extends TestBase
 			Node n = doc.getDocumentElement().getChildNodes().item(1);
 			PublicKey pubKey = issuerCert1[0].getPublicKey();
 			dsigEngine.genEnvelopedSignature(privKey1, pubKey, issuerCert1, 
-				doc, n, SamlTrustChecker.ASSERTION_ID_QNAME);
+				doc, n, SAMLConstants.ASSERTION_ID_QNAME);
 
-			assertTrue(dsigEngine.verifyEnvelopedSignature(doc, Collections.singletonList(doc.getDocumentElement()), 
-					SamlTrustChecker.ASSERTION_ID_QNAME, pubKey));
+			boolean verified = dsigEngine.verifyEnvelopedSignature(doc, 
+					Collections.singletonList(doc.getDocumentElement()), 
+					SAMLConstants.ASSERTION_ID_QNAME, pubKey);
+			assertThat(verified, is(true));
 			
 		} catch (Exception e)
 		{
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
-		assertTrue(true);
 	}
 	
 	@Test
-	public void testVerify()
+	public void parsedDocumentSignatureIsVerified()
 	{
 		try
 		{
@@ -69,17 +72,16 @@ public class DSigTest extends TestBase
 			boolean result = dsigEngine.verifyEnvelopedSignature(doc, 
 					Collections.singletonList((Element)doc.getDocumentElement().getLastChild()), 
 					WSS_ID, pubKey);
-			assertTrue(result);
+			assertThat(result, is(true));
 		} catch (Exception e)
 		{
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
-		assertTrue(true);
 	}
 	
 	@Test
-	public void testStandaloneCanonizer()
+	public void standaloneCanonRemovesComments()
 	{
 		StandaloneCanonizer instance;
 		try
@@ -91,7 +93,7 @@ public class DSigTest extends TestBase
 			
 			System.out.println("\n\nCanonized document:\n" + res);
 			
-			assertFalse(res.contains("<!--COMMENT-TO-REMOVE-->"));
+			assertThat(res.contains("<!--COMMENT-TO-REMOVE-->"), is(false));
 		} catch (Exception e)
 		{
 			e.printStackTrace();

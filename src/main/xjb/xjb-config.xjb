@@ -1,0 +1,48 @@
+<jxb:bindings version="2.1" xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+	extensionBindingPrefixes="xjc">
+	
+	<jxb:globalBindings generateValueClass="true" mapSimpleTypeDef="false" 
+			 generateElementClass="true" choiceContentProperty="true">
+			 <xjc:generateElementProperty>true</xjc:generateElementProperty>
+	</jxb:globalBindings>
+	 
+	<jxb:bindings schemaLocation="../xsd/saml-schema-assertion-2.0.xsd" node="//xsd:schema">
+		<jxb:schemaBindings>
+			<jxb:package name="eu.unicore.samly2.jaxb.saml2.assertion" />
+		</jxb:schemaBindings>
+	</jxb:bindings>
+	
+
+	<jxb:bindings schemaLocation="../xsd/saml-schema-protocol-2.0.xsd" node="//xsd:schema">
+		<jxb:schemaBindings>
+			<jxb:package name="eu.unicore.samly2.jaxb.saml2.protocol" />
+		</jxb:schemaBindings>
+	</jxb:bindings>
+	
+	<jxb:bindings schemaLocation="../xsd/xenc-schema.xsd" node="//xsd:schema">
+		<jxb:schemaBindings>
+			<jxb:package name="eu.unicore.samly2.jaxb.xmlenc.x2001.x04" />
+		</jxb:schemaBindings>
+	</jxb:bindings>
+
+	<jxb:bindings schemaLocation="../xsd/xmldsig-core-schema.xsd" node="//xsd:schema">
+		<jxb:schemaBindings>
+			<jxb:package name="eu.unicore.samly2.jaxb.xmldsig.x2000.x09" />
+		</jxb:schemaBindings>
+	</jxb:bindings>
+
+
+	<jxb:bindings schemaLocation="../xsd/saml-attrQuery-ext-schema.xsd" node="//xsd:schema">
+		<jxb:schemaBindings>
+			<jxb:package name="eu.unicore.samly2.jaxb.saml2.ext.attrquery" />
+		</jxb:schemaBindings>
+	</jxb:bindings>
+
+	<jxb:bindings schemaLocation="../xsd/saml-nameIdMap-ext-schema.xsd" node="//xsd:schema">
+		<jxb:schemaBindings>
+			<jxb:package name="eu.unicore.samly2.jaxb.saml2.ext.nameidmap" />
+		</jxb:schemaBindings>
+	</jxb:bindings>
+</jxb:bindings>

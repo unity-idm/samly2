@@ -11,6 +11,7 @@ package eu.unicore.security.dsig;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -39,11 +40,11 @@ public class Utils
 		}
 	}
 	
-	public static X509Certificate[] deserializeCertificateChain(byte [][]encodedCerts)
+	public static X509Certificate[] deserializeCertificateChain(List<byte[]> encodedCerts)
 	{
-		X509Certificate []retval = new X509Certificate[encodedCerts.length];
-		for (int i=0; i<encodedCerts.length; i++)
-			retval[i] = deserializeCertificate(encodedCerts[i]);
+		X509Certificate []retval = new X509Certificate[encodedCerts.size()];
+		for (int i=0; i<encodedCerts.size(); i++)
+			retval[i] = deserializeCertificate(encodedCerts.get(i));
 		return retval;
 	}
 }

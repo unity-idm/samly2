@@ -7,7 +7,6 @@ import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
-import org.apache.xmlbeans.XmlOptions;
 import org.junit.Before;
 
 /**
@@ -32,14 +31,12 @@ public abstract class TestBase
 	protected String issuerDN1, issuerDN2;
 	protected String receiverDN1, receiverDN2, expiredDN;
 	protected PrivateKey privKey1, privKey2, privKey3, privKeyExpired;
-	protected XmlOptions xmlOpts;
 	
 	@Before
 	public void setUp()
 	{
 		try
 		{
-			xmlOpts = new XmlOptions().setSavePrettyPrint();
 			ks1 = KeyStore.getInstance("JKS");
 			InputStream is = getClass().getResourceAsStream("/" + KEYSTORE1);
 			ks1.load(is, PASSWORD.toCharArray());

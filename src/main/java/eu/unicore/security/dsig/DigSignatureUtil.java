@@ -15,7 +15,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
@@ -58,14 +57,10 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI;
 import org.apache.log4j.Logger;
 import org.apache.xml.security.utils.Base64;
-import org.apache.xmlbeans.XmlBase64Binary;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import xmlbeans.org.w3.x2000.x09.xmldsig.KeyInfoType;
-import xmlbeans.org.w3.x2000.x09.xmldsig.X509DataType;
 
 
 /**
@@ -323,7 +318,7 @@ public class DigSignatureUtil
 		return true;
 	}
 
-	
+	/*
 	public static KeyInfoType generateX509KeyInfo(X509Certificate[] certs) 
 		throws CertificateEncodingException
 	{
@@ -337,7 +332,7 @@ public class DigSignatureUtil
 		}
 		return ret;
 	}
-	
+	*/
 	public List<?> getReferencesFromSignature(Node signatureNode) 
 		throws DSigException
 	{

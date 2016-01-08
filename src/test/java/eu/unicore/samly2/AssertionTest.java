@@ -1,32 +1,30 @@
 package eu.unicore.samly2;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-import java.util.Calendar;
+import java.io.File;
 import java.util.Date;
 
-import org.apache.xmlbeans.XmlObject;
-import org.junit.Test;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.datatype.DatatypeFactory;
 
-import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
-import xmlbeans.org.oasis.saml2.assertion.AudienceRestrictionType;
-import xmlbeans.org.oasis.saml2.assertion.AuthnContextType;
-import xmlbeans.org.oasis.saml2.assertion.AuthnStatementType;
-import eu.emi.security.authn.x509.impl.X500NameUtils;
-import eu.unicore.samly2.assertion.Assertion;
+import org.junit.Test;
+import org.w3c.dom.Document;
+
 import eu.unicore.samly2.assertion.AssertionParser;
-import eu.unicore.samly2.elements.NameID;
-import eu.unicore.samly2.elements.SAMLAttribute;
-import eu.unicore.samly2.exceptions.SAMLValidationException;
-import eu.unicore.samly2.proto.AssertionResponse;
-import eu.unicore.samly2.trust.DsigSamlTrustCheckerBase.CheckingMode;
-import eu.unicore.samly2.trust.ResponseTrustCheckResult;
-import eu.unicore.samly2.trust.SimpleTrustChecker;
-import eu.unicore.samly2.trust.StrictSamlTrustChecker;
+import eu.unicore.samly2.jaxb.saml2.assertion.Assertion;
+import eu.unicore.samly2.jaxb.saml2.assertion.AssertionType;
+import eu.unicore.samly2.jaxb.saml2.assertion.Conditions;
+import eu.unicore.samly2.jaxb.saml2.assertion.ConditionsType;
+import eu.unicore.samly2.jaxb.saml2.assertion.Issuer;
+import eu.unicore.samly2.jaxb.saml2.assertion.NameIDType;
+import eu.unicore.security.dsig.DigSignatureUtil;
 import eu.unicore.security.dsig.TestBase;
 
 /**
@@ -34,93 +32,41 @@ import eu.unicore.security.dsig.TestBase;
  * @author K. Benedyczak
  */
 public class AssertionTest extends TestBase {
-	private String subject1 = "C=PL,ST=Kujawsko-Pomorskie,L=Torun,O=UW,OU=ICM,CN=Krzysztof Benedyczak,1.2.840.113549.1.9.1=#1610676f6c6269406d61742e756d6b2e706c";
+	//private String subject1 = "C=PL,ST=Kujawsko-Pomorskie,L=Torun,O=UW,OU=ICM,CN=Krzysztof Benedyczak,1.2.840.113549.1.9.1=#1610676f6c6269406d61742e756d6b2e706c";
 
 	@Test
-	public void testAssertionResp() throws SAMLValidationException {
-		NameID issuer = new NameID(issuerDN1, SAMLConstants.NFORMAT_DN);
-
-		AssertionResponse resp = new AssertionResponse(issuer.getXBean(), "1234");
-		Assertion as = new Assertion();
-		as.addAttribute(new SAMLAttribute("a", "b"));
-		resp.addAssertion(as);
-
-		try {
-
-			resp.sign(privKey1, issuerCert1);
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Cannot sign NameIDMappingResponse");
-		}
-
-		//in the default mode should require signed assertion always
-		StrictSamlTrustChecker checker = new StrictSamlTrustChecker();
-		checker.addTrustedIssuer(issuerDN1, SAMLConstants.NFORMAT_DN, issuerCert1[0].getPublicKey());
-
-		ResponseTrustCheckResult checkTrust = checker.checkTrust(resp.getXMLBeanDoc(), resp.getXMLBean());
-		assertTrue(checkTrust.isTrustEstablished());
-		try
-		{
-	
-			checker.checkTrust(as.getXMLBeanDoc(), checkTrust);
-			fail("Should fail on unsigned assertion");
-		} catch (SAMLValidationException e)
-		{
-			//OK
-		}
+	public void parsedDocumentShouldBeNotChangedAfterConversionToDOM() throws JAXBException
+	{
+		JAXBContext context = JAXBUtils.getContext();
+		String path = "src/test/resources/assert.xml";
 		
-		//in lax mode signed response should be enough
-		StrictSamlTrustChecker checker2 = new StrictSamlTrustChecker(CheckingMode.REQUIRE_SIGNED_RESPONSE_OR_ASSERTION);
-		checker2.addTrustedIssuer(issuerDN1, SAMLConstants.NFORMAT_DN, issuerCert1[0].getPublicKey());
-		ResponseTrustCheckResult checkTrust2 = checker2.checkTrust(resp.getXMLBeanDoc(), resp.getXMLBean());
-		assertTrue(checkTrust2.isTrustEstablished());
-		checker2.checkTrust(as.getXMLBeanDoc(), checkTrust2);
-	}
+		Unmarshaller unmarshaller = context.createUnmarshaller();
+		Assertion loaded = (Assertion)unmarshaller.unmarshal(new File(path));
 
-	@Test
-	public void testOptionalSignature() throws SAMLValidationException {
-		NameID issuer = new NameID(issuerDN1, SAMLConstants.NFORMAT_DN);
-
-		AssertionResponse resp = new AssertionResponse(issuer.getXBean(), "1234");
-		Assertion as = new Assertion();
-		as.addAttribute(new SAMLAttribute("a", "b"));
-		resp.addAssertion(as);
-
-		SimpleTrustChecker checker = new SimpleTrustChecker(issuerCert1[0], true);
-		ResponseTrustCheckResult checkTrust = checker.checkTrust(resp.getXMLBeanDoc(), resp.getXMLBean());
-		assertFalse(checkTrust.isTrustEstablished());
-		checker.checkTrust(as.getXMLBeanDoc(), checkTrust);
-		
-		SimpleTrustChecker checker2 = new SimpleTrustChecker(issuerCert1[0], false);
-		ResponseTrustCheckResult checkTrust2 = checker2.checkTrust(resp.getXMLBeanDoc(), resp.getXMLBean());
-		assertFalse(checkTrust2.isTrustEstablished());
-		try
-		{
-			checker2.checkTrust(as.getXMLBeanDoc(), checkTrust2);
-			fail("Should fail on unsigned assertion");
-		} catch (SAMLValidationException e)
-		{
-			//OK
-		}
+		AssertionParser parser = new AssertionParser(loaded);
+		Document asDOM = parser.getAsDOM();
+		String domAsString = DigSignatureUtil.dumpDOMToString(asDOM);
+		System.out.println(domAsString);
 	}
 	
-	@Test
+	
 	public void testAssertionParser()
 	{
 		AssertionParser assertion;
 		try {
-			AssertionDocument adoc = create(true);
+			JAXBElement<AssertionType> adoc = create(true);
 			assertion = new AssertionParser(adoc);
 		} catch (Exception e) {
 			e.printStackTrace();
-			fail("Cannot create assertion: " + e);
+			fail("Cannot parse assertion: " + e);
 			return;
 		}
 		
-		assertEquals(new Date(1000), assertion.getNotBefore());
-		assertEquals(new Date(4500), assertion.getNotOnOrAfter());
-		assertNotNull(assertion.getXMLBean());
-		assertNotNull(assertion.getXMLBeanDoc());
+		assertThat(assertion.getNotBefore(), is(new Date(1000)));
+		assertThat(assertion.getNotOnOrAfter(), is(new Date(4500)));
+		assertThat(assertion.getJAXBObject(), is(notNullValue()));
+
+		/*
 		//JDK uses GMT by default, not UTC
 		assertEquals("GMT", assertion.getXMLBean().getIssueInstant().getTimeZone().getID());
 		assertEquals("foo", assertion.getXMLBean().getIssuer().getStringValue());
@@ -158,10 +104,27 @@ public class AssertionTest extends TestBase {
 			e.printStackTrace();
 			fail("Signature verification failed " + e);
 		}
+		*/
 	}
 	
-	private AssertionDocument create(boolean sign) throws Exception
+	private JAXBElement<AssertionType> create(boolean sign) throws Exception
 	{
+		AssertionType assertionType = new AssertionType();
+		NameIDType nameId = new NameIDType();
+		nameId.setFormat(SAMLConstants.NFORMAT_ENTITY);
+		nameId.setValue("foo");
+		assertionType.setIssuer(new Issuer(nameId));
+		ConditionsType conditions = new ConditionsType();
+		DatatypeFactory dataFactory = DatatypeFactory.newInstance();
+		conditions.setNotBefore(dataFactory.newXMLGregorianCalendar("20101022T101010"));
+		conditions.setNotOnOrAfter(dataFactory.newXMLGregorianCalendar("20501022T101010"));
+		assertionType.setConditions(new Conditions(conditions));
+		
+	//	JAXBContext context = JAXBContext.newInstance(Assertion.class);
+		//context.createUnmarshaller().
+		return null;
+		
+		/*
 		Assertion assertion = new Assertion();
 		assertion.setIssuer("foo", SAMLConstants.NFORMAT_ENTITY);
 		assertion.setX509Subject(subject1);
@@ -185,5 +148,6 @@ public class AssertionTest extends TestBase {
 			assertion.sign(privKey1, issuerCert1);
 		
 		return assertion.getXMLBeanDoc();
+		*/
 	}
 }

@@ -10,6 +10,8 @@ package eu.unicore.samly2;
 
 import javax.xml.namespace.QName;
 
+import eu.unicore.security.dsig.IdAttribute;
+
 /**
  * @author K. Benedyczak
  */
@@ -74,6 +76,9 @@ public class SAMLConstants
 	//relay state
 	public static final String RELAY_STATE = "RelayState";
 
+	public static final IdAttribute PROTOCOL_ID_QNAME = new IdAttribute(null, "ID");
+	public static final IdAttribute ASSERTION_ID_QNAME = new IdAttribute(null, "ID");
+	
 	
 	public static enum AuthNClasses {NONE, TLS};
 	

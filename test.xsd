@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<schema targetNamespace="urn:test" 
+	xmlns:test="urn:test"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+	xmlns="http://www.w3.org/2001/XMLSchema" 
+	elementFormDefault="unqualified"
+	attributeFormDefault="unqualified" 
+	blockDefault="substitution" 
+	version="2.0"
+	jaxb:version="2.1"
+	jaxb:extensionBindingPrefixes="xjc">
+
+	<annotation>
+		<appinfo>
+			<jaxb:globalBindings generateValueClass="true" mapSimpleTypeDef="false" 
+			 generateElementClass="true" choiceContentProperty="true">
+				<xjc:generateElementProperty>true</xjc:generateElementProperty>
+			</jaxb:globalBindings>
+		</appinfo>
+	</annotation>
+
+	<complexType name="SubjectType">
+		<choice>
+			<sequence>
+				<choice>
+					<element ref="test:El1" />
+					<element ref="test:el2" />
+				</choice>
+				<element ref="test:ce1" minOccurs="0" maxOccurs="unbounded" />
+			</sequence>
+			<element ref="test:ce1" maxOccurs="unbounded" />
+		</choice>
+	</complexType>
+	<complexType name="KeyInfoType">
+	<!-- 
+		<annotation>
+			<appinfo>
+				<jaxb:bindings choiceContentProperty="true">
+					<xjc:generateElementProperty>true</xjc:generateElementProperty>
+				</jaxb:bindings>
+			</appinfo>
+		</annotation> -->
+		<choice maxOccurs="unbounded">
+			<element ref="test:El1" />
+			<element ref="test:el2" />
+		</choice>
+	</complexType>
+	
+	<element name="Subject" type="test:SubjectType" />
+
+	<element name="El1" type="test:CommonType" />
+	<element name="el2" type="test:CommonType" />
+	<element name="ce1" type="test:CommonType" />
+
+	<complexType name="CommonType">
+		<sequence>
+			<choice minOccurs="0">
+				<element name="variant1" type="string" />
+				<element name="variant2" type="string" />
+			</choice>
+			<element name="mandatory" type="string" />
+		</sequence>
+	</complexType>
+
+
+	<element name="KeyInfo" type="test:KeyInfoType" />
+
+</schema>

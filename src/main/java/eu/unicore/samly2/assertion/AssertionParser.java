@@ -9,31 +9,35 @@
 package eu.unicore.samly2.assertion;
 
 import java.io.Serializable;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.time.ZonedDateTime;
 import java.util.Collections;
-import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 
 import org.w3c.dom.Document;
 
-import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
-import xmlbeans.org.oasis.saml2.assertion.AssertionType;
-import xmlbeans.org.oasis.saml2.assertion.ConditionsType;
-import xmlbeans.org.oasis.saml2.assertion.EncryptedAssertionDocument;
-import xmlbeans.org.oasis.saml2.assertion.KeyInfoConfirmationDataType;
-import xmlbeans.org.oasis.saml2.assertion.SubjectConfirmationType;
-import xmlbeans.org.oasis.saml2.assertion.SubjectType;
-import xmlbeans.org.w3.x2000.x09.xmldsig.KeyInfoType;
-import xmlbeans.org.w3.x2000.x09.xmldsig.X509DataType;
+import eu.unicore.samly2.JAXBUtils;
+import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
-import eu.unicore.samly2.trust.SamlTrustChecker;
-import eu.unicore.samly2.validators.AssertionValidator;
+import eu.unicore.samly2.jaxb.saml2.assertion.AssertionType;
+import eu.unicore.samly2.jaxb.saml2.assertion.ConditionAbstractType;
+import eu.unicore.samly2.jaxb.saml2.assertion.Conditions;
+import eu.unicore.samly2.jaxb.saml2.assertion.KeyInfoConfirmationDataType;
+import eu.unicore.samly2.jaxb.saml2.assertion.NameIDType;
+import eu.unicore.samly2.jaxb.saml2.assertion.ProxyRestrictionType;
+import eu.unicore.samly2.jaxb.saml2.assertion.Subject;
+import eu.unicore.samly2.jaxb.saml2.assertion.SubjectConfirmationData;
+import eu.unicore.samly2.jaxb.saml2.assertion.SubjectConfirmationType;
+import eu.unicore.samly2.jaxb.xmldsig.x2000.x09.KeyInfo;
+import eu.unicore.samly2.jaxb.xmldsig.x2000.x09.KeyInfoType;
 import eu.unicore.security.dsig.DSigException;
 import eu.unicore.security.dsig.DigSignatureUtil;
-import eu.unicore.security.dsig.Utils;
-import eu.unicore.security.enc.EncryptionUtil;
 
 
 /**
@@ -47,21 +51,17 @@ public class AssertionParser implements Serializable
 {
 	private static final long serialVersionUID=1L;
 
-	protected AssertionDocument assertionDoc;
+	protected JAXBElement<AssertionType> assertionDoc;
+	protected AssertionType assertion;
 	
 	protected AssertionParser()
 	{
 	}
 	
-	public AssertionParser(AssertionDocument doc)
+	public AssertionParser(JAXBElement<AssertionType> doc)
 	{
 		assertionDoc = doc;
-	}
-
-	public AssertionParser(AssertionType assertion)
-	{
-		assertionDoc = AssertionDocument.Factory.newInstance();
-		assertionDoc.setAssertion(assertion);
+		assertion = assertionDoc.getValue();
 	}
 
 	/**
@@ -70,6 +70,7 @@ public class AssertionParser implements Serializable
 	 * @param decryptKey
 	 * @throws Exception
 	 */
+/*
 	public AssertionParser(EncryptedAssertionDocument encryptedAssertion, PrivateKey decryptKey) throws Exception
 	{
 		EncryptionUtil encUtil = new EncryptionUtil();
@@ -77,53 +78,38 @@ public class AssertionParser implements Serializable
 		Document reverted = encUtil.decrypt(toDec, decryptKey);
 		assertionDoc = AssertionDocument.Factory.parse(reverted.getDocumentElement().getFirstChild());
 	}
-	
-	/**
-	 * Use {@link #getIssuerName()}.
-	 * @return
-	 */
-	@Deprecated
-	public String getIssuerDN()
-	{
-		return assertionDoc.getAssertion().getIssuer().getStringValue();
-	}
-	
+*/	
 	public String getIssuerName()
 	{
-		return assertionDoc.getAssertion().getIssuer().getStringValue();
-	}
-
-	/**
-	 * Use {@link #getSubjectName()}
-	 * @return
-	 */
-	@Deprecated
-	public String getSubjectDN()
-	{
-		return getSubjectName();
+		return assertion.getIssuer().getValue().getValue();
 	}
 
 	public String getSubjectName()
 	{
-		return assertionDoc.getAssertion().getSubject().getNameID().getStringValue();
+		Optional<NameIDType> name = getSubjectNameID();
+		return name.isPresent() ? null : name.get().getValue();
 	}
 	
 	public String getIssuerNameFormat()
 	{
-		return assertionDoc.getAssertion().getIssuer().getFormat();
+		return assertion.getIssuer().getValue().getFormat();
 	}
 
 	public String getSubjectNameFormat()
 	{
-		return assertionDoc.getAssertion().getSubject().getNameID().getFormat();
+		Optional<NameIDType> name = getSubjectNameID();
+		return name.isPresent() ? null : name.get().getFormat();
+	}
+	
+	public Optional<NameIDType> getSubjectNameID()
+	{
+		List<JAXBElement<?>> content = assertion.getSubject().getValue().getBaseIDOrNameIDOrEncryptedID();
+		return JAXBUtils.getFirstJAXB(content, NameIDType.class);
 	}
 	
 	public boolean isSigned()
 	{
-		if (assertionDoc.getAssertion().getSignature() == null 
-				|| assertionDoc.getAssertion().getSignature().isNil())
-			return false;
-		else return true;
+		return assertion.getSignature() != null;
 	}
 	
 	public void validateSignature(PublicKey key) throws SAMLValidationException
@@ -133,93 +119,95 @@ public class AssertionParser implements Serializable
 			Document doc = getAsDOM();
 			DigSignatureUtil sign = new DigSignatureUtil();
 			if (!sign.verifyEnvelopedSignature(doc, Collections.singletonList(doc.getDocumentElement()),  
-					SamlTrustChecker.ASSERTION_ID_QNAME, key))
+					SAMLConstants.ASSERTION_ID_QNAME, key))
 				throw new SAMLValidationException("Signature is incorrect");
-		} catch (DSigException e)
+		} catch (JAXBException | DSigException e)
 		{
 			throw new SAMLValidationException("Signature verification failed", e);
 		}
 	}
 
 	
-	public X509Certificate[] getIssuerFromSignature()
+	public Optional<X509Certificate[]> getIssuerFromSignature()
 	{
-		return SAMLUtils.getIssuerFromSignature(assertionDoc.getAssertion().getSignature());
+		return SAMLUtils.getIssuerFromSignature(assertion.getSignature());
 	}
 
-	public X509Certificate[] getSubjectFromConfirmation()
+	public Optional<X509Certificate[]> getSubjectFromConfirmation()
 	{
-		SubjectType subject = assertionDoc.getAssertion().getSubject();
+		Subject subject = assertion.getSubject();
 		if (subject == null)
-			return null;
-		SubjectConfirmationType[] tt = subject.getSubjectConfirmationArray();
-		if (tt == null || tt.length == 0)
-			return null;
-		SubjectConfirmationType confirmation = tt[0];
-		if (confirmation == null)
-			return null;
+			return Optional.empty();
+		List<JAXBElement<?>> content = subject.getValue().getBaseIDOrNameIDOrEncryptedID();
+		Optional<SubjectConfirmationType> confirmationO = 
+				JAXBUtils.getFirstJAXB(content, SubjectConfirmationType.class);
+
+		if (!confirmationO.isPresent())
+			return Optional.empty();
+		
+		SubjectConfirmationType confirmation = confirmationO.get();
+		SubjectConfirmationData subjectConfirmationData = confirmation.getSubjectConfirmationData();
+		if (subjectConfirmationData == null)
+			return Optional.empty();
+		
 		KeyInfoConfirmationDataType confirData;
 		try
 		{
-			confirData = (KeyInfoConfirmationDataType) 
-				confirmation.getSubjectConfirmationData();
+			confirData = (KeyInfoConfirmationDataType)subjectConfirmationData.getValue();
 		} catch (ClassCastException e)
 		{
-			return null;
+			return Optional.empty();
 		}
-		if (confirData == null)
-			return null;
-		KeyInfoType ki = confirData.getKeyInfoArray(0);
-		if (ki == null)
-			return null;
-		X509DataType[] x509Data = ki.getX509DataArray();
-		if (x509Data == null)
-			return null;
-		for (int i=0; i<x509Data.length; i++)
-			if (x509Data[i].getX509CertificateArray().length > 0)
-				return Utils.deserializeCertificateChain(
-						x509Data[i].getX509CertificateArray());
-		return null;
+		Optional<KeyInfo> kiO = JAXBUtils.getFirstObject(confirData.getContent(), KeyInfo.class);
+		if (!kiO.isPresent())
+			return Optional.empty();
+		
+		KeyInfoType ki = kiO.get().getValue();
+		return SAMLUtils.extractCertificateFromKeyInfo(ki);
 	}
 	
 	
-	public AssertionDocument getXMLBeanDoc()
+	public JAXBElement<AssertionType> getJAXBObject()
 	{
 		return assertionDoc;
 	}
 
-	public AssertionType getXMLBean()
-	{
-		return assertionDoc.getAssertion();
-	}
-	
-	public Document getAsDOM() throws DSigException
+	public Document getAsDOM() throws JAXBException
 	{
 		return SAMLUtils.getDOM(assertionDoc);
 	}
 	
 	public int getProxyRestriction()
 	{
-		ConditionsType conditions = assertionDoc.getAssertion().getConditions();
-		if (conditions == null || conditions.sizeOfProxyRestrictionArray() == 0)
-			return -1;
-		return conditions.getProxyRestrictionArray(0).getCount().intValue();
+		return getConditionByType(ProxyRestrictionType.class).
+				map(pr -> pr.getCount().intValue()).
+				orElse(-1);
 	}
 	
-	public Date getNotBefore()
+	private <T> Optional<T> getConditionByType(Class<T> type)
 	{
-		ConditionsType conditions = assertionDoc.getAssertion().getConditions();
-		if (conditions != null && conditions.getNotBefore() != null) {
-			return conditions.getNotBefore().getTime();
+		Conditions conditions = assertion.getConditions();
+		if (conditions == null)
+			return Optional.empty();
+		List<JAXBElement<? extends ConditionAbstractType>> conditionsV = 
+				conditions.getValue().getConditionOrAudienceRestrictionOrOneTimeUse();
+		return JAXBUtils.getFirstJAXB(conditionsV, type);
+	}
+	
+	public ZonedDateTime getNotBefore()
+	{
+		Conditions conditions = assertion.getConditions();
+		if (conditions != null && conditions.getValue().getNotBefore() != null) {
+			return conditions.getValue().getNotBefore().toGregorianCalendar().toZonedDateTime();
 		}
 		return null;
 	}
 
-	public Date getNotOnOrAfter()
+	public ZonedDateTime getNotOnOrAfter()
 	{
-		ConditionsType conditions = assertionDoc.getAssertion().getConditions();
-		if (conditions != null && conditions.getNotOnOrAfter() != null) {
-			return conditions.getNotOnOrAfter().getTime();
+		Conditions conditions = assertion.getConditions();
+		if (conditions != null && conditions.getValue().getNotOnOrAfter() != null) {
+			return conditions.getValue().getNotOnOrAfter().toGregorianCalendar().toZonedDateTime();
 		}
 		return null;
 	}

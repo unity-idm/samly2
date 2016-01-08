@@ -19,7 +19,7 @@
 		<saml:Attribute xmlns:x500="urn:oasis:names:tc:SAML:2.0:profiles:attribute:X500"
 			NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri" Name="urn:oid:2.5.4.20"
 			FriendlyName="telephoneNumber">
-			<saml:AttributeValue xsi:type="xs:string">
+			<saml:AttributeValue xsi:type="xsd:string">
 				+1-888-555-1212
           </saml:AttributeValue>
 		</saml:Attribute>
