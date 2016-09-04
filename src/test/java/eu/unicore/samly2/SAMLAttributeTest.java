@@ -9,6 +9,7 @@ import eu.unicore.samly2.elements.SAMLAttribute;
 
 public class SAMLAttributeTest {
 
+	@SuppressWarnings("deprecation")
 	@Test
 	public void testAttribute() {
 		SAMLAttribute attr = new SAMLAttribute(

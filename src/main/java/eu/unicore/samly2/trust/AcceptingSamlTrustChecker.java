@@ -46,4 +46,10 @@ public class AcceptingSamlTrustChecker implements SamlTrustChecker
 	{
 		checkTrust(assertionDoc, new ResponseTrustCheckResult(false));
 	}
+
+	@Override
+	public CheckingMode getCheckingMode()
+	{
+		return CheckingMode.REQUIRE_SIGNED_RESPONSE_OR_ASSERTION;
+	}
 }

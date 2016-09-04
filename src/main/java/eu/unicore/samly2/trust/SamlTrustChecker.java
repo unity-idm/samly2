@@ -39,4 +39,6 @@ public interface SamlTrustChecker
 			throws SAMLValidationException;
 
 	void checkTrust(XmlObject requestDoc, RequestAbstractType request) throws SAMLValidationException;
+	
+	CheckingMode getCheckingMode();
 }

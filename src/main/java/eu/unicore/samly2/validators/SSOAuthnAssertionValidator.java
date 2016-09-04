@@ -10,6 +10,7 @@ import eu.unicore.samly2.SAMLBindings;
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.samly2.exceptions.SAMLValidationSoftException;
+import eu.unicore.samly2.trust.CheckingMode;
 import eu.unicore.samly2.trust.ResponseTrustCheckResult;
 import eu.unicore.samly2.trust.SamlTrustChecker;
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
@@ -104,8 +105,19 @@ public class SSOAuthnAssertionValidator extends AssertionValidator
 		
 			//6 - must be signed
 			if (assertionXml.getSignature() == null || assertionXml.getSignature().isNil())
-				throw new SAMLValidationException("Assertion is not signed in the SSO authN used over HTTP POST, while should be.");
-				
+			{
+				if (trustChecker.getCheckingMode() == CheckingMode.REQUIRE_SIGNED_ASSERTION)
+				{
+					throw new SAMLValidationException("Assertion is not signed in the SSO authN "
+						+ "used over HTTP POST, while should be.");
+				} else
+				{
+					if (!responseCheckResult.isTrustEstablished())
+						throw new SAMLValidationException("Neither assertion nor "
+								+ "response is signed, while at least one of "
+								+ "them should be.");
+				}
+			}	
 		}
 	}
 	

@@ -118,4 +118,14 @@ public class EnumeratedTrustChecker implements SamlTrustChecker
 	{
 		checkTrust(assertionDoc, new ResponseTrustCheckResult(false));
 	}
+
+	/**
+	 * Note: this method always throws exception as it shouldn't be used: signatures are not checked by
+	 * this trust checker.
+	 */
+	@Override
+	public CheckingMode getCheckingMode()
+	{
+		throw new IllegalStateException("Trust model of this validator is not using signatures");
+	}
 }

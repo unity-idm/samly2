@@ -23,7 +23,7 @@ import eu.unicore.samly2.elements.NameID;
 import eu.unicore.samly2.elements.SAMLAttribute;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.samly2.proto.AssertionResponse;
-import eu.unicore.samly2.trust.DsigSamlTrustCheckerBase.CheckingMode;
+import eu.unicore.samly2.trust.CheckingMode;
 import eu.unicore.samly2.trust.ResponseTrustCheckResult;
 import eu.unicore.samly2.trust.SimpleTrustChecker;
 import eu.unicore.samly2.trust.StrictSamlTrustChecker;
@@ -70,7 +70,8 @@ public class AssertionTest extends TestBase {
 		}
 		
 		//in lax mode signed response should be enough
-		StrictSamlTrustChecker checker2 = new StrictSamlTrustChecker(CheckingMode.REQUIRE_SIGNED_RESPONSE_OR_ASSERTION);
+		StrictSamlTrustChecker checker2 = new StrictSamlTrustChecker(
+				CheckingMode.REQUIRE_SIGNED_RESPONSE_OR_ASSERTION);
 		checker2.addTrustedIssuer(issuerDN1, SAMLConstants.NFORMAT_DN, issuerCert1[0].getPublicKey());
 		ResponseTrustCheckResult checkTrust2 = checker2.checkTrust(resp.getXMLBeanDoc(), resp.getXMLBean());
 		assertTrue(checkTrust2.isTrustEstablished());

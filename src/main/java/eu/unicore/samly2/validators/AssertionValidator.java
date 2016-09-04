@@ -62,7 +62,7 @@ public class AssertionValidator
 	protected String requestId;
 	protected long samlValidityGraceTime;
 	protected SamlTrustChecker trustChecker;
-	private ResponseTrustCheckResult responseCheckResult;
+	protected ResponseTrustCheckResult responseCheckResult;
 
 	public AssertionValidator(String consumerSamlName, String consumerEndpointUri, String requestId, 
 			long samlValidityGraceTime, SamlTrustChecker trustChecker)

@@ -34,8 +34,6 @@ import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
  */
 public abstract class DsigSamlTrustCheckerBase implements SamlTrustChecker
 {
-	public enum CheckingMode {REQUIRE_SIGNED_RESPONSE_OR_ASSERTION, REQUIRE_SIGNED_ASSERTION} 
-
 	private CheckingMode mode;
 	
 	public DsigSamlTrustCheckerBase(CheckingMode mode)
@@ -43,6 +41,12 @@ public abstract class DsigSamlTrustCheckerBase implements SamlTrustChecker
 		this.mode = mode;
 	}
 
+	@Override
+	public CheckingMode getCheckingMode()
+	{
+		return mode;
+	}
+	
 	@Override
 	public void checkTrust(AssertionDocument assertionDoc, ResponseTrustCheckResult responseCheckResult) 
 			throws SAMLValidationException
