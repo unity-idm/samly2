@@ -18,6 +18,7 @@ import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.samly2.exceptions.SAMLValidationSoftException;
+import eu.unicore.samly2.trust.CheckingMode;
 import eu.unicore.samly2.trust.ResponseTrustCheckResult;
 import eu.unicore.samly2.trust.SamlTrustChecker;
 
@@ -109,7 +110,7 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 				tryValidateAsAuthnAssertion(authnAsValidator, assertionDoc);
 			if (assertion.sizeOfStatementArray() > 0 || assertion.sizeOfAttributeStatementArray() > 0 ||
 					assertion.sizeOfAuthzDecisionStatementArray() > 0)
-				tryValidateAsGenericAssertion(asValidator, assertionDoc);
+				tryValidateAsGenericAssertion(asValidator, assertionDoc, responseTrust);
 
 			//asIssuer is not null (checked for all assertions) and has proper format 
 			//(checked for SSOAuth or manually above for other assertions)
@@ -170,7 +171,8 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 	}
 
 	protected void tryValidateAsGenericAssertion(AssertionValidator asValidator, 
-			AssertionDocument assertionDoc) throws SAMLValidationException
+			AssertionDocument assertionDoc, ResponseTrustCheckResult responseTrust) 
+					throws SAMLValidationException
 	{
 		asValidator.validate(assertionDoc);
 		AssertionType assertion = assertionDoc.getAssertion();
@@ -179,8 +181,19 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 			throw new SAMLValidationException("Issuer of assertion must be of Entity type in SSO AuthN. It is: " + asIssuer.getFormat());
 		if (binding == SAMLBindings.HTTP_POST && 
 				(assertion.getSignature() == null || assertion.getSignature().isNil()))
-			throw new SAMLValidationException("Assertion is not signed in the SSO authN used over HTTP POST, while should be.");
-
+		{
+			if (trustChecker.getCheckingMode() == CheckingMode.REQUIRE_SIGNED_ASSERTION)
+			{
+				throw new SAMLValidationException("Assertion is not signed in the SSO authN "
+					+ "used over HTTP POST, while should be.");
+			} else
+			{
+				if (!responseTrust.isTrustEstablished())
+					throw new SAMLValidationException("Neither assertion nor "
+							+ "response is signed, while at least one of "
+							+ "them should be.");
+			}
+		}
 		otherAssertions.add(assertionDoc);
 		if (assertion.sizeOfAttributeStatementArray() > 0)
 			attributeAssertions.add(assertionDoc);
