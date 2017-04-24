@@ -98,21 +98,28 @@ public class EnumeratedTrustChecker implements SamlTrustChecker
 		{
 			AuthnRequestType rr = (AuthnRequestType) request;
 			String consumerUrl = rr.getAssertionConsumerServiceURL();
-			try
-			{
-				URI consumerUri = SAMLUtils.normalizeUri(consumerUrl);
-				if (!addresses.contains(consumerUri))
-					throw new SAMLValidationException("AssertionConsumerServiceURL in request (" 
-							+ consumerUrl + ") is not among trusted endpoints of the " +
-									"issuer.");
-			} catch (URISyntaxException e)
-			{
-				throw new SAMLValidationException("AssertionConsumerServiceURL is not a valid URI: "
-						+ consumerUrl, e);
-			}
+			if (consumerUrl != null)
+				verifyConsumerServiceURL(consumerUrl, addresses);
 		}
 	}
 
+	private void verifyConsumerServiceURL(String consumerUrl, Set<URI> addresses) 
+			throws SAMLValidationException
+	{
+		try
+		{
+			URI consumerUri = SAMLUtils.normalizeUri(consumerUrl);
+			if (!addresses.contains(consumerUri))
+				throw new SAMLValidationException("AssertionConsumerServiceURL in request (" 
+						+ consumerUrl + ") is not among trusted endpoints of the " +
+						"issuer.");
+		} catch (URISyntaxException e)
+		{
+			throw new SAMLValidationException("AssertionConsumerServiceURL is not a valid URI: "
+					+ consumerUrl, e);
+		}
+	}
+	
 	@Override
 	public void checkTrust(AssertionDocument assertionDoc) throws SAMLValidationException
 	{
