@@ -9,6 +9,7 @@
 package eu.unicore.security.dsig;
 
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyException;
 import java.security.NoSuchAlgorithmException;
@@ -22,6 +23,7 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,6 +32,7 @@ import java.util.Set;
 import java.util.Vector;
 
 import javax.xml.crypto.MarshalException;
+import javax.xml.crypto.XMLStructure;
 import javax.xml.crypto.dom.DOMCryptoContext;
 import javax.xml.crypto.dom.DOMStructure;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
@@ -57,7 +60,6 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI;
 import org.apache.log4j.Logger;
-import org.apache.xml.security.utils.Base64;
 import org.apache.xmlbeans.XmlBase64Binary;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -186,7 +188,7 @@ public class DigSignatureUtil
 			"dsig");
 		KeyInfo ki = null;
 		KeyInfoFactory kif = fac.getKeyInfoFactory();
-		Vector<Object> kiVals = new Vector<Object>();
+		List<XMLStructure> kiVals = new ArrayList<>();
 		if (pubKey != null)
 		{
 			KeyValue kv = kif.newKeyValue(pubKey);
@@ -302,9 +304,9 @@ public class DigSignatureUtil
 				boolean refValid = ref.validate(valContext);
 
 				log.debug("ref["+j+"] validity status: " + refValid);
-				String s = Base64.encode(ref.getDigestValue());
+				String s = new String(Base64.getEncoder().encode(ref.getDigestValue()), StandardCharsets.US_ASCII);
 				log.debug("ref["+j+"] digest: " + s);
-				s = Base64.encode(ref.getCalculatedDigestValue());
+				s = new String(Base64.getEncoder().encode(ref.getCalculatedDigestValue()), StandardCharsets.US_ASCII);
 				log.debug("ref["+j+"] calculated digest: " + s);
 			}
 		} 

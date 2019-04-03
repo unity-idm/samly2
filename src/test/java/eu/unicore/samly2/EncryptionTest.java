@@ -6,6 +6,7 @@ package eu.unicore.samly2;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
@@ -53,7 +54,8 @@ public class EncryptionTest extends TestBase
 	@Test
 	public void testOfResponse() throws Exception
 	{
-		String respXml = FileUtils.readFileToString(new File("src/test/resources/encryptedResp.xml"));
+		String respXml = FileUtils.readFileToString(new File("src/test/resources/encryptedResp.xml"),
+				StandardCharsets.UTF_8);
 		ResponseDocument responseDoc = ResponseDocument.Factory.parse(respXml);
 		
 		KeystoreCredential ksCred = new KeystoreCredential("src/test/resources/encryptionKeystore.p12", 
