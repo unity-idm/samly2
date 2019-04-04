@@ -4,13 +4,13 @@
 	<groupId>pl.edu.icm.saml</groupId>
 	<artifactId>samly2</artifactId>
 	<packaging>jar</packaging>
-	<version>2.3.4-SNAPSHOT</version>
+	<version>2.3.5-SNAPSHOT</version>
 	<name>samly2</name>
 	
 	<parent>
 		<groupId>eu.unicore</groupId>
 		<artifactId>unicore-parent</artifactId>
-		<version>1.20</version>
+		<version>1.21</version>
 	</parent>
 	
 	<scm>
