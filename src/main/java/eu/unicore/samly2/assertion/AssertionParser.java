@@ -66,9 +66,6 @@ public class AssertionParser implements Serializable
 
 	/**
 	 * Decrypts encrypted assertion and setups the object
-	 * @param encryptedAssertion
-	 * @param decryptKey
-	 * @throws Exception
 	 */
 	public AssertionParser(EncryptedAssertionDocument encryptedAssertion, PrivateKey decryptKey) throws Exception
 	{
@@ -80,7 +77,6 @@ public class AssertionParser implements Serializable
 	
 	/**
 	 * Use {@link #getIssuerName()}.
-	 * @return
 	 */
 	@Deprecated
 	public String getIssuerDN()

@@ -6,12 +6,12 @@ package eu.unicore.samly2.validators;
 
 import java.util.Calendar;
 
-import xmlbeans.org.oasis.saml2.assertion.NameIDType;
-import xmlbeans.org.oasis.saml2.protocol.LogoutRequestDocument;
-import xmlbeans.org.oasis.saml2.protocol.LogoutRequestType;
 import eu.unicore.samly2.exceptions.SAMLRequesterException;
 import eu.unicore.samly2.exceptions.SAMLServerException;
 import eu.unicore.samly2.trust.SamlTrustChecker;
+import xmlbeans.org.oasis.saml2.assertion.NameIDType;
+import xmlbeans.org.oasis.saml2.protocol.LogoutRequestDocument;
+import xmlbeans.org.oasis.saml2.protocol.LogoutRequestType;
 
 /**
  * Validates SAML Logout Request, in accordance with the core SAML profile. 
@@ -59,11 +59,16 @@ public class LogoutRequestValidator extends AbstractRequestValidator
 	
 	protected void validateSubject(LogoutRequestType logoutRequest) throws SAMLServerException
 	{
-		NameIDType subject = logoutRequest.getNameID();
-		if (subject == null)
-			throw new SAMLRequesterException("Logged out entity name must be present in SLO request "
-					+ "and only NameID is supported");
-		if (subject.getStringValue() == null)
-			throw new SAMLRequesterException("Logged out entity value must be present in SLO request");
+		NameIDType plainSubject = logoutRequest.getNameID();
+		if (plainSubject != null)
+		{
+			if (plainSubject.getStringValue() == null)
+				throw new SAMLRequesterException("Logged out entity value must be present in SLO request");
+			return;
+		}
+		if (logoutRequest.getEncryptedID() != null)
+			return;
+		throw new SAMLRequesterException("Logged out entity name must be present in SLO request "
+				+ "and only NameID or EncryptedID are supported");
 	}
 }
