@@ -28,9 +28,6 @@ public interface SamlTrustChecker
 	/**
 	 * This method should be used to verify if the assertion is trusted, whenever the assertion is processed 
 	 * in the context of a response message which contain it.
-	 * @param assertionDoc
-	 * @param responseCheckResult
-	 * @throws SAMLValidationException
 	 */
 	void checkTrust(AssertionDocument assertionDoc, ResponseTrustCheckResult responseCheckResult) 
 			throws SAMLValidationException;

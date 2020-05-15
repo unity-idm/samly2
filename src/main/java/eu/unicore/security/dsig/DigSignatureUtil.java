@@ -109,7 +109,6 @@ public class DigSignatureUtil
 	 * @param insertBefore where to insert the dsig:Signature element
 	 * @param idAttribute what is the id attribute, which should be used as a reference. The root element
 	 * of the docToSign must possess this attribute.
-	 * @throws DSigException
 	 */
 	public void genEnvelopedSignature(PrivateKey privKey, PublicKey pubKey, 
 			X509Certificate []cert, Document docToSign, Node insertBefore, IdAttribute idAttribute) 
@@ -223,7 +222,6 @@ public class DigSignatureUtil
 	 * @param idAttribute what attribute holds information about element's identifier, which 
 	 * @param validatingKey key which shall be used for signature verification
 	 * @return true only if signature is valid
-	 * @throws DSigException
 	 */
 	public boolean verifyEnvelopedSignature(Document signedDocument, List<Element> shallBeSigned, 
 			IdAttribute idAttribute, PublicKey validatingKey) throws DSigException
@@ -259,7 +257,6 @@ public class DigSignatureUtil
 	 * @param validatingKey key which shall be used for signature verification
 	 * @param signatureNode a node (which need not to be in the document) with signature.
 	 * @return true only if signature is valid
-	 * @throws DSigException
 	 */
 	public boolean verifyDetachedSignature(Document signedDocument, List<Element> shallBeSigned, 
 			IdAttribute idAttribute, PublicKey validatingKey, Node signatureNode) throws DSigException
@@ -357,10 +354,6 @@ public class DigSignatureUtil
 	
 	/**
 	 * Recursively searches in the element and its children. 
-	 * @param cryptoContext
-	 * @param element
-	 * @param idAttribute
-	 * @throws XMLSignatureException 
 	 */
 	private void setResolverAttributes(DOMCryptoContext cryptoContext, Element element, 
 			IdAttribute idAttribute) throws XMLSignatureException

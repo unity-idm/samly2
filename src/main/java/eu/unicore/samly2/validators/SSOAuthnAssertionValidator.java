@@ -42,13 +42,6 @@ public class SSOAuthnAssertionValidator extends AssertionValidator
 				replayChecker, binding, new ResponseTrustCheckResult(false));
 	}
 	
-	/**
-	 * @param consumerSamlName
-	 * @param consumerEndpointUri
-	 * @param requestId
-	 * @param samlValidityGraceTime
-	 * @param trustChecker
-	 */
 	public SSOAuthnAssertionValidator(String consumerSamlName, String consumerEndpointUri,
 			String requestId, long samlValidityGraceTime, SamlTrustChecker trustChecker,
 			ReplayAttackChecker replayChecker, SAMLBindings binding, 

@@ -91,7 +91,6 @@ public class AssertionParser implements Serializable
 
 	/**
 	 * Use {@link #getSubjectName()}
-	 * @return
 	 */
 	@Deprecated
 	public String getSubjectDN()

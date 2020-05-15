@@ -18,11 +18,6 @@ import xmlbeans.org.oasis.saml2.protocol.NameIDMappingResponseType;
  */
 public class NameIDMappingResponseValidator extends StatusResponseValidator
 {
-	/**
-	 * @param consumerEndpointUri
-	 * @param requestId
-	 * @param trustChecker
-	 */
 	public NameIDMappingResponseValidator(String consumerEndpointUri, 
 			String requestId, SamlTrustChecker trustChecker)
 	{

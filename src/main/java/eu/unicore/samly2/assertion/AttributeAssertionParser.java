@@ -56,9 +56,6 @@ public class AttributeAssertionParser extends AssertionParser
 	/**
 	 * Returns the only attribute in the assertion. If the assertion contains more then one attribute 
 	 * an exception is thrown. If there is no attribute then null is returned.
-	 * @param whose
-	 * @return
-	 * @throws SAMLValidationException
 	 */
 	public ParsedAttribute getAttribute() 
 		throws SAMLValidationException
@@ -77,11 +74,9 @@ public class AttributeAssertionParser extends AssertionParser
 	}
 	
 	/**
-	 * @param name
 	 * @return the first attribute with the given name found. There may be more then one attribute 
 	 * with the same name, if there are more then one AttributeStatements. Null is returned when there is no 
 	 * such attribute. 
-	 * @throws SAMLValidationException
 	 */
 	public ParsedAttribute getAttribute(String name) throws SAMLValidationException
 	{

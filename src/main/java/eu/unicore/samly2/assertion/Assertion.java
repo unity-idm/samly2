@@ -296,9 +296,7 @@ public class Assertion extends AssertionParser implements Serializable
 	/**
 	 * Encrypt the assertion with a given public key (used to encrypt an actual, random symmetric 
 	 * encryption key). Encryption should be performed typically after signing the assertion.
-	 * @param pk
 	 * @param keySize key size: 128, 192 or 256 bit.
-	 * @throws Exception
 	 */
 	public EncryptedAssertionDocument encrypt(X509Certificate certificate, int keySize) throws Exception
 	{

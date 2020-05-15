@@ -36,9 +36,6 @@ public class StandaloneCanonizer
 		documentBuilder = dfactory.newDocumentBuilder();		
 	}
 	
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args)
 	{
 		boolean doEnvTr = false;

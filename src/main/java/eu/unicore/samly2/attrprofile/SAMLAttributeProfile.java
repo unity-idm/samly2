@@ -32,16 +32,16 @@ public interface SAMLAttributeProfile
 	/**
 	 * Checks if the XML attribute is supported.
 	 * @param xmlAttr SAML attribute
-	 * @return >= 0 if the attribute is supported (higher number means higher 
-	 * probability that the attribute is matching the profile), <0 if not supported. 
+	 * @return &gt;= 0 if the attribute is supported (higher number means higher 
+	 * probability that the attribute is matching the profile), &lt;0 if not supported. 
 	 */
 	public int isSupported(AttributeType xmlAttr);
 
 	/**
 	 * Checks if the parsed attribute is supported.
 	 * @param attr SAML attribute
-	 * @return >= 0 if the attribute is supported (higher number means higher 
-	 * probability that the attribute is matching the profile), <0 if not supported. 
+	 * @return &gt;= 0 if the attribute is supported (higher number means higher 
+	 * probability that the attribute is matching the profile), &lt;0 if not supported. 
 	 */
 	public int isSupported(ParsedAttribute attr);
 	
@@ -50,7 +50,6 @@ public interface SAMLAttributeProfile
 	 *  
 	 * @param xmlAttr SAML attribute to be mapped
 	 * @return the mapped attribute
-	 * @throws SAMLValidationException 
 	 */
 	public ParsedAttribute map(AttributeType xmlAttr) throws SAMLValidationException;
 	
@@ -58,9 +57,6 @@ public interface SAMLAttributeProfile
 	 * Performs a mapping to the SAML attribute. Implementations should assume that name is set,
 	 * and at least string or object values are set. If both are set then the profile is free to choose a preferred 
 	 * version as input.
-	 * @param attr
-	 * @return
-	 * @throws SAMLValidationException
 	 */
 	public AttributeType map(ParsedAttribute attr) throws SAMLValidationException;
 }

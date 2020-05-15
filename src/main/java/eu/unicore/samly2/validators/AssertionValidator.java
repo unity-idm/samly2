@@ -229,9 +229,6 @@ public class AssertionValidator
 
 	/**
 	 * This is tricky: we can have DNs so equality test must be done properly, but we can URIs also...
-	 * @param audience
-	 * @param tested
-	 * @return
 	 */
 	protected boolean audienceMatching(String audience, String tested)
 	{

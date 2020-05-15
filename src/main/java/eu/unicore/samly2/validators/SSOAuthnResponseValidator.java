@@ -45,11 +45,6 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 	protected List<AssertionDocument> otherAssertions;
 	protected ErrorReasons reasons;
 	
-	/**
-	 * @param consumerEndpointUri
-	 * @param requestId
-	 * @param trustChecker
-	 */
 	public SSOAuthnResponseValidator(String consumerSamlName, String consumerEndpointUri, 
 			String requestId, long samlValidityGraceTime, SamlTrustChecker trustChecker, 
 			ReplayAttackChecker replayChecker, SAMLBindings binding)

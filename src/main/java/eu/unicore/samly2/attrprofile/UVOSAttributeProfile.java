@@ -185,8 +185,6 @@ public class UVOSAttributeProfile implements SAMLAttributeProfile
 	/**
 	 * All UVOS scoped attributes are removed and instead a list of attributes is added, each with
 	 * the same scope. 
-	 * @param from
-	 * @return
 	 */
 	public static List<ParsedAttribute> splitByScopes(List<ParsedAttribute> from)
 	{
@@ -211,8 +209,6 @@ public class UVOSAttributeProfile implements SAMLAttributeProfile
 	 * The argument must be attribute with {@link ScopedStringValue}s. A list is returned, 
 	 * where each entry has a subset of values of the original attribute. Each attribute returned
 	 * has values on one scope only. 
-	 * @param pa
-	 * @return
 	 */
 	private static List<ParsedAttribute> splitByScopes(ParsedAttribute pa)
 	{

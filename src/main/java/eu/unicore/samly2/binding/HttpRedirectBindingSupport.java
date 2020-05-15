@@ -35,9 +35,6 @@ public class HttpRedirectBindingSupport
 	 * @param relayState relay state or null if not needed.
 	 * @param samlMessage the saml protocol message encoded as string 
 	 * @param samlParticipantURL the base URL of the SAML receiver
-	 * @return
-	 * @throws IOException 
-	 * @throws  
 	 */
 	public static String getRedirectURL(SAMLMessageType messageType, String relayState, 
 			String samlMessage, String samlParticipantURL) throws IOException
@@ -64,10 +61,6 @@ public class HttpRedirectBindingSupport
 	/**
 	 * Creates a URL parameter to be used in redirect URL.
 	 * The resulting string is deflated and base64 encoded, however it is not URL-encoded. 
-	 * @param samlMessage
-	 * @return
-	 * @throws IOException 
-	 * @throws UnsupportedEncodingException 
 	 */
 	public static String toURLParam(String samlMessage) throws UnsupportedEncodingException, IOException
 	{
@@ -88,7 +81,6 @@ public class HttpRedirectBindingSupport
 	 * @param samlRequest value of the URL parameter with the SAML assertion. It is assumed that the value was
 	 * already URL decoded.
 	 * @return String after Base64 decoding and decompression.
-	 * @throws IOException
 	 */
 	public static String inflateSAMLRequest(String samlRequest) throws IOException
 	{

@@ -36,11 +36,6 @@ public class AttributeAssertionResponseValidator extends StatusResponseValidator
 	
 	protected List<AssertionDocument> attributeAssertions;
 	
-	/**
-	 * @param consumerEndpointUri
-	 * @param requestId
-	 * @param trustChecker
-	 */
 	public AttributeAssertionResponseValidator(String consumerSamlName, String consumerEndpointUri, 
 			String requestId, long samlValidityGraceTime, SamlTrustChecker trustChecker,
 			NameIDType requestedSubject)

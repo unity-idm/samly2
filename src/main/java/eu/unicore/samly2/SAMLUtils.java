@@ -117,10 +117,6 @@ public class SAMLUtils
 	/**
 	 * Extracts assertions from the wrapping SAML response in a safe way. It is guaranteed that no link is preserved 
 	 * in the returned objects to the parameter object.
-	 * @param response
-	 * @return
-	 * @throws XmlException
-	 * @throws IOException
 	 */
 	public static AssertionDocument[] getAssertions(ResponseType response) 
 		throws XmlException, IOException
@@ -160,10 +156,6 @@ public class SAMLUtils
 	/**
 	 * Extracts encrypted assertions from the wrapping SAML response in a safe way. 
 	 * It is guaranteed that no link is preserved in the returned objects to the parameter object.
-	 * @param response
-	 * @return
-	 * @throws XmlException
-	 * @throws IOException
 	 */
 	public static EncryptedAssertionDocument[] getEncryptedAssertions(ResponseType response) 
 		throws XmlException, IOException
@@ -193,10 +185,6 @@ public class SAMLUtils
 	
 	/**
 	 * Extracts all assertions from the response, decrypting those encrypted.
-	 * @param response
-	 * @param encryptionKey
-	 * @return
-	 * @throws Exception 
 	 */
 	public static List<AssertionDocument> extractAllAssertions(ResponseType response, PrivateKey decryptionKey) 
 			throws Exception

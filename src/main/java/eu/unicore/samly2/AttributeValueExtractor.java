@@ -19,8 +19,6 @@ import org.apache.xmlbeans.XmlObject;
 public class AttributeValueExtractor
 {
 	/**
-	 * 
-	 * @param value
 	 * @return either String or byte[]. String is returned for all simple types, except base64 binary which is
 	 * converted to byte[].
 	 */

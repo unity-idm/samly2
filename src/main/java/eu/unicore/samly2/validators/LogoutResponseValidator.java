@@ -18,11 +18,6 @@ import eu.unicore.samly2.trust.SamlTrustChecker;
  */
 public class LogoutResponseValidator extends StatusResponseValidator
 {
-	/**
-	 * @param consumerEndpointUri
-	 * @param requestId
-	 * @param trustChecker
-	 */
 	public LogoutResponseValidator(String consumerEndpointUri, String requestId, SamlTrustChecker trustChecker)
 	{
 		super(consumerEndpointUri, requestId, trustChecker);

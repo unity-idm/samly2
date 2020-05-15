@@ -44,9 +44,6 @@ public class AssertionSignatureChecker
 		documentBuilder = dfactory.newDocumentBuilder();		
 	}
 
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args)
 	{
 		Logger.getRootLogger().setLevel(Level.TRACE);

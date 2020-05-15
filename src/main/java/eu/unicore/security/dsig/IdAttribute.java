@@ -14,24 +14,19 @@ public class IdAttribute
 	private final String localName;
 
 	/**
-	 * @param namespace, can be null
-	 * @param localName
+	 * @param namespace can be null
 	 */
 	public IdAttribute(String namespace, String localName)
 	{
 		this.namespace = namespace;
 		this.localName = localName;
 	}
-	/**
-	 * @return the namespace
-	 */
+
 	public String getNamespace()
 	{
 		return namespace;
 	}
-	/**
-	 * @return the localName
-	 */
+
 	public String getLocalName()
 	{
 		return localName;
