@@ -46,7 +46,7 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>3.1.0</version>
+			<version>3.3.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -57,7 +57,7 @@
 		<dependency>
 			<groupId>org.apache.santuario</groupId>
 			<artifactId>xmlsec</artifactId>
-			<version>2.1.4</version>
+			<version>2.1.5</version>
 		</dependency>
 		<dependency>
 			<groupId>xalan</groupId>
@@ -76,14 +76,6 @@
 		</dependency>
 	</dependencies>
 	
-	<repositories>
-		<repository>
-			<id>unicore.eu</id>
-			<name>UNICORE repository</name>
-			<url>http://unicore-dev.zam.kfa-juelich.de/maven</url>
-		</repository>
-	</repositories>
-
 	<profiles>
 		<profile>
 			<id>SOAP_for_jdk11</id>
