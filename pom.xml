@@ -119,7 +119,6 @@
 						<xmlConfig implementation="java.io.File">src/main/schema/xmlbeans_config.xsdconfig</xmlConfig>
 					</xmlConfigs>
 					<noUpa>true</noUpa>
-					<outputJar>target/samly2Xbeans-${project.version}.jar</outputJar>
 					<javaSource>1.8</javaSource>
 				</configuration>
 			</plugin>
