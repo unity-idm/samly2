@@ -11,7 +11,6 @@ import org.junit.Test;
 import xmlbeans.org.oasis.saml2.protocol.RequestAbstractType;
 import xmlbeans.org.oasis.saml2.protocol.ResponseDocument;
 import xmlbeans.org.oasis.saml2.protocol.StatusResponseType;
-import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.assertion.Assertion;
 import eu.unicore.samly2.elements.NameID;
 import eu.unicore.samly2.elements.NameIDPolicy;

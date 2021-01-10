@@ -10,7 +10,7 @@ package eu.unicore.security.dsig;
 
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 
 

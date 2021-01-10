@@ -11,7 +11,8 @@ package eu.unicore.samly2.assertion;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.AssertionType;
@@ -30,7 +31,7 @@ import eu.unicore.samly2.exceptions.SAMLValidationException;
  */
 public class AttributeAssertionParser extends AssertionParser
 {
-	private static final Logger log = Logger.getLogger(AttributeAssertionParser.class);
+	private static final Logger log = LogManager.getLogger(AttributeAssertionParser.class);
 	private static final long serialVersionUID=1L;
 	private ProfilesManager profilesManager = new ProfilesManager();
 	

@@ -59,7 +59,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xmlbeans.XmlBase64Binary;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -78,7 +79,7 @@ import xmlbeans.org.w3.x2000.x09.xmldsig.X509DataType;
  */
 public class DigSignatureUtil
 {
-	private static final Logger log = Logger.getLogger("unicore.security.dsig." + 
+	private static final Logger log = LogManager.getLogger("unicore.security.dsig." + 
 		DigSignatureUtil.class.getSimpleName());
 	private XMLSignatureFactory fac = null;
 	

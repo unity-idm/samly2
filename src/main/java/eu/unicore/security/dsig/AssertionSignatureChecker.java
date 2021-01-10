@@ -9,7 +9,6 @@
 package eu.unicore.security.dsig;
 
 import java.io.FileInputStream;
-import java.io.OutputStreamWriter;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
@@ -17,21 +16,20 @@ import java.util.Collections;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.builder.api.AppenderComponentBuilder;
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilder;
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory;
+import org.apache.logging.log4j.core.config.builder.api.LayoutComponentBuilder;
+import org.apache.logging.log4j.core.config.builder.api.RootLoggerComponentBuilder;
+import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 import org.w3c.dom.Document;
 
 import eu.unicore.samly2.assertion.AssertionParser;
 import eu.unicore.samly2.trust.SamlTrustChecker;
-
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 
 
-/**
- * @author K. Benedyczak
- */
 public class AssertionSignatureChecker
 {
 	private DocumentBuilder documentBuilder;
@@ -46,11 +44,20 @@ public class AssertionSignatureChecker
 
 	public static void main(String[] args)
 	{
-		Logger.getRootLogger().setLevel(Level.TRACE);
-		ConsoleAppender ca = new ConsoleAppender(new PatternLayout("[%t] %-p %c: %x %m%n"));
-		ca.setImmediateFlush(true);
-		ca.setWriter(new OutputStreamWriter(System.out));
-		Logger.getRootLogger().addAppender(ca);
+		ConfigurationBuilder<BuiltConfiguration> builder
+		 	= ConfigurationBuilderFactory.newConfigurationBuilder();
+		
+		AppenderComponentBuilder consoleAppender = builder.newAppender("stdout", "Console"); 
+		
+		LayoutComponentBuilder layoutBuilder = builder.newLayout("PatternLayout");
+		layoutBuilder.addAttribute("pattern", "[%t] %-p %c: %x %m%n");
+		consoleAppender.add(layoutBuilder);
+		
+		RootLoggerComponentBuilder rootLoggerBuilder = builder.newRootLogger(Level.TRACE);
+		rootLoggerBuilder.add(builder.newAppenderRef("stdout"));
+		builder.add(rootLoggerBuilder);
+		
+		
 		AssertionSignatureChecker checker;
 		try
 		{

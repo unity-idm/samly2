@@ -12,7 +12,8 @@ import java.security.cert.X509Certificate;
 
 import javax.crypto.KeyGenerator;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xml.security.encryption.EncryptedData;
 import org.apache.xml.security.encryption.EncryptedKey;
 import org.apache.xml.security.encryption.XMLCipher;
@@ -30,7 +31,7 @@ import eu.unicore.security.dsig.DigSignatureUtil;
  */
 public class EncryptionUtil
 {
-	private static final Logger log = Logger.getLogger("unicore.security.enc." + 
+	private static final Logger log = LogManager.getLogger("unicore.security.enc." + 
 			EncryptionUtil.class.getSimpleName());
 
 	static

@@ -12,7 +12,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import eu.emi.security.authn.x509.impl.CertificateUtils;
 import eu.emi.security.authn.x509.impl.CertificateUtils.Encoding;
@@ -23,7 +24,7 @@ import eu.emi.security.authn.x509.impl.CertificateUtils.Encoding;
  */
 public class Utils
 {
-	private static final Logger log = Logger.getLogger("unicore.security." + 
+	private static final Logger log = LogManager.getLogger("unicore.security." + 
 		Utils.class.getSimpleName());
 
 	private static X509Certificate deserializeCertificate(byte []encodedCert)
