@@ -142,16 +142,7 @@ public class DigSignatureUtil
 				CanonicalizationMethod.EXCLUSIVE,
 				(C14NMethodParameterSpec) null);
 		
-		SignatureMethod sigMethod;
-		if (privKey instanceof RSAPrivateKey)
-			sigMethod = fac.newSignatureMethod(
-				SignatureMethod.RSA_SHA1, null);
-		else if (privKey instanceof DSAPrivateKey)
-			sigMethod = fac.newSignatureMethod(
-				SignatureMethod.DSA_SHA1, null);
-		else
-			throw new KeyException("Unsupported private key algorithm " +
-				"(must be DSA or RSA) :" + privKey.getAlgorithm());
+		SignatureMethod sigMethod = fac.newSignatureMethod(getSAMLSignatureAlgorithmForPrivateKey(privKey), null);
 
 		Element elToSign = docToSign.getDocumentElement();
 		
@@ -214,6 +205,41 @@ public class DigSignatureUtil
 			log.trace("Signed document:\n" + 
 					dumpDOMToString(docToSign));
 
+	}
+	
+	public static String getSAMLSignatureAlgorithmForPrivateKey(PrivateKey privKey) throws KeyException
+	{
+		if (privKey instanceof RSAPrivateKey)
+			return SignatureMethod.RSA_SHA1;
+		else if (privKey instanceof DSAPrivateKey)
+			return SignatureMethod.DSA_SHA1;
+		else
+			throw new KeyException("Unsupported private key algorithm " +
+				"(must be DSA or RSA) :" + privKey.getAlgorithm());
+	}
+	
+	public static String getJCASignatureAlgorithmForPrivateKey(PrivateKey privKey) throws KeyException
+	{
+		if (privKey instanceof RSAPrivateKey)
+			return "SHA1withRSA";
+		else if (privKey instanceof DSAPrivateKey)
+			return "SHA1withDSA";
+		else
+			throw new KeyException("Unsupported private key algorithm " +
+				"(must be DSA or RSA) :" + privKey.getAlgorithm());
+	}
+
+	public static String getJCASignatureAlgorithmForSAMLSignatureAlgorithm(String samlSignatureAlgorithm) throws KeyException
+	{
+		if (SignatureMethod.RSA_SHA1.equals(samlSignatureAlgorithm))
+			return "SHA1withRSA";
+		else if (SignatureMethod.DSA_SHA1.equals(samlSignatureAlgorithm))
+			return "SHA1withDSA";
+		else
+			throw new KeyException("Unsupported signature algorithm " 
+					+ "(must be http://www.w3.org/2000/09/xmldsig#rsa-sha1 or "
+					+ "http://www.w3.org/2000/09/xmldsig#dsa-sha1) :" 
+					+ samlSignatureAlgorithm);
 	}
 	
 	/**

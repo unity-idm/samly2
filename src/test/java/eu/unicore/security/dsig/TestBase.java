@@ -10,19 +10,16 @@ import java.security.cert.X509Certificate;
 import org.apache.xmlbeans.XmlOptions;
 import org.junit.Before;
 
-/**
- * @author K. Benedyczak
- */
 public abstract class TestBase
 {
-	private static final String PASSWORD = "dummypassword";
-	private static final String ALIAS = "a1";
+	public static final String PASSWORD = "dummypassword";
+	public static final String ALIAS = "a1";
 	
-	private static final String KEYSTORE1 = "keystoreRSA1.jks";
-	private static final String KEYSTORE2 = "keystoreRSA2.jks";
-	private static final String KEYSTORE3 = "keystoreDSA1.jks";
-	private static final String KEYSTORE4 = "keystoreDSA2.jks";
-	private static final String KEYSTORE_EXP = "keystoreExpired.jks";
+	public static final String KEYSTORE1 = "keystoreRSA1.jks";
+	public static final String KEYSTORE2 = "keystoreRSA2.jks";
+	public static final String KEYSTORE3 = "keystoreDSA1.jks";
+	public static final String KEYSTORE4 = "keystoreDSA2.jks";
+	public static final String KEYSTORE_EXP = "keystoreExpired.jks";
 	
 	
 	private KeyStore ks1, ks2, ks3, ks4, ksExp;
@@ -34,31 +31,19 @@ public abstract class TestBase
 	protected PrivateKey privKey1, privKey2, privKey3, privKeyExpired;
 	protected XmlOptions xmlOpts;
 	
+	
+	
 	@Before
 	public void setUp()
 	{
 		try
 		{
 			xmlOpts = new XmlOptions().setSavePrettyPrint();
-			ks1 = KeyStore.getInstance("JKS");
-			InputStream is = getClass().getResourceAsStream("/" + KEYSTORE1);
-			ks1.load(is, PASSWORD.toCharArray());
-			
-			ks2 = KeyStore.getInstance("JKS");
-			is = getClass().getResourceAsStream("/" + KEYSTORE2);
-			ks2.load(is, PASSWORD.toCharArray());
-
-			ks3 = KeyStore.getInstance("JKS");
-			is = getClass().getResourceAsStream("/" + KEYSTORE3);
-			ks3.load(is, PASSWORD.toCharArray());
-			
-			ks4 = KeyStore.getInstance("JKS");
-			is = getClass().getResourceAsStream("/" + KEYSTORE4);
-			ks4.load(is, PASSWORD.toCharArray());
-
-			ksExp = KeyStore.getInstance("JKS");
-			is = getClass().getResourceAsStream("/" + KEYSTORE_EXP);
-			ksExp.load(is, PASSWORD.toCharArray());
+			ks1 = loadKeystore(KEYSTORE1);
+			ks2 = loadKeystore(KEYSTORE2);
+			ks3 = loadKeystore(KEYSTORE3);
+			ks4 = loadKeystore(KEYSTORE4);
+			ksExp = loadKeystore(KEYSTORE_EXP);
 			
 			issuerCert1 = convertChain(ks1.getCertificateChain(ALIAS));
 			receiverCert1 = convertChain(ks2.getCertificateChain(ALIAS));
@@ -79,12 +64,25 @@ public abstract class TestBase
 			expiredDN = expiredCert[0].getSubjectX500Principal().getName();
 		} catch (Exception e)
 		{
-			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 	}
 	
-	private X509Certificate[] convertChain(Certificate[] chain)
+	public static KeyStore loadKeystore(String path) throws Exception
+	{
+		try
+		{
+			KeyStore keystore = KeyStore.getInstance("JKS");
+			InputStream is = TestBase.class.getResourceAsStream("/" + path);
+			keystore.load(is, PASSWORD.toCharArray());
+			return keystore;
+		} catch (Exception e)
+		{
+			throw new RuntimeException("Can't load keystore", e);
+		}
+	}
+	
+	public static X509Certificate[] convertChain(Certificate[] chain)
 	{
 		X509Certificate[] ret = new X509Certificate[chain.length];
 		for (int i=0; i<chain.length; i++)
