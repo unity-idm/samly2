@@ -35,6 +35,8 @@ public class AttributeAssertionResponseValidator extends StatusResponseValidator
 	protected PrivateKey decryptionKey;
 	
 	protected List<AssertionDocument> attributeAssertions;
+	private final String consumerEndpointUri;
+	private final String requestId;
 	
 	public AttributeAssertionResponseValidator(String consumerSamlName, String consumerEndpointUri, 
 			String requestId, long samlValidityGraceTime, SamlTrustChecker trustChecker,
@@ -42,6 +44,8 @@ public class AttributeAssertionResponseValidator extends StatusResponseValidator
 	{
 		super(consumerEndpointUri, requestId, trustChecker);
 		this.consumerSamlName = consumerSamlName;
+		this.consumerEndpointUri = consumerEndpointUri;
+		this.requestId = requestId;
 		this.samlValidityGraceTime = samlValidityGraceTime;
 		this.requestedSubject = requestedSubject;
 	}

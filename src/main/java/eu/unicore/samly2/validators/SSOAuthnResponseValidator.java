@@ -44,6 +44,8 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 	protected List<AssertionDocument> attributeAssertions;
 	protected List<AssertionDocument> otherAssertions;
 	protected ErrorReasons reasons;
+	private final String consumerEndpointUri;
+	private final String requestId;
 	
 	public SSOAuthnResponseValidator(String consumerSamlName, String consumerEndpointUri, 
 			String requestId, long samlValidityGraceTime, SamlTrustChecker trustChecker, 
@@ -51,6 +53,8 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 	{
 		super(consumerEndpointUri, requestId, trustChecker);
 		this.consumerSamlName = consumerSamlName;
+		this.consumerEndpointUri = consumerEndpointUri;
+		this.requestId = requestId;
 		this.replayChecker = replayChecker;
 		this.samlValidityGraceTime = samlValidityGraceTime;
 		this.binding = binding;

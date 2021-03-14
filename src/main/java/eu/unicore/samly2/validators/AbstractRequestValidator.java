@@ -4,19 +4,13 @@
  */
 package eu.unicore.samly2.validators;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import org.apache.xmlbeans.XmlObject;
 
 import eu.unicore.samly2.SAMLConstants;
-import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLRequesterException;
 import eu.unicore.samly2.exceptions.SAMLServerException;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
-import eu.unicore.samly2.exceptions.SAMLVersionException;
 import eu.unicore.samly2.trust.SamlTrustChecker;
-
 import xmlbeans.org.oasis.saml2.protocol.RequestAbstractType;
 
 /**
@@ -35,49 +29,20 @@ import xmlbeans.org.oasis.saml2.protocol.RequestAbstractType;
  */
 public class AbstractRequestValidator
 {
-	protected URI responderEndpointUri;
-	protected SamlTrustChecker trustChecker;
-	protected long requestValidity;
-	protected ReplayAttackChecker replayChecker;
+	private final CommonRequestValidation commonRequestValidation;
+	private SamlTrustChecker trustChecker;
 
 	public AbstractRequestValidator(String responderEndpointUri, SamlTrustChecker trustChecker,
 			long requestValidity, ReplayAttackChecker replayChecker)
 	{
-		try
-		{
-			this.responderEndpointUri = SAMLUtils.normalizeUri(responderEndpointUri);
-		} catch (URISyntaxException e)
-		{
-			throw new IllegalArgumentException("responderURI '" + responderEndpointUri + 
-					"' is not a valid URI: " + e, e);
-		}
+		this.commonRequestValidation = new CommonRequestValidation(responderEndpointUri, 
+				requestValidity, replayChecker);
 		this.trustChecker = trustChecker;
-		this.requestValidity = requestValidity;
-		this.replayChecker = replayChecker;
 	}
 	
 	public void validate(XmlObject wrappingDcoument, RequestAbstractType request) throws SAMLServerException
 	{
-		checkMandatoryElements(request);
-		
-		
-		String destination = request.getDestination();
-		if (destination != null)
-		{
-			URI destinationUri;
-			try
-			{
-				destinationUri = SAMLUtils.normalizeUri(destination);
-			} catch (URISyntaxException e)
-			{
-				throw new SAMLRequesterException(SAMLConstants.SubStatus.STATUS2_REQUEST_DENIED, "Destination value " + destination
-						+ " is not a valid URI: " + e.toString());
-			}
-			
-			if (!destinationUri.equals(responderEndpointUri))
-				throw new SAMLRequesterException(SAMLConstants.SubStatus.STATUS2_REQUEST_DENIED, "Destination value " + destination
-					+ " is not matching the responder's URI: " + responderEndpointUri);
-		}
+		commonRequestValidation.validateBasicElements(request);
 		try
 		{
 			trustChecker.checkTrust(wrappingDcoument, request);
@@ -86,30 +51,6 @@ public class AbstractRequestValidator
 			throw new SAMLRequesterException(SAMLConstants.SubStatus.STATUS2_REQUEST_DENIED,
 					e.getMessage(), e);
 		}
-		long maxTs = request.getIssueInstant().getTimeInMillis() + requestValidity;
-		if (maxTs < System.currentTimeMillis())
-			throw new SAMLRequesterException(SAMLConstants.SubStatus.STATUS2_REQUEST_DENIED, 
-					"Request is too old. It was issued at " + 
-					request.getIssueInstant() + " and the validity timeframe is " + 
-					requestValidity + "ms");
-		
-		try
-		{
-			replayChecker.checkAndStore(request.getID(), requestValidity);
-		} catch (SAMLValidationException e)
-		{
-			throw new SAMLRequesterException(SAMLConstants.SubStatus.STATUS2_REQUEST_DENIED, 
-					e.getMessage());
-		}
-	}
-	
-	protected void checkMandatoryElements(RequestAbstractType request) throws SAMLServerException
-	{
-		if (request.getID() == null || request.getID().equals(""))
-			throw new SAMLRequesterException("Request must posses an ID");
-		if (request.getVersion() == null || !request.getVersion().equals(SAMLConstants.SAML2_VERSION))
-			throw new SAMLVersionException("Request must posses " + SAMLConstants.SAML2_VERSION + " version");
-		if (request.getIssueInstant() == null)
-			throw new SAMLRequesterException("Request must posses an IssueInstant");
+		commonRequestValidation.validateReply(request);
 	}
 }

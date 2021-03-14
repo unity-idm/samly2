@@ -171,6 +171,12 @@ public class HttpRedirectBindingSupport
 		}		
 	}
 
+	public static boolean isSigned(String rawQueryString)
+	{
+		Map<String, String> paramsMap = parseQueryString(rawQueryString);
+		return paramsMap.get(SIGNATURE_ALGORITHM_PARAM) != null && paramsMap.get(SIGNATURE_PARAM) != null;
+	}
+	
 	private static SAMLMessageType getMessageType(Map<String, String> paramsMap) 
 	{
 		if (paramsMap.containsKey(SAMLMessageType.SAMLRequest.toString()))

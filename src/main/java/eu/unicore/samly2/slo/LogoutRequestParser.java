@@ -9,7 +9,7 @@ import java.security.PrivateKey;
 import org.w3c.dom.Document;
 
 import eu.unicore.samly2.SAMLUtils;
-import eu.unicore.samly2.validators.LogoutRequestValidator;
+import eu.unicore.samly2.messages.SAMLMessage;
 import eu.unicore.security.enc.EncryptionUtil;
 import xmlbeans.org.oasis.saml2.assertion.EncryptedElementType;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
@@ -31,13 +31,12 @@ public class LogoutRequestParser
 		this.decryptKey = decryptKey;
 	}
 	
-	public ParsedLogoutRequest parseRequest(LogoutRequestDocument logoutRequestDoc) throws Exception
+	public ParsedLogoutRequest parseRequest(SAMLMessage<LogoutRequestDocument> logoutRequest) throws Exception
 	{
-		validator.validate(logoutRequestDoc);
-		LogoutRequestType logoutRequest = logoutRequestDoc.getLogoutRequest();
-		
-		NameIDType issuer = logoutRequest.getIssuer();
-		NameIDType subject = parseSubject(logoutRequest);
+		validator.validate(logoutRequest.messageDocument, logoutRequest.verifiableMessage);
+		LogoutRequestType request = logoutRequest.messageDocument.getLogoutRequest();
+		NameIDType issuer = request.getIssuer();
+		NameIDType subject = parseSubject(request);
 		
 		return new ParsedLogoutRequest(subject, issuer);
 	}

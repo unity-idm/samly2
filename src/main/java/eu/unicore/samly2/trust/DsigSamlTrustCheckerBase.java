@@ -16,7 +16,6 @@ import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.security.dsig.DSigException;
 import eu.unicore.security.dsig.DigSignatureUtil;
 import eu.unicore.security.dsig.IdAttribute;
-
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.AssertionType;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;

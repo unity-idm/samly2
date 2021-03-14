@@ -2,13 +2,20 @@
  * Copyright (c) 2012 ICM Uniwersytet Warszawski All rights reserved.
  * See LICENCE file for licensing information.
  */
-package eu.unicore.samly2.validators;
+package eu.unicore.samly2.slo;
 
+import java.security.PublicKey;
 import java.util.Calendar;
+import java.util.List;
+import java.util.function.Function;
 
 import eu.unicore.samly2.exceptions.SAMLRequesterException;
 import eu.unicore.samly2.exceptions.SAMLServerException;
-import eu.unicore.samly2.trust.SamlTrustChecker;
+import eu.unicore.samly2.exceptions.SAMLValidationException;
+import eu.unicore.samly2.messages.SAMLVerifiableMessage;
+import eu.unicore.samly2.trust.MessagePublicKeyTrustChecker;
+import eu.unicore.samly2.validators.CommonRequestValidation;
+import eu.unicore.samly2.validators.ReplayAttackChecker;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 import xmlbeans.org.oasis.saml2.protocol.LogoutRequestDocument;
 import xmlbeans.org.oasis.saml2.protocol.LogoutRequestType;
@@ -18,18 +25,25 @@ import xmlbeans.org.oasis.saml2.protocol.LogoutRequestType;
  * 
  * @author K. Benedyczak
  */
-public class LogoutRequestValidator extends AbstractRequestValidator
+public class LogoutRequestValidator
 {
-	public LogoutRequestValidator(String consumerEndpointUri, SamlTrustChecker trustChecker,
-			long requestValidity, ReplayAttackChecker replayChecker)
+	private final CommonRequestValidation commonValidator;
+	private final MessagePublicKeyTrustChecker trustChecker;
+	
+	public LogoutRequestValidator(String consumerEndpointUri, long requestValidity, ReplayAttackChecker replayChecker, 
+			Function<NameIDType, List<PublicKey>> trustedKeysProvider)
 	{
-		super(consumerEndpointUri, trustChecker, requestValidity, replayChecker);
+		commonValidator = new CommonRequestValidation(consumerEndpointUri, requestValidity, replayChecker);
+		trustChecker = new MessagePublicKeyTrustChecker(trustedKeysProvider);
 	}
 
-	public void validate(LogoutRequestDocument logoutRequestDoc) throws SAMLServerException
+	public void validate(LogoutRequestDocument logoutRequestDoc, SAMLVerifiableMessage verifiableMessage) 
+			throws SAMLServerException
 	{
 		LogoutRequestType logoutRequest = logoutRequestDoc.getLogoutRequest();
-		super.validate(logoutRequestDoc, logoutRequest);
+		commonValidator.validateBasicElements(logoutRequest);
+		verifyTrust(verifiableMessage, logoutRequest);
+		commonValidator.validateReply(logoutRequest);
 		
 		validateIssuer(logoutRequest);
 		validateSubject(logoutRequest);
@@ -39,6 +53,18 @@ public class LogoutRequestValidator extends AbstractRequestValidator
 		{
 			if (Calendar.getInstance().after(c))
 				throw new SAMLRequesterException("Request has expired");
+		}
+	}
+
+	private void verifyTrust(SAMLVerifiableMessage verifiableMessage, LogoutRequestType logoutRequest)
+			throws SAMLRequesterException
+	{
+		try
+		{
+			trustChecker.verify(logoutRequest.getIssuer(), verifiableMessage);
+		} catch (SAMLValidationException e)
+		{
+			throw new SAMLRequesterException("Request is not trusted", e);
 		}
 	}
 	

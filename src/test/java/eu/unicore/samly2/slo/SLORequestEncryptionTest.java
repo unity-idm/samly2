@@ -9,15 +9,20 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.security.PublicKey;
+import java.util.Collections;
 
 import org.apache.xmlbeans.XmlOptions;
 import org.junit.Test;
 
+import eu.unicore.samly2.SAMLBindings;
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.elements.NameID;
+import eu.unicore.samly2.messages.SAMLMessage;
+import eu.unicore.samly2.messages.SAMLVerifiableMessage;
 import eu.unicore.samly2.proto.LogoutRequest;
-import eu.unicore.samly2.trust.SamlTrustChecker;
-import eu.unicore.samly2.validators.LogoutRequestValidator;
 import eu.unicore.samly2.validators.ReplayAttackChecker;
 import eu.unicore.security.dsig.TestBase;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
@@ -38,9 +43,15 @@ public class SLORequestEncryptionTest extends TestBase
 		System.out.println("Encrypted:\n" + encryptedRequest.xmlText(new XmlOptions().setSavePrettyPrint()) + "\n");
 		
 		LogoutRequestValidator validator = new LogoutRequestValidator(
-				"consumerEndpoint", mock(SamlTrustChecker.class), 1000000l, mock(ReplayAttackChecker.class));
+				"consumerEndpoint", 1000000l, mock(ReplayAttackChecker.class), 
+				id -> Collections.singletonList(mock(PublicKey.class)));
 		LogoutRequestParser parser = new LogoutRequestParser(validator, privKey1);
-		ParsedLogoutRequest parsedRequest = parser.parseRequest(encryptedRequest);
+		
+		SAMLVerifiableMessage verMsg = mock(SAMLVerifiableMessage.class);
+		when(verMsg.isSigned()).thenReturn(true);
+		SAMLMessage<LogoutRequestDocument> requestMessage = new SAMLMessage<>(verMsg, "relay", 
+				SAMLBindings.SOAP, encryptedRequest);
+		ParsedLogoutRequest parsedRequest = parser.parseRequest(requestMessage);
 		
 		assertThat(parsedRequest.getIssuer().xmlText(), is(issuer.xmlText()));
 		assertThat(parsedRequest.getSubject().xmlText(), is(subject.xmlText()));
