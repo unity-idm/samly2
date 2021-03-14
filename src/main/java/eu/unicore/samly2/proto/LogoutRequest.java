@@ -62,6 +62,7 @@ public class LogoutRequest extends AbstractRequest<LogoutRequestDocument, Logout
 		xmlReq.unsetNameID();
 	}
 	
+	@Override
 	public void sign(PrivateKey pk, X509Certificate[] cert) 
 		throws DSigException
 	{
