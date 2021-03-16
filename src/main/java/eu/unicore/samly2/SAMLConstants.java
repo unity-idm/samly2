@@ -107,7 +107,7 @@ public class SAMLConstants
 	
 	public enum SubStatus 
 	{
-		STATUS2_UNKNOWN_PRINCIPIAL(STAT_P + "UnknownPrincipial"),
+		STATUS2_UNKNOWN_PRINCIPAL(STAT_P + "UnknownPrincipal"),
 		STATUS2_AUTHN_FAILED(STAT_P + "AuthnFailed"),
 		STATUS2_REQUEST_DENIED(STAT_P + "RequestDenied"),	
 		STATUS2_INVALID_ATTR(STAT_P + "InvalidAttrNameOrValue"),
