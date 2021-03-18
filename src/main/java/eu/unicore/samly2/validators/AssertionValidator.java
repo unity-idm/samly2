@@ -8,7 +8,10 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.AssertionType;
@@ -122,8 +125,9 @@ public class AssertionValidator
 	protected void checkSubject(AssertionType assertion) throws SAMLValidationException
 	{
 		SubjectType subject = assertion.getSubject();
-		SubjectConfirmationType[] confirmations = subject.getSubjectConfirmationArray();
-		if (confirmations == null || confirmations.length == 0)
+		List<SubjectConfirmationType> confirmations = Stream.of(subject.getSubjectConfirmationArray())
+				.filter(sc -> sc.getSubjectConfirmationData() != null).collect(Collectors.toList());
+		if (confirmations == null || confirmations.size() == 0)
 			return;
 
 		ErrorReasons errors = new ErrorReasons();
@@ -132,7 +136,7 @@ public class AssertionValidator
 		int i=1;
 		for (SubjectConfirmationType confirmation: confirmations)
 		{
-			SubjectConfirmationDataType confData = confirmation.getSubjectConfirmationData();
+			SubjectConfirmationDataType confData = confirmation.getSubjectConfirmationData();	
 			if (confData.getRecipient() != null && consumerEndpointUri != null)
 			{
 				if (!confData.getRecipient().equals(consumerEndpointUri))

@@ -104,7 +104,7 @@ public class AttributeAssertionResponseValidator extends StatusResponseValidator
 
 		if (!SAMLUtils.compareNameIDs(receivedSubject, requestedSubject))
 			throw new SAMLValidationException("Received assertion for subject which was not requested: " + receivedSubject.xmlText() +
-					"(requested was " + receivedSubject.xmlText() + ")");
+					"(requested was " + requestedSubject.xmlText() + ")");
 		attributeAssertions.add(assertionDoc);
 		
 	}
