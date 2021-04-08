@@ -11,17 +11,16 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.xmlbeans.XmlObject;
-
+import eu.emi.security.authn.x509.impl.X500NameUtils;
+import eu.unicore.samly2.SAMLConstants;
+import eu.unicore.samly2.SAMLUtils;
+import eu.unicore.samly2.exceptions.SAMLValidationException;
+import eu.unicore.samly2.messages.SAMLVerifiableElement;
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 import xmlbeans.org.oasis.saml2.protocol.AuthnRequestType;
 import xmlbeans.org.oasis.saml2.protocol.RequestAbstractType;
 import xmlbeans.org.oasis.saml2.protocol.StatusResponseType;
-import eu.emi.security.authn.x509.impl.X500NameUtils;
-import eu.unicore.samly2.SAMLConstants;
-import eu.unicore.samly2.SAMLUtils;
-import eu.unicore.samly2.exceptions.SAMLValidationException;
 
 /**
  * Metadata based trust checker: signatures are not required, however issuers must be 
@@ -67,14 +66,14 @@ public class EnumeratedTrustChecker implements SamlTrustChecker
 	}
 
 	@Override
-	public ResponseTrustCheckResult checkTrust(XmlObject responseDoc, StatusResponseType response)
+	public ResponseTrustCheckResult checkTrust(SAMLVerifiableElement message, StatusResponseType response)
 			throws SAMLValidationException
 	{
 		throw new IllegalStateException("This trust checker should not be used for responses validation");
 	}
 
 	@Override
-	public void checkTrust(XmlObject requestDoc, RequestAbstractType request)
+	public void checkTrust(SAMLVerifiableElement message, RequestAbstractType request)
 			throws SAMLValidationException
 	{
 		NameIDType issuer = request.getIssuer();

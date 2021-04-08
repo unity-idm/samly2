@@ -10,12 +10,12 @@ import eu.unicore.samly2.SAMLBindings;
 
 public class SAMLMessage<T extends XmlObject>
 {
-	public final SAMLVerifiableMessage verifiableMessage;
+	public final SAMLVerifiableElement verifiableMessage;
 	public final String relayState;
 	public final SAMLBindings binding;
 	public final T messageDocument;
 	
-	public SAMLMessage(SAMLVerifiableMessage verifiableMessage, String relayState, SAMLBindings binding,
+	public SAMLMessage(SAMLVerifiableElement verifiableMessage, String relayState, SAMLBindings binding,
 			T messageDocument)
 	{
 		this.verifiableMessage = verifiableMessage;

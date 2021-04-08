@@ -4,12 +4,11 @@
  */
 package eu.unicore.samly2.validators;
 
-import org.apache.xmlbeans.XmlObject;
-
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.exceptions.SAMLRequesterException;
 import eu.unicore.samly2.exceptions.SAMLServerException;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
+import eu.unicore.samly2.messages.SAMLVerifiableElement;
 import eu.unicore.samly2.trust.SamlTrustChecker;
 import xmlbeans.org.oasis.saml2.protocol.RequestAbstractType;
 
@@ -40,12 +39,12 @@ public class AbstractRequestValidator
 		this.trustChecker = trustChecker;
 	}
 	
-	public void validate(XmlObject wrappingDcoument, RequestAbstractType request) throws SAMLServerException
+	public void validate(SAMLVerifiableElement verifiableRequestMessage, RequestAbstractType request) throws SAMLServerException
 	{
 		commonRequestValidation.validateBasicElements(request);
 		try
 		{
-			trustChecker.checkTrust(wrappingDcoument, request);
+			trustChecker.checkTrust(verifiableRequestMessage, request);
 		} catch (SAMLValidationException e)
 		{
 			throw new SAMLRequesterException(SAMLConstants.SubStatus.STATUS2_REQUEST_DENIED,

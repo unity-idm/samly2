@@ -12,8 +12,8 @@ import java.util.function.Function;
 import eu.unicore.samly2.exceptions.SAMLRequesterException;
 import eu.unicore.samly2.exceptions.SAMLServerException;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
-import eu.unicore.samly2.messages.SAMLVerifiableMessage;
-import eu.unicore.samly2.trust.MessagePublicKeyTrustChecker;
+import eu.unicore.samly2.messages.SAMLVerifiableElement;
+import eu.unicore.samly2.trust.SignatureChecker;
 import eu.unicore.samly2.validators.CommonRequestValidation;
 import eu.unicore.samly2.validators.ReplayAttackChecker;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
@@ -28,16 +28,16 @@ import xmlbeans.org.oasis.saml2.protocol.LogoutRequestType;
 public class LogoutRequestValidator
 {
 	private final CommonRequestValidation commonValidator;
-	private final MessagePublicKeyTrustChecker trustChecker;
+	private final SignatureChecker signatureChecker;
 	
 	public LogoutRequestValidator(String consumerEndpointUri, long requestValidity, ReplayAttackChecker replayChecker, 
 			Function<NameIDType, List<PublicKey>> trustedKeysProvider)
 	{
 		commonValidator = new CommonRequestValidation(consumerEndpointUri, requestValidity, replayChecker);
-		trustChecker = new MessagePublicKeyTrustChecker(trustedKeysProvider);
+		signatureChecker = new SignatureChecker(trustedKeysProvider);
 	}
 
-	public void validate(LogoutRequestDocument logoutRequestDoc, SAMLVerifiableMessage verifiableMessage) 
+	public void validate(LogoutRequestDocument logoutRequestDoc, SAMLVerifiableElement verifiableMessage) 
 			throws SAMLServerException
 	{
 		LogoutRequestType logoutRequest = logoutRequestDoc.getLogoutRequest();
@@ -56,12 +56,12 @@ public class LogoutRequestValidator
 		}
 	}
 
-	private void verifyTrust(SAMLVerifiableMessage verifiableMessage, LogoutRequestType logoutRequest)
+	private void verifyTrust(SAMLVerifiableElement verifiableMessage, LogoutRequestType logoutRequest)
 			throws SAMLRequesterException
 	{
 		try
 		{
-			trustChecker.verify(logoutRequest.getIssuer(), verifiableMessage);
+			signatureChecker.verify(logoutRequest.getIssuer(), verifiableMessage);
 		} catch (SAMLValidationException e)
 		{
 			throw new SAMLRequesterException("Request is not trusted", e);

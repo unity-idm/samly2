@@ -22,6 +22,7 @@ import eu.unicore.samly2.assertion.AssertionParser;
 import eu.unicore.samly2.elements.NameID;
 import eu.unicore.samly2.elements.SAMLAttribute;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
+import eu.unicore.samly2.messages.XMLExpandedMessage;
 import eu.unicore.samly2.proto.AssertionResponse;
 import eu.unicore.samly2.trust.CheckingMode;
 import eu.unicore.samly2.trust.ResponseTrustCheckResult;
@@ -57,7 +58,8 @@ public class AssertionTest extends TestBase {
 		StrictSamlTrustChecker checker = new StrictSamlTrustChecker();
 		checker.addTrustedIssuer(issuerDN1, SAMLConstants.NFORMAT_DN, issuerCert1[0].getPublicKey());
 
-		ResponseTrustCheckResult checkTrust = checker.checkTrust(resp.getXMLBeanDoc(), resp.getXMLBean());
+		XMLExpandedMessage verifiableMessage = new XMLExpandedMessage(resp.getXMLBeanDoc(), resp.getXMLBean());
+		ResponseTrustCheckResult checkTrust = checker.checkTrust(verifiableMessage, resp.getXMLBean());
 		assertTrue(checkTrust.isTrustEstablished());
 		try
 		{
@@ -73,7 +75,7 @@ public class AssertionTest extends TestBase {
 		StrictSamlTrustChecker checker2 = new StrictSamlTrustChecker(
 				CheckingMode.REQUIRE_SIGNED_RESPONSE_OR_ASSERTION);
 		checker2.addTrustedIssuer(issuerDN1, SAMLConstants.NFORMAT_DN, issuerCert1[0].getPublicKey());
-		ResponseTrustCheckResult checkTrust2 = checker2.checkTrust(resp.getXMLBeanDoc(), resp.getXMLBean());
+		ResponseTrustCheckResult checkTrust2 = checker2.checkTrust(verifiableMessage, resp.getXMLBean());
 		assertTrue(checkTrust2.isTrustEstablished());
 		checker2.checkTrust(as.getXMLBeanDoc(), checkTrust2);
 	}
@@ -88,12 +90,13 @@ public class AssertionTest extends TestBase {
 		resp.addAssertion(as);
 
 		SimpleTrustChecker checker = new SimpleTrustChecker(issuerCert1[0], true);
-		ResponseTrustCheckResult checkTrust = checker.checkTrust(resp.getXMLBeanDoc(), resp.getXMLBean());
+		XMLExpandedMessage verifiableMessage = new XMLExpandedMessage(resp.getXMLBeanDoc(), resp.getXMLBean());
+		ResponseTrustCheckResult checkTrust = checker.checkTrust(verifiableMessage, resp.getXMLBean());
 		assertFalse(checkTrust.isTrustEstablished());
 		checker.checkTrust(as.getXMLBeanDoc(), checkTrust);
 		
 		SimpleTrustChecker checker2 = new SimpleTrustChecker(issuerCert1[0], false);
-		ResponseTrustCheckResult checkTrust2 = checker2.checkTrust(resp.getXMLBeanDoc(), resp.getXMLBean());
+		ResponseTrustCheckResult checkTrust2 = checker2.checkTrust(verifiableMessage, resp.getXMLBean());
 		assertFalse(checkTrust2.isTrustEstablished());
 		try
 		{

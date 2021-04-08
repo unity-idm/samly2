@@ -13,7 +13,7 @@ import eu.unicore.security.dsig.DSigException;
  * An input message which can have its signature checked (in transport dependent way). 
  *  
  */
-public interface SAMLVerifiableMessage
+public interface SAMLVerifiableElement
 {
 	void verifySignature(PublicKey publicKey) throws DSigException;
 	Optional<PublicKey> getSignatureKey();

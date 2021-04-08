@@ -12,6 +12,7 @@ import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLRequesterException;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
+import eu.unicore.samly2.messages.XMLExpandedMessage;
 import eu.unicore.samly2.trust.ResponseTrustCheckResult;
 import eu.unicore.samly2.trust.SamlTrustChecker;
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
@@ -61,10 +62,11 @@ public class AttributeAssertionResponseValidator extends StatusResponseValidator
 	
 	public void validate(ResponseDocument attributeResponseDoc) throws SAMLValidationException
 	{
-		attributeAssertions = new ArrayList<AssertionDocument>();
+		attributeAssertions = new ArrayList<>();
 		
 		ResponseType response = attributeResponseDoc.getResponse();
-		ResponseTrustCheckResult responseTrust = super.validate(attributeResponseDoc, response);
+		XMLExpandedMessage verifiableMessage = new XMLExpandedMessage(attributeResponseDoc, response);
+		ResponseTrustCheckResult responseTrust = super.validate(verifiableMessage, response);
 		
 		NameIDType issuer = response.getIssuer();
 		if (issuer == null || issuer.isNil() || issuer.getStringValue() == null)

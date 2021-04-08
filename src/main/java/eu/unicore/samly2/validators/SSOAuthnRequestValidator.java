@@ -7,6 +7,7 @@ package eu.unicore.samly2.validators;
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.exceptions.SAMLRequesterException;
 import eu.unicore.samly2.exceptions.SAMLServerException;
+import eu.unicore.samly2.messages.SAMLVerifiableElement;
 import eu.unicore.samly2.trust.SamlTrustChecker;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 import xmlbeans.org.oasis.saml2.protocol.AuthnRequestDocument;
@@ -25,10 +26,10 @@ public class SSOAuthnRequestValidator extends AbstractRequestValidator
 		super(consumerEndpointUri, trustChecker, requestValidity, replayChecker);
 	}
 
-	public void validate(AuthnRequestDocument authenticationRequestDoc) throws SAMLServerException
+	public void validate(AuthnRequestDocument authenticationRequestDoc, SAMLVerifiableElement verifiableMessage) throws SAMLServerException
 	{
 		AuthnRequestType authnRequest = authenticationRequestDoc.getAuthnRequest();
-		super.validate(authenticationRequestDoc, authnRequest);
+		super.validate(verifiableMessage, authnRequest);
 		
 		validateIssuer(authnRequest);
 	}

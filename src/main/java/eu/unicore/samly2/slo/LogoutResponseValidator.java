@@ -11,8 +11,8 @@ import java.util.function.Function;
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.exceptions.SAMLRequesterException;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
-import eu.unicore.samly2.messages.SAMLVerifiableMessage;
-import eu.unicore.samly2.trust.MessagePublicKeyTrustChecker;
+import eu.unicore.samly2.messages.SAMLVerifiableElement;
+import eu.unicore.samly2.trust.SignatureChecker;
 import eu.unicore.samly2.validators.CommonResponseValidator;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 import xmlbeans.org.oasis.saml2.protocol.LogoutResponseDocument;
@@ -26,24 +26,24 @@ import xmlbeans.org.oasis.saml2.protocol.StatusResponseType;
 public class LogoutResponseValidator
 {
 	private final CommonResponseValidator coreValidator;
-	private final MessagePublicKeyTrustChecker trustChecker;
+	private final SignatureChecker trustChecker;
 	
 	public LogoutResponseValidator(String consumerEndpointUri, String requestId, 
 			Function<NameIDType, List<PublicKey>> trustedKeysProvider)
 	{
 		coreValidator = new CommonResponseValidator(consumerEndpointUri, requestId);
-		trustChecker = new MessagePublicKeyTrustChecker(trustedKeysProvider);
+		trustChecker = new SignatureChecker(trustedKeysProvider);
 	}
 
-	public void validate(LogoutResponseDocument logoutResponseDoc, SAMLVerifiableMessage verifiableMessage) throws SAMLValidationException
+	public void validate(LogoutResponseDocument logoutResponseDoc, SAMLVerifiableElement verifiableMessage) throws SAMLValidationException
 	{
 		StatusResponseType response = logoutResponseDoc.getLogoutResponse();
-		coreValidator.validate(logoutResponseDoc, response);
+		coreValidator.validate(response);
 		validateIssuerType(response);
 		verifyTrust(verifiableMessage, response);
 	}
 
-	private void verifyTrust(SAMLVerifiableMessage verifiableMessage, StatusResponseType response)
+	private void verifyTrust(SAMLVerifiableElement verifiableMessage, StatusResponseType response)
 			throws SAMLRequesterException
 	{
 		try

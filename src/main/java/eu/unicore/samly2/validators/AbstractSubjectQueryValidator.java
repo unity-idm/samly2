@@ -4,12 +4,10 @@
  */
 package eu.unicore.samly2.validators;
 
-import org.apache.xmlbeans.XmlObject;
-
 import eu.unicore.samly2.exceptions.SAMLRequesterException;
 import eu.unicore.samly2.exceptions.SAMLServerException;
+import eu.unicore.samly2.messages.SAMLVerifiableElement;
 import eu.unicore.samly2.trust.SamlTrustChecker;
-
 import xmlbeans.org.oasis.saml2.assertion.SubjectType;
 import xmlbeans.org.oasis.saml2.protocol.SubjectQueryAbstractType;
 
@@ -29,9 +27,9 @@ public abstract class AbstractSubjectQueryValidator extends AbstractRequestValid
 		super(responderEndpointUri, trustChecker, requestValidity, replayChecker);
 	}
 
-	public void validate(XmlObject wrappingDcoument, SubjectQueryAbstractType request) throws SAMLServerException
+	public void validate(SAMLVerifiableElement verifiableRequestMessage, SubjectQueryAbstractType request) throws SAMLServerException
 	{
-		super.validate(wrappingDcoument, request);
+		super.validate(verifiableRequestMessage, request);
 		SubjectType subject = request.getSubject();
 		if (subject == null || subject.isNil())
 			throw new SAMLRequesterException("Subject can't be empty");

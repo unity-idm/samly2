@@ -4,9 +4,8 @@
  */
 package eu.unicore.samly2.validators;
 
-import org.apache.xmlbeans.XmlObject;
-
 import eu.unicore.samly2.exceptions.SAMLValidationException;
+import eu.unicore.samly2.messages.SAMLVerifiableElement;
 import eu.unicore.samly2.trust.ResponseTrustCheckResult;
 import eu.unicore.samly2.trust.SamlTrustChecker;
 import xmlbeans.org.oasis.saml2.protocol.StatusResponseType;
@@ -28,10 +27,10 @@ public class StatusResponseValidator
 		this.trustChecker = trustChecker;
 	}
 	
-	public ResponseTrustCheckResult validate(XmlObject wrappingDcoument, StatusResponseType responseXml) 
+	public ResponseTrustCheckResult validate(SAMLVerifiableElement verifiableResponseMessage, StatusResponseType responseXml) 
 			throws SAMLValidationException
 	{
-		commonValidator.validate(wrappingDcoument, responseXml);
-		return trustChecker.checkTrust(wrappingDcoument, responseXml);
+		commonValidator.validate(responseXml);
+		return trustChecker.checkTrust(verifiableResponseMessage, responseXml);
 	}
 }

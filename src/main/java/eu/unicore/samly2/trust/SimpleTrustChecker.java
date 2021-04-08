@@ -6,10 +6,11 @@ package eu.unicore.samly2.trust;
 
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
+import java.util.List;
 
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
-import eu.unicore.samly2.exceptions.SAMLValidationException;
 
 /**
  * Trivial assertion checker - checks if signature is done by a specified certificate.
@@ -18,7 +19,7 @@ import eu.unicore.samly2.exceptions.SAMLValidationException;
  */
 public class SimpleTrustChecker extends OptionalDSigTrustChecker
 {
-	private X509Certificate issuerCert;
+	private final X509Certificate issuerCert;
 
 	public SimpleTrustChecker(X509Certificate issuerCertificate, boolean signatureOptional)
 	{
@@ -27,9 +28,8 @@ public class SimpleTrustChecker extends OptionalDSigTrustChecker
 	}
 	
 	@Override
-	protected PublicKey establishKey(NameIDType issuer, SignatureType signature)
-			throws SAMLValidationException
+	protected List<PublicKey> establishKey(NameIDType issuer, SignatureType signature)
 	{
-		return issuerCert.getPublicKey();
+		return Collections.singletonList(issuerCert.getPublicKey());
 	}
 }

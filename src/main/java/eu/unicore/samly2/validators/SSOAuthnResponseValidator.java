@@ -18,6 +18,7 @@ import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.samly2.exceptions.SAMLValidationSoftException;
+import eu.unicore.samly2.messages.SAMLVerifiableElement;
 import eu.unicore.samly2.trust.CheckingMode;
 import eu.unicore.samly2.trust.ResponseTrustCheckResult;
 import eu.unicore.samly2.trust.SamlTrustChecker;
@@ -70,15 +71,15 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 	}
 
 	
-	public void validate(ResponseDocument authenticationResponseDoc) throws SAMLValidationException
+	public void validate(ResponseDocument authenticationResponseDoc, SAMLVerifiableElement verifiableMessage) throws SAMLValidationException
 	{
-		authNAssertions = new ArrayList<AssertionDocument>();
-		otherAssertions = new ArrayList<AssertionDocument>();
-		attributeAssertions = new ArrayList<AssertionDocument>();
+		authNAssertions = new ArrayList<>();
+		otherAssertions = new ArrayList<>();
+		attributeAssertions = new ArrayList<>();
 		reasons = new ErrorReasons();
 		
 		ResponseType response = authenticationResponseDoc.getResponse();
-		ResponseTrustCheckResult responseTrust = super.validate(authenticationResponseDoc, response);
+		ResponseTrustCheckResult responseTrust = super.validate(verifiableMessage, response);
 		
 		NameIDType issuer = response.getIssuer();
 		if (issuer != null)

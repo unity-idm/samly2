@@ -10,7 +10,7 @@ import java.util.Optional;
 import eu.unicore.samly2.binding.HttpRedirectBindingSupport;
 import eu.unicore.security.dsig.DSigException;
 
-public class RedirectedMessage implements SAMLVerifiableMessage
+public class RedirectedMessage implements SAMLVerifiableElement
 {
 	private final String rawQuery;
 	

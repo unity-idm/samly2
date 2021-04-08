@@ -10,10 +10,12 @@ import java.util.Set;
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.exceptions.SAMLRequesterException;
 import eu.unicore.samly2.exceptions.SAMLServerException;
+import eu.unicore.samly2.messages.XMLExpandedMessage;
 import eu.unicore.samly2.trust.SamlTrustChecker;
 
 import xmlbeans.org.oasis.saml2.assertion.AttributeType;
 import xmlbeans.org.oasis.saml2.protocol.AttributeQueryDocument;
+import xmlbeans.org.oasis.saml2.protocol.AttributeQueryType;
 
 /**
  * Validates SAML attribute assertion requests in accordance to SAML core and profile.
@@ -31,9 +33,11 @@ public class AttributeQueryValidator extends AbstractSubjectQueryValidator
 
 	public void validate(AttributeQueryDocument wrappingDcoument) throws SAMLServerException
 	{
-		super.validate(wrappingDcoument, wrappingDcoument.getAttributeQuery());
+		AttributeQueryType attributeQuery = wrappingDcoument.getAttributeQuery();
+		XMLExpandedMessage verifiableMessage = new XMLExpandedMessage(wrappingDcoument, attributeQuery);
+		super.validate(verifiableMessage, attributeQuery);
 
-		AttributeType[] queriedAttrs = wrappingDcoument.getAttributeQuery().getAttributeArray();
+		AttributeType[] queriedAttrs = attributeQuery.getAttributeArray();
 		Set<String> uniqueAttrs = new HashSet<String>();
 		for (AttributeType qa: queriedAttrs)
 			if (uniqueAttrs.contains(qa.getName()+"-||-"+qa.getNameFormat()))

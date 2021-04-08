@@ -13,35 +13,36 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import eu.unicore.samly2.exceptions.SAMLValidationException;
-import eu.unicore.samly2.messages.SAMLVerifiableMessage;
+import eu.unicore.samly2.messages.SAMLVerifiableElement;
 import eu.unicore.security.dsig.DSigException;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 
 /**
- * New API (not {@link SamlTrustChecker} based) to verify whether message is trusted.
+ * Implements checking of signatures on {@link SAMLVerifiableElement} objects. It is configured with a provider that can
+ * supply trusted keys. If verified object doesn't specify which key was used for signing then all trusted keys are tried. 
  */
-public class MessagePublicKeyTrustChecker
+public class SignatureChecker
 {
-	private static final Logger log = LogManager.getLogger(MessagePublicKeyTrustChecker.class);
+	private static final Logger log = LogManager.getLogger(SignatureChecker.class);
 	private final Function<NameIDType, List<PublicKey>> trustedKeys;
 	
-	public MessagePublicKeyTrustChecker(Function<NameIDType, List<PublicKey>> trustedKeys)
+	public SignatureChecker(Function<NameIDType, List<PublicKey>> trustedKeys)
 	{
 		this.trustedKeys = trustedKeys;
 	}
 
-	public void verify(NameIDType issuer, SAMLVerifiableMessage message) throws SAMLValidationException
+	public void verify(NameIDType issuer, SAMLVerifiableElement verifiableElement) throws SAMLValidationException
 	{
-		if (!message.isSigned())
+		if (!verifiableElement.isSigned())
 			throw new SAMLValidationException("Message is not signed");
-		Optional<PublicKey> signatureKey = message.getSignatureKey();
+		Optional<PublicKey> signatureKey = verifiableElement.getSignatureKey();
 		if (signatureKey.isPresent())
-			verifyWithGivenPublicKey(issuer, message, signatureKey.get());
+			verifyWithGivenPublicKey(issuer, verifiableElement, signatureKey.get());
 		else
-			verifyOverArbitraryPublicKey(issuer, message);
+			verifyOverArbitraryPublicKey(issuer, verifiableElement);
 	}
 
-	private void verifyOverArbitraryPublicKey(NameIDType issuer, SAMLVerifiableMessage message) throws SAMLValidationException
+	private void verifyOverArbitraryPublicKey(NameIDType issuer, SAMLVerifiableElement verifiableElement) throws SAMLValidationException
 	{
 		List<PublicKey> allKeys = getKeysOfIssuer(issuer);
 
@@ -50,7 +51,7 @@ public class MessagePublicKeyTrustChecker
 		{
 			try
 			{
-				message.verifySignature(candidateKey);
+				verifiableElement.verifySignature(candidateKey);
 				return;
 			} catch (DSigException e)
 			{
@@ -71,7 +72,7 @@ public class MessagePublicKeyTrustChecker
 		return allKeys;
 	}
 
-	private void verifyWithGivenPublicKey(NameIDType issuer, SAMLVerifiableMessage message, PublicKey publicKey) 
+	private void verifyWithGivenPublicKey(NameIDType issuer, SAMLVerifiableElement verifiableElement, PublicKey publicKey) 
 			throws SAMLValidationException
 	{
 		List<PublicKey> allKeys = getKeysOfIssuer(issuer);
@@ -80,7 +81,7 @@ public class MessagePublicKeyTrustChecker
 					+ " not registered for " + issuer.getStringValue());
 		try
 		{
-			message.verifySignature(publicKey);
+			verifiableElement.verifySignature(publicKey);
 		} catch (DSigException e)
 		{
 			throw new SAMLValidationException("Message signature is incorrect", e);

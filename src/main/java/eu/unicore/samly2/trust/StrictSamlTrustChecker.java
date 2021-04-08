@@ -5,7 +5,6 @@
 package eu.unicore.samly2.trust;
 
 import java.security.PublicKey;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,12 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import xmlbeans.org.oasis.saml2.assertion.NameIDType;
-import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.unicore.samly2.SAMLConstants;
-import eu.unicore.samly2.SAMLUtils;
-import eu.unicore.samly2.exceptions.SAMLValidationException;
+import xmlbeans.org.oasis.saml2.assertion.NameIDType;
+import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
 
 /**
  * Configures and performs checking whether consumer trusts the issuer of 
@@ -59,50 +56,31 @@ public class StrictSamlTrustChecker extends DsigSamlTrustCheckerBase
 		Set<PublicKey> current = trustedIssuers.get(key);
 		if (current == null)
 		{
-			current = new HashSet<PublicKey>();
+			current = new HashSet<>();
 			trustedIssuers.put(key, current);
 		}
 		current.addAll(trustedKeys);
 	}
 
 	@Override
-	protected PublicKey establishKey(NameIDType issuer, SignatureType signature) throws SAMLValidationException
+	protected List<PublicKey> establishKey(NameIDType issuer, SignatureType signature)
 	{
 		if (issuer == null)
-			throw new SAMLValidationException("Issuer must be set when SAML artifact is signed");
-		List<PublicKey> keys = getPublicKeys(issuer);
-		X509Certificate[] issuerCC = SAMLUtils.getIssuerFromSignature(signature);
-		if (issuerCC == null)
-		{
-			if (keys.size() == 1)
-				return keys.get(0);
-			else
-				throw new SAMLValidationException("Issuer certificate is not " +
-						"set and the issuer '"+ issuer.getStringValue() + 
-						"' has several trusted public keys - it is undefined which was used for signing.");
-		} else
-		{
-			for (PublicKey trustedKey: keys)
-				if (trustedKey.equals(issuerCC[0].getPublicKey()))
-					return trustedKey;
-			throw new SAMLValidationException("Issuer certificate is not " +
-					"among trusted certificates for the issuer'" + issuer.getStringValue() + 
-						"' Untrusted issuer certificate subject is: " + 
-					X500NameUtils.getReadableForm(issuerCC[0].getSubjectX500Principal()));
-		}
+			throw new SAMLTrustedKeyDiscoveryException("Issuer must be set when SAML artifact is signed");
+		return getPublicKeys(issuer);
 	}
 	
-	protected List<PublicKey> getPublicKeys(NameIDType issuer) throws SAMLValidationException
+	private List<PublicKey> getPublicKeys(NameIDType issuer)
 	{
 		String key = getIssuerKey(issuer.getFormat(), issuer.getStringValue());
 		Set<PublicKey> trustedKeys = trustedIssuers.get(key);
 		if (trustedKeys == null)
-			throw new SAMLValidationException("The issuer of the SAML artifact " +
+			throw new SAMLTrustedKeyDiscoveryException("The issuer of the SAML artifact " +
 					"is not trusted: " + issuer.getStringValue());
-		return new ArrayList<PublicKey>(trustedKeys);
+		return new ArrayList<>(trustedKeys);
 	}
 	
-	protected String getIssuerKey(String format, String value) throws IllegalArgumentException
+	private String getIssuerKey(String format, String value) throws IllegalArgumentException
 	{
 		if (format == null)
 			format = SAMLConstants.NFORMAT_ENTITY;

@@ -6,6 +6,7 @@ package eu.unicore.samly2.validators;
 
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
+import eu.unicore.samly2.messages.XMLExpandedMessage;
 import eu.unicore.samly2.trust.SamlTrustChecker;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 import xmlbeans.org.oasis.saml2.protocol.NameIDMappingResponseDocument;
@@ -27,7 +28,8 @@ public class NameIDMappingResponseValidator extends StatusResponseValidator
 	public void validate(NameIDMappingResponseDocument mappingResponseDoc) throws SAMLValidationException
 	{
 		NameIDMappingResponseType respXml = mappingResponseDoc.getNameIDMappingResponse();
-		super.validate(mappingResponseDoc, respXml);
+		XMLExpandedMessage verifiableMessage = new XMLExpandedMessage(mappingResponseDoc, respXml);
+		super.validate(verifiableMessage, respXml);
 		if (respXml.getNameID() == null || respXml.getEncryptedID() == null)
 			throw new SAMLValidationException("No mapped name in response");
 		

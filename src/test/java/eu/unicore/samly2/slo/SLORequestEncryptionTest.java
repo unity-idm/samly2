@@ -21,7 +21,7 @@ import eu.unicore.samly2.SAMLBindings;
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.elements.NameID;
 import eu.unicore.samly2.messages.SAMLMessage;
-import eu.unicore.samly2.messages.SAMLVerifiableMessage;
+import eu.unicore.samly2.messages.SAMLVerifiableElement;
 import eu.unicore.samly2.proto.LogoutRequest;
 import eu.unicore.samly2.validators.ReplayAttackChecker;
 import eu.unicore.security.dsig.TestBase;
@@ -47,7 +47,7 @@ public class SLORequestEncryptionTest extends TestBase
 				id -> Collections.singletonList(mock(PublicKey.class)));
 		LogoutRequestParser parser = new LogoutRequestParser(validator, privKey1);
 		
-		SAMLVerifiableMessage verMsg = mock(SAMLVerifiableMessage.class);
+		SAMLVerifiableElement verMsg = mock(SAMLVerifiableElement.class);
 		when(verMsg.isSigned()).thenReturn(true);
 		SAMLMessage<LogoutRequestDocument> requestMessage = new SAMLMessage<>(verMsg, "relay", 
 				SAMLBindings.SOAP, encryptedRequest);

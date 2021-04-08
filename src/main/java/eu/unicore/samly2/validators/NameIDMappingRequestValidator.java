@@ -6,6 +6,7 @@ package eu.unicore.samly2.validators;
 
 import eu.unicore.samly2.exceptions.SAMLRequesterException;
 import eu.unicore.samly2.exceptions.SAMLServerException;
+import eu.unicore.samly2.messages.XMLExpandedMessage;
 import eu.unicore.samly2.trust.SamlTrustChecker;
 import xmlbeans.org.oasis.saml2.protocol.NameIDMappingRequestDocument;
 import xmlbeans.org.oasis.saml2.protocol.NameIDMappingRequestType;
@@ -31,7 +32,8 @@ public class NameIDMappingRequestValidator extends AbstractRequestValidator
 	public void validate(NameIDMappingRequestDocument nameMappingRequestDoc) throws SAMLServerException
 	{
 		NameIDMappingRequestType request = nameMappingRequestDoc.getNameIDMappingRequest();
-		super.validate(nameMappingRequestDoc, request);
+		XMLExpandedMessage verifiableMessage = new XMLExpandedMessage(nameMappingRequestDoc, request);
+		super.validate(verifiableMessage, request);
 		if (request.getIssuer() == null || request.getIssuer().isNil() || 
 				request.getIssuer().getStringValue() == null)
 			throw new SAMLRequesterException("Issuer must be present");

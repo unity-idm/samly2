@@ -4,8 +4,6 @@
  */
 package eu.unicore.samly2.validators;
 
-import org.apache.xmlbeans.XmlObject;
-
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.exceptions.SAMLErrorResponseException;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
@@ -32,8 +30,7 @@ public class CommonResponseValidator
 		this.requestId = requestId;
 	}
 	
-	public void validate(XmlObject wrappingDcoument, StatusResponseType responseXml) 
-			throws SAMLValidationException
+	public void validate(StatusResponseType responseXml) throws SAMLValidationException
 	{
 		checkMandatoryElements(responseXml);
 		

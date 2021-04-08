@@ -4,11 +4,9 @@
  */
 package eu.unicore.samly2.trust;
 
-import org.apache.xmlbeans.XmlObject;
-
 import eu.unicore.samly2.exceptions.SAMLValidationException;
+import eu.unicore.samly2.messages.SAMLVerifiableElement;
 import eu.unicore.security.dsig.IdAttribute;
-
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.protocol.RequestAbstractType;
 import xmlbeans.org.oasis.saml2.protocol.StatusResponseType;
@@ -32,10 +30,10 @@ public interface SamlTrustChecker
 	void checkTrust(AssertionDocument assertionDoc, ResponseTrustCheckResult responseCheckResult) 
 			throws SAMLValidationException;
 
-	ResponseTrustCheckResult checkTrust(XmlObject responseDoc, StatusResponseType response) 
+	ResponseTrustCheckResult checkTrust(SAMLVerifiableElement responseMessage, StatusResponseType response) 
 			throws SAMLValidationException;
 
-	void checkTrust(XmlObject requestDoc, RequestAbstractType request) throws SAMLValidationException;
+	void checkTrust(SAMLVerifiableElement requestMessage, RequestAbstractType request) throws SAMLValidationException;
 	
 	CheckingMode getCheckingMode();
 }

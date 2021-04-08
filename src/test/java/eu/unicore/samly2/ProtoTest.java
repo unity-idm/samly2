@@ -17,6 +17,7 @@ import eu.unicore.samly2.elements.NameIDPolicy;
 import eu.unicore.samly2.elements.SAMLAttribute;
 import eu.unicore.samly2.elements.Subject;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
+import eu.unicore.samly2.messages.XMLExpandedMessage;
 import eu.unicore.samly2.proto.AssertionResponse;
 import eu.unicore.samly2.proto.AttributeQuery;
 import eu.unicore.samly2.proto.AuthnRequest;
@@ -39,9 +40,10 @@ public class ProtoTest extends TestBase {
 	{
 		StrictSamlTrustChecker checker = new StrictSamlTrustChecker();
 		checker.addTrustedIssuer(issuerDN1, SAMLConstants.NFORMAT_DN, issuerCert1[0].getPublicKey());
+		XMLExpandedMessage verifiableMsg = new XMLExpandedMessage(doc, req);
 		try
 		{
-			checker.checkTrust(doc, req);
+			checker.checkTrust(verifiableMsg, req);
 		} catch (SAMLValidationException e)
 		{
 			e.printStackTrace();
@@ -49,13 +51,14 @@ public class ProtoTest extends TestBase {
 		}
 	}
 
-	private void sigCheck(XmlObject doc, StatusResponseType req)
+	private void sigCheck(XmlObject doc, StatusResponseType resp)
 	{
 		StrictSamlTrustChecker checker = new StrictSamlTrustChecker();
 		checker.addTrustedIssuer(issuerDN1, SAMLConstants.NFORMAT_DN, issuerCert1[0].getPublicKey());
+		XMLExpandedMessage verifiableMsg = new XMLExpandedMessage(doc, resp);
 		try
 		{
-			checker.checkTrust(doc, req);
+			checker.checkTrust(verifiableMsg, resp);
 		} catch (SAMLValidationException e)
 		{
 			e.printStackTrace();
@@ -191,8 +194,8 @@ public class ProtoTest extends TestBase {
 		SSOAuthnResponseValidator validator = new SSOAuthnResponseValidator(null, null, 
 				"SAMLY2lib_msg_19155ef4173009c5b5d93ec3c07edcdc39d281b15cef0e28", 
 				360000000000L, trustChecker, new ReplayAttackChecker(), SAMLBindings.HTTP_POST);
-		
-		validator.validate(authenticationResponseDoc);
+		XMLExpandedMessage verifiableMsg = new XMLExpandedMessage(authenticationResponseDoc, authenticationResponseDoc.getResponse());
+		validator.validate(authenticationResponseDoc, verifiableMsg);
 		
 	}
 

@@ -5,17 +5,11 @@
 package eu.unicore.samly2.trust;
 
 import java.security.PublicKey;
-import java.util.Collections;
 import java.util.List;
 
-import org.apache.xmlbeans.XmlObject;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
 import eu.unicore.samly2.exceptions.SAMLValidationException;
-import eu.unicore.security.dsig.DSigException;
-import eu.unicore.security.dsig.DigSignatureUtil;
-import eu.unicore.security.dsig.IdAttribute;
+import eu.unicore.samly2.messages.SAMLVerifiableElement;
+import eu.unicore.samly2.messages.XMLExpandedAssertion;
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.AssertionType;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
@@ -51,13 +45,11 @@ public abstract class DsigSamlTrustCheckerBase implements SamlTrustChecker
 			throws SAMLValidationException
 	{
 		AssertionType assertion = assertionDoc.getAssertion();
-		
+		XMLExpandedAssertion verifiableAssertion = new XMLExpandedAssertion(assertionDoc);
 		if (mode == CheckingMode.REQUIRE_SIGNED_ASSERTION)
-			checkRequiredSignature(assertionDoc, assertion.getIssuer(), assertion.getSignature(), 
-					ASSERTION_ID_QNAME);
+			checkRequiredSignature(verifiableAssertion, assertion.getIssuer(), assertion.getSignature());
 		else
-			checkOptionalSignature(assertionDoc, assertion.getIssuer(), assertion.getSignature(), 
-					ASSERTION_ID_QNAME);
+			checkOptionalSignature(verifiableAssertion, assertion.getIssuer(), assertion.getSignature());
 	}
 
 	@Override
@@ -67,66 +59,60 @@ public abstract class DsigSamlTrustCheckerBase implements SamlTrustChecker
 	}
 	
 	@Override
-	public ResponseTrustCheckResult checkTrust(XmlObject responseDoc, StatusResponseType response) 
+	public ResponseTrustCheckResult checkTrust(SAMLVerifiableElement responseMessage, StatusResponseType response) 
 			throws SAMLValidationException
 	{
 		SignatureType signature = response.getSignature();
 		if (signature == null || signature.isNil())
 			return new ResponseTrustCheckResult(false);
 		
-		checkSignature(responseDoc, response.getIssuer(), signature, PROTOCOL_ID_QNAME);
+		checkSignature(responseMessage, response.getIssuer(), signature);
 		return new ResponseTrustCheckResult(true);
 	}
 
 	@Override
-	public void checkTrust(XmlObject requestDoc, RequestAbstractType request) throws SAMLValidationException
+	public void checkTrust(SAMLVerifiableElement requestMessage, RequestAbstractType request) throws SAMLValidationException
 	{
-		checkRequiredSignature(requestDoc, request.getIssuer(), request.getSignature(), PROTOCOL_ID_QNAME);
+		checkRequiredSignature(requestMessage, request.getIssuer(), request.getSignature());
 	}
 
-	protected void checkRequiredSignature(XmlObject xmlbeansDoc, NameIDType issuer, 
-			SignatureType signature, IdAttribute idAttribute) throws SAMLValidationException
+	protected void checkRequiredSignature(SAMLVerifiableElement message, NameIDType issuer, 
+			SignatureType signature) throws SAMLValidationException
 	{
 		if (signature == null || signature.isNil())
 			throw new SAMLValidationException("SAML document is not signed and the policy requires a signature");
-		checkSignature(xmlbeansDoc, issuer, signature, idAttribute);
+		checkSignature(message, issuer, signature);
 	}
 
-	protected void checkOptionalSignature(XmlObject xmlbeansDoc, NameIDType issuer, 
-			SignatureType signature, IdAttribute idAttribute) throws SAMLValidationException
+	protected void checkOptionalSignature(SAMLVerifiableElement message, NameIDType issuer, 
+			SignatureType signature) throws SAMLValidationException
 	{
 		if (signature == null || signature.isNil())
 			return;
-		checkSignature(xmlbeansDoc, issuer, signature, idAttribute);
+		checkSignature(message, issuer, signature);
 	}
 	
-	protected void checkSignature(XmlObject xmlbeansDoc, NameIDType issuer, 
-			SignatureType signature, IdAttribute idAttribute) throws SAMLValidationException
+	protected void checkSignature(SAMLVerifiableElement message, NameIDType issuer, 
+			SignatureType signature) throws SAMLValidationException
 	{
-		PublicKey publicKey = establishKey(issuer, signature);
-		
-		Document doc = (Document) xmlbeansDoc.getDomNode();
-		isCorrectlySigned(doc, publicKey, 
-				signature, 
-				Collections.singletonList(doc.getDocumentElement()), 
-				idAttribute);
-	}
-	
-	protected void isCorrectlySigned(Document doc, PublicKey key, SignatureType signature, 
-			List<Element> shallBeSigned, 
-			IdAttribute idAttribute) throws SAMLValidationException
-	{
-		DigSignatureUtil sign;
+		SignatureChecker dsigVerificator = 
+				new SignatureChecker(nameId -> establishKey(nameId, signature));
 		try
 		{
-			sign = new DigSignatureUtil();
-			if (!sign.verifyEnvelopedSignature(doc, shallBeSigned, idAttribute, key))
-				throw new SAMLValidationException("Signature is incorrect");
-		} catch (DSigException e)
+			dsigVerificator.verify(issuer, message);
+		} catch (SAMLTrustedKeyDiscoveryException e)
 		{
-			throw new SAMLValidationException("Signature verification failed", e);
+			throw new SAMLValidationException(e.getMessage(), e);
 		}
 	}
-
-	protected abstract PublicKey establishKey(NameIDType issuer, SignatureType signature) throws SAMLValidationException;
+	
+	protected abstract List<PublicKey> establishKey(NameIDType issuer, SignatureType signature) throws SAMLTrustedKeyDiscoveryException;
+	
+	public class SAMLTrustedKeyDiscoveryException extends RuntimeException
+	{
+		public SAMLTrustedKeyDiscoveryException(String message)
+		{
+			super(message);
+		}
+	}
 }
