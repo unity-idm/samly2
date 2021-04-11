@@ -29,7 +29,7 @@ public abstract class OptionalDSigTrustChecker extends DsigSamlTrustCheckerBase
 	protected void checkRequiredSignature(SAMLVerifiableElement message, NameIDType issuer, 
 			SignatureType signature) throws SAMLValidationException
 	{
-		if (signature == null || signature.isNil())
+		if (!message.isSigned())
 		{
 			if (!signatureOptional)
 				throw new SAMLValidationException("SAML document is not signed and the policy requires a signature");

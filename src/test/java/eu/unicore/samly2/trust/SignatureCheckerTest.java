@@ -8,16 +8,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import java.security.PublicKey;
-import java.util.Optional;
-import java.util.function.Consumer;
 
 import org.assertj.core.api.Assertions;
 import org.assertj.core.util.Lists;
 import org.junit.Test;
 
 import eu.unicore.samly2.exceptions.SAMLValidationException;
-import eu.unicore.samly2.messages.SAMLVerifiableElement;
-import eu.unicore.security.dsig.DSigException;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 
 public class SignatureCheckerTest
@@ -68,44 +64,5 @@ public class SignatureCheckerTest
 				})));
 		
 		assertThat(error).isInstanceOf(SAMLValidationException.class);		
-	}
-
-	
-	private static class FakeVerifiableElement implements SAMLVerifiableElement
-	{
-		private final PublicKey sigKey;
-		private final boolean signed;
-		private final Consumer<PublicKey> checker;
-
-		FakeVerifiableElement(PublicKey sigKey, boolean signed, Consumer<PublicKey> checker)
-		{
-			this.sigKey = sigKey;
-			this.signed = signed;
-			this.checker = checker;
-		}
-
-		@Override
-		public void verifySignature(PublicKey publicKey) throws DSigException
-		{
-			try
-			{
-				checker.accept(publicKey);
-			} catch (Exception e)
-			{
-				throw new DSigException(e.toString());
-			}
-		}
-
-		@Override
-		public Optional<PublicKey> getSignatureKey()
-		{
-			return Optional.ofNullable(sigKey);
-		}
-
-		@Override
-		public boolean isSigned()
-		{
-			return signed;
-		}
 	}
 }

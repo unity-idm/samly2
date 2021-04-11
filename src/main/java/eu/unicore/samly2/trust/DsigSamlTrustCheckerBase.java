@@ -62,11 +62,10 @@ public abstract class DsigSamlTrustCheckerBase implements SamlTrustChecker
 	public ResponseTrustCheckResult checkTrust(SAMLVerifiableElement responseMessage, StatusResponseType response) 
 			throws SAMLValidationException
 	{
-		SignatureType signature = response.getSignature();
-		if (signature == null || signature.isNil())
+		if (!responseMessage.isSigned())
 			return new ResponseTrustCheckResult(false);
 		
-		checkSignature(responseMessage, response.getIssuer(), signature);
+		checkSignature(responseMessage, response.getIssuer(), response.getSignature());
 		return new ResponseTrustCheckResult(true);
 	}
 
@@ -79,7 +78,7 @@ public abstract class DsigSamlTrustCheckerBase implements SamlTrustChecker
 	protected void checkRequiredSignature(SAMLVerifiableElement message, NameIDType issuer, 
 			SignatureType signature) throws SAMLValidationException
 	{
-		if (signature == null || signature.isNil())
+		if (!message.isSigned())
 			throw new SAMLValidationException("SAML document is not signed and the policy requires a signature");
 		checkSignature(message, issuer, signature);
 	}
@@ -87,7 +86,7 @@ public abstract class DsigSamlTrustCheckerBase implements SamlTrustChecker
 	protected void checkOptionalSignature(SAMLVerifiableElement message, NameIDType issuer, 
 			SignatureType signature) throws SAMLValidationException
 	{
-		if (signature == null || signature.isNil())
+		if (!message.isSigned())
 			return;
 		checkSignature(message, issuer, signature);
 	}

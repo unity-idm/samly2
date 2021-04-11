@@ -31,7 +31,7 @@ import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
  */
 public class StrictSamlTrustChecker extends DsigSamlTrustCheckerBase
 {
-	protected Map<String, Set<PublicKey>> trustedIssuers = new HashMap<String, Set<PublicKey>>();
+	protected Map<String, Set<PublicKey>> trustedIssuers = new HashMap<>();
 
 	public StrictSamlTrustChecker()
 	{

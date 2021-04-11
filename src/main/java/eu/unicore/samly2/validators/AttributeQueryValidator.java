@@ -38,7 +38,7 @@ public class AttributeQueryValidator extends AbstractSubjectQueryValidator
 		super.validate(verifiableMessage, attributeQuery);
 
 		AttributeType[] queriedAttrs = attributeQuery.getAttributeArray();
-		Set<String> uniqueAttrs = new HashSet<String>();
+		Set<String> uniqueAttrs = new HashSet<>();
 		for (AttributeType qa: queriedAttrs)
 			if (uniqueAttrs.contains(qa.getName()+"-||-"+qa.getNameFormat()))
 				throw new SAMLRequesterException(
