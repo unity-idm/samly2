@@ -13,19 +13,18 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
-import xmlbeans.org.oasis.saml2.assertion.AssertionType;
-import xmlbeans.org.oasis.saml2.assertion.AudienceRestrictionType;
-import xmlbeans.org.oasis.saml2.assertion.ConditionsType;
-import xmlbeans.org.oasis.saml2.assertion.NameIDType;
-import xmlbeans.org.oasis.saml2.assertion.SubjectConfirmationDataType;
-import xmlbeans.org.oasis.saml2.assertion.SubjectConfirmationType;
-import xmlbeans.org.oasis.saml2.assertion.SubjectType;
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.samly2.trust.ResponseTrustCheckResult;
 import eu.unicore.samly2.trust.SamlTrustChecker;
+import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
+import xmlbeans.org.oasis.saml2.assertion.AssertionType;
+import xmlbeans.org.oasis.saml2.assertion.AudienceRestrictionType;
+import xmlbeans.org.oasis.saml2.assertion.ConditionsType;
+import xmlbeans.org.oasis.saml2.assertion.SubjectConfirmationDataType;
+import xmlbeans.org.oasis.saml2.assertion.SubjectConfirmationType;
+import xmlbeans.org.oasis.saml2.assertion.SubjectType;
 
 /**
  * Validates SAML assertion, checking only the SAML 2.0 core specification rules. This class
@@ -116,10 +115,11 @@ public class AssertionValidator
 			throw new SAMLValidationException("Assertion must have its Issuer value set");
 		if (assertion.getSubject() == null || assertion.getSubject().isNil())
 			throw new SAMLValidationException("Assertion must have its Subject set");
-		NameIDType subjectID = assertion.getSubject().getNameID();
-		if (subjectID == null || subjectID.isNil())
-			throw new SAMLValidationException("Only assertions with subject "
-					+ "represented with NameID are supported");
+		if (assertion.getSubject().getBaseID() != null && !assertion.getSubject().getBaseID().isNil())
+			throw new SAMLValidationException("Assertions with custom subject IDs based on BaseID "
+					+ "are not supported");
+		if (assertion.getSubject().getEncryptedID() != null && !assertion.getSubject().getEncryptedID().isNil())
+			throw new SAMLValidationException("Assertions with encrypted subject's nameID are not supported");
 	}
 
 	protected void checkSubject(AssertionType assertion) throws SAMLValidationException

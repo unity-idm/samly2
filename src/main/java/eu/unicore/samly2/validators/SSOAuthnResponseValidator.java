@@ -118,7 +118,7 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 				issuer = assertion.getIssuer();
 			else if (!issuer.getStringValue().equals(assertion.getIssuer().getStringValue()))
 				throw new SAMLValidationException("Inconsistent issuer in assertion: " + 
-						assertion.getIssuer() + ", previously had: " + issuer);
+						assertion.getIssuer().getStringValue() + ", previously had: " + issuer.getStringValue());
 		}
 		if (authNAssertions.size() == 0)
 		{
