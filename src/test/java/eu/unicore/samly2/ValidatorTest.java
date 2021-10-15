@@ -1,5 +1,7 @@
 package eu.unicore.samly2;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -10,7 +12,6 @@ import eu.unicore.samly2.elements.NameID;
 import eu.unicore.samly2.elements.SAMLAttribute;
 import eu.unicore.samly2.elements.Subject;
 import eu.unicore.samly2.exceptions.SAMLServerException;
-import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.samly2.proto.AttributeQuery;
 import eu.unicore.samly2.trust.AcceptingSamlTrustChecker;
 import eu.unicore.samly2.trust.SamlTrustChecker;
@@ -21,10 +22,6 @@ import eu.unicore.samly2.validators.ReplayAttackChecker;
 import eu.unicore.security.dsig.DSigException;
 import eu.unicore.security.dsig.TestBase;
 
-/**
- * Tests validators
- * @author K. Benedyczak
- */
 public class ValidatorTest extends TestBase {
 
 	@Test
@@ -54,7 +51,7 @@ public class ValidatorTest extends TestBase {
 	}
 	
 	@Test
-	public void emptySubjectDisallowed() throws SAMLServerException {
+	public void emptySubjectAllowed() throws SAMLServerException {
 		Assertion a = new Assertion();
 		SubjectType subject = SubjectType.Factory.newInstance();
 		a.getXMLBean().setSubject(subject);
@@ -62,14 +59,9 @@ public class ValidatorTest extends TestBase {
 		SamlTrustChecker checker = new AcceptingSamlTrustChecker();
 		AssertionValidator validator = new AssertionValidator("https://somehost/foo/bar", 
 				"", "", 1000L, checker, null);
-		try
-		{
-			validator.validate(a.getXMLBeanDoc());
-			fail("Validation should fail");
-		} catch (SAMLValidationException e)
-		{
-			assertTrue(e.getMessage().contains("subject"));
-			assertTrue(e.getMessage().contains("NameID"));
-		}
+
+		Throwable throwable = catchThrowable(() -> validator.validate(a.getXMLBeanDoc()));
+		
+		assertThat(throwable).isNull();
 	}
 }
