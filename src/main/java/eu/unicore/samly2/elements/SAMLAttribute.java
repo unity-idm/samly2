@@ -15,9 +15,7 @@ import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlString;
 
 import eu.unicore.samly2.SAMLConstants;
-
 import xmlbeans.org.oasis.saml2.assertion.AttributeType;
-import xmlbeans.pl.edu.icm.samlvo.attrext.ScopedStringAttributeValueType;
 
 /**
  * Simplifies creation of AttributeType.
@@ -118,22 +116,6 @@ public class SAMLAttribute
 		o.set(s);
 	}
 
-	@Deprecated
-	public void addScopedStringAttributeValue(String value, String scope)
-	{
-		XmlObject o = xml.addNewAttributeValue();
-		
-		ScopedStringAttributeValueType valXml = 
-			ScopedStringAttributeValueType.Factory.newInstance();
-		if (value != null)
-			valXml.setStringValue(value);
-		else
-			valXml.setNil();
-		
-		valXml.setScope(scope == null ? "/" : scope);
-		o.set(valXml);
-	}
-	
 	public void addXMLAttribute(QName name, String value)
 	{
 		XmlCursor cur = xml.newCursor();
