@@ -15,6 +15,8 @@ import eu.unicore.samly2.SAMLConstants.SubStatus;
 public class SAMLErrorResponseException extends SAMLServerException
 {
 
+	private static final long serialVersionUID = 1L;
+
 	public SAMLErrorResponseException(Status samlErrorId, String message, Throwable cause)
 	{
 		super(samlErrorId, message, cause);
