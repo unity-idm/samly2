@@ -109,6 +109,8 @@ public abstract class DsigSamlTrustCheckerBase implements SamlTrustChecker
 	
 	public class SAMLTrustedKeyDiscoveryException extends RuntimeException
 	{
+		private static final long serialVersionUID = 1L;
+
 		public SAMLTrustedKeyDiscoveryException(String message)
 		{
 			super(message);

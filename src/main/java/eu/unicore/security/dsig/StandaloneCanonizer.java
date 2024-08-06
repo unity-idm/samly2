@@ -9,14 +9,19 @@
 package eu.unicore.security.dsig;
 
 import java.io.FileInputStream;
+import java.util.Iterator;
 
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
 
 import org.apache.xml.security.signature.XMLSignatureInput;
+import org.apache.xml.security.signature.XMLSignatureNodeInput;
 import org.apache.xml.security.transforms.Transforms;
 import org.apache.xml.security.utils.Constants;
-import org.apache.xpath.XPathAPI;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -88,16 +93,33 @@ public class StandaloneCanonizer
 	public String fireCanon(Document inputDoc, boolean envSigTr) throws Exception
 	{
 		org.apache.xml.security.Init.init();
-		XMLSignatureInput signatureInput = new XMLSignatureInput((Node) inputDoc);
+		XMLSignatureInput signatureInput = new XMLSignatureNodeInput((Node) inputDoc);
 		Document transformDoc = documentBuilder.newDocument();
 
 		XMLSignatureInput result;
 		if (envSigTr)
 		{
-			Element nscontext = createDSctx(inputDoc, "ds", 
-					Constants.SignatureSpecNS);
-			Element transformsElement = (Element) XPathAPI.selectSingleNode(
-					inputDoc, "//ds:Transforms", nscontext);
+			XPath xPath = XPathFactory.newInstance().newXPath();
+			xPath.setNamespaceContext(new NamespaceContext() {
+				
+				@Override
+				public Iterator<String> getPrefixes(String namespaceURI) {
+					return null;
+				}
+				
+				@Override
+				public String getPrefix(String namespaceURI) {
+					return null;
+				}
+				
+				@Override
+				public String getNamespaceURI(String prefix) {
+					return "ds".equals(prefix) ? Constants.SignatureSpecNS : null;
+				}
+			});
+			String expression = "//ds:Transforms";
+			Element transformsElement = (Element)xPath.compile(expression).
+					evaluate(transformDoc, XPathConstants.NODE);
 			Transforms transforms = new Transforms(transformsElement, 
 					"memory://");
 			result = transforms.performTransforms(signatureInput);
@@ -108,8 +130,6 @@ public class StandaloneCanonizer
 			c14nTrans.addTransform(Transforms.TRANSFORM_C14N_EXCL_OMIT_COMMENTS);
 			result = c14nTrans.performTransforms(signatureInput);			
 		}
-		
-		byte outputBytes[] = result.getBytes();
-		return new String(outputBytes);
+		return new String(result.getBytes());
 	}
 }
