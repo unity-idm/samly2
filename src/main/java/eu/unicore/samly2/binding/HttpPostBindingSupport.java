@@ -4,8 +4,7 @@
  */
 package eu.unicore.samly2.binding;
 
-import org.apache.xmlbeans.impl.util.Base64;
-
+import org.apache.commons.codec.binary.Base64;
 
 /**
  * Helper class supporting SAML HTTP POST binding.
@@ -18,7 +17,7 @@ public class HttpPostBindingSupport
 	{
 		String f = formForm.replace("__ACTION__", identityProviderURL);
 		f = f.replace("__RELAYSTATE__", relayState == null ? "" : relayState);
-		String encodedReq = new String(Base64.encode(xmlMessage.getBytes()));
+		String encodedReq = new String(Base64.encodeBase64(xmlMessage.getBytes()));
 		f = f.replace("__SAMLREQUEST__", encodedReq);
 		f = f.replace("__MESSAGE_TYPE__", messageType.toString());
 		return f;
