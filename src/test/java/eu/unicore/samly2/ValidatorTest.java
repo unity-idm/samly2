@@ -60,7 +60,8 @@ public class ValidatorTest extends TestBase {
 		AssertionValidator validator = new AssertionValidator("https://somehost/foo/bar", 
 				"", "", 1000L, checker, null);
 
-		Throwable throwable = catchThrowable(() -> validator.validate(a.getXMLBeanDoc()));
+		Throwable throwable = catchThrowable(() -> validator.validate(
+				new SAMLUtils.XMLBeansWithDom<>(a.getXMLBeanDoc(), null)));
 		
 		assertThat(throwable).isNull();
 	}

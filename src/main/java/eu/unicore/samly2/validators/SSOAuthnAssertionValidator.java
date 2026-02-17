@@ -8,6 +8,7 @@ import java.util.Calendar;
 
 import eu.unicore.samly2.SAMLBindings;
 import eu.unicore.samly2.SAMLConstants;
+import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.samly2.exceptions.SAMLValidationSoftException;
 import eu.unicore.samly2.trust.CheckingMode;
@@ -64,10 +65,10 @@ public class SSOAuthnAssertionValidator extends AssertionValidator
 	}
 	
 	@Override
-	public void validate(AssertionDocument assertionDoc) throws SAMLValidationException
+	public void validate(SAMLUtils.XMLBeansWithDom<AssertionDocument> assertionDoc) throws SAMLValidationException
 	{
 		super.validate(assertionDoc);
-		AssertionType assertionXml = assertionDoc.getAssertion();
+		AssertionType assertionXml = assertionDoc.xmlBean.getAssertion();
 		
 		//1 - issuer format unspec or entity
 		NameIDType issuer = assertionXml.getIssuer();

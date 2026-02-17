@@ -4,6 +4,7 @@
  */
 package eu.unicore.samly2.trust;
 
+import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.samly2.messages.SAMLVerifiableElement;
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
@@ -27,7 +28,7 @@ public class AcceptingSamlTrustChecker implements SamlTrustChecker
 	}
 
 	@Override
-	public void checkTrust(AssertionDocument assertionDoc,
+	public void checkTrust(SAMLUtils.XMLBeansWithDom<AssertionDocument> assertionDoc,
 			ResponseTrustCheckResult responseCheckResult)
 			throws SAMLValidationException
 	{
@@ -41,7 +42,7 @@ public class AcceptingSamlTrustChecker implements SamlTrustChecker
 	}
 	
 	@Override
-	public void checkTrust(AssertionDocument assertionDoc) throws SAMLValidationException
+	public void checkTrust(SAMLUtils.XMLBeansWithDom<AssertionDocument> assertionDoc) throws SAMLValidationException
 	{
 		checkTrust(assertionDoc, new ResponseTrustCheckResult(false));
 	}

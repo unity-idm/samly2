@@ -23,7 +23,7 @@ import org.apache.xml.security.utils.EncryptionConstants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import eu.unicore.security.dsig.DigSignatureUtil;
+import eu.unicore.security.dsig.DOMUtilities;
 
 /**
  * Support code for encrypting XML
@@ -53,7 +53,7 @@ public class EncryptionUtil
 		Document ret = xmlCipher.doFinal(xml, encryptedDataElement);
 		
 		if (log.isTraceEnabled())
-			log.trace("Decrypted document:\n" + DigSignatureUtil.dumpDOMToString(ret));
+			log.trace("Decrypted document:\n" + DOMUtilities.dumpNodeToString(ret));
 		
 		return ret;
 	}

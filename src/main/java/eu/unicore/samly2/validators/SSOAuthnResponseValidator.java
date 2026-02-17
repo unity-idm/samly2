@@ -88,7 +88,7 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 				throw new SAMLValidationException("Issuer of SAML response must be of Entity type in SSO AuthN. It is: " + issuer.getFormat());
 		}
 		
-		List<AssertionDocument> assertions;
+		List<SAMLUtils.XMLBeansWithDom<AssertionDocument>> assertions;
 		try
 		{
 			assertions = SAMLUtils.extractAllAssertions(response, decryptionKey);
@@ -103,9 +103,9 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 				binding, responseTrust);
 		AssertionValidator asValidator = new AssertionValidator(consumerSamlName, consumerEndpointUri, 
 				null, samlValidityGraceTime, trustChecker, responseTrust);
-		for (AssertionDocument assertionDoc: assertions)
+		for (SAMLUtils.XMLBeansWithDom<AssertionDocument> assertionDoc: assertions)
 		{
-			AssertionType assertion = assertionDoc.getAssertion();
+			AssertionType assertion = assertionDoc.xmlBean.getAssertion();
 			if (assertion.sizeOfAuthnStatementArray() > 0)
 				tryValidateAsAuthnAssertion(authnAsValidator, assertionDoc);
 			if (assertion.sizeOfStatementArray() > 0 || assertion.sizeOfAttributeStatementArray() > 0 ||
@@ -157,25 +157,25 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 		return attributeAssertions;
 	}
 
-	protected void tryValidateAsAuthnAssertion(SSOAuthnAssertionValidator authnAsValidator, 
-			AssertionDocument assertionDoc) throws SAMLValidationException
+	protected void tryValidateAsAuthnAssertion(SSOAuthnAssertionValidator authnAsValidator,
+			SAMLUtils.XMLBeansWithDom<AssertionDocument> assertionDoc) throws SAMLValidationException
 	{
 		try
 		{
 			authnAsValidator.validate(assertionDoc);
-			authNAssertions.add(assertionDoc);
+			authNAssertions.add(assertionDoc.xmlBean);
 		} catch (SAMLValidationSoftException e)
 		{
-			reasons.addAssertionError(assertionDoc.getAssertion(), e.getMessage());
+			reasons.addAssertionError(assertionDoc.xmlBean.getAssertion(), e.getMessage());
 		}
 	}
 
-	protected void tryValidateAsGenericAssertion(AssertionValidator asValidator, 
-			AssertionDocument assertionDoc, ResponseTrustCheckResult responseTrust) 
+	protected void tryValidateAsGenericAssertion(AssertionValidator asValidator,
+			SAMLUtils.XMLBeansWithDom<AssertionDocument> assertionDoc, ResponseTrustCheckResult responseTrust)
 					throws SAMLValidationException
 	{
 		asValidator.validate(assertionDoc);
-		AssertionType assertion = assertionDoc.getAssertion();
+		AssertionType assertion = assertionDoc.xmlBean.getAssertion();
 		NameIDType asIssuer = assertion.getIssuer();
 		if (asIssuer.getFormat() != null && !asIssuer.getFormat().equals(SAMLConstants.NFORMAT_ENTITY))
 			throw new SAMLValidationException("Issuer of assertion must be of Entity type in SSO AuthN. It is: " + asIssuer.getFormat());
@@ -194,8 +194,8 @@ public class SSOAuthnResponseValidator extends StatusResponseValidator
 							+ "them should be.");
 			}
 		}
-		otherAssertions.add(assertionDoc);
+		otherAssertions.add(assertionDoc.xmlBean);
 		if (assertion.sizeOfAttributeStatementArray() > 0)
-			attributeAssertions.add(assertionDoc);
+			attributeAssertions.add(assertionDoc.xmlBean);
 	}
 }

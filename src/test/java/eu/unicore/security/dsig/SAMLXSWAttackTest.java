@@ -12,6 +12,7 @@ import static org.junit.Assert.fail;
 
 import java.security.cert.X509Certificate;
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -93,8 +94,8 @@ public class SAMLXSWAttackTest
 		
 		try
 		{
-			AssertionDocument[] toCheck = SAMLUtils.getAssertions(xmlRespDoc.getResponse());
-			for (AssertionDocument assertion: toCheck)
+			List<SAMLUtils.XMLBeansWithDom<AssertionDocument>> toCheck = SAMLUtils.getAssertions(xmlRespDoc.getResponse());
+			for (SAMLUtils.XMLBeansWithDom<AssertionDocument> assertion: toCheck)
 			{
 				trustChecker.checkTrust(assertion);
 			}

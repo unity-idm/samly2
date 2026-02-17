@@ -64,9 +64,9 @@ public class EncryptionTest extends TestBase
 				new FileInputStream("src/test/resources/encryptedAssertionSigner.pem"), 
 				Encoding.PEM);
 		
-		List<AssertionDocument> assertions = SAMLUtils.extractAllAssertions(
+		List<SAMLUtils.XMLBeansWithDom<AssertionDocument>> assertions = SAMLUtils.extractAllAssertions(
 				responseDoc.getResponse(), ksCred.getKey());
-		AssertionDocument asDoc = assertions.get(0);
+		AssertionDocument asDoc = assertions.get(0).xmlBean;
 		System.out.println("Decrypted, after XMLBeans:\n" + asDoc.xmlText() + "\n");
 		Assertion a = new Assertion(asDoc);
 		a.validateSignature(cert.getPublicKey());

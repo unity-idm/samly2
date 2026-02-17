@@ -1,6 +1,9 @@
 package eu.unicore.samly2;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.security.cert.X509Certificate;
@@ -8,9 +11,6 @@ import java.security.cert.X509Certificate;
 import org.apache.xmlbeans.XmlObject;
 import org.junit.Test;
 
-import xmlbeans.org.oasis.saml2.protocol.RequestAbstractType;
-import xmlbeans.org.oasis.saml2.protocol.ResponseDocument;
-import xmlbeans.org.oasis.saml2.protocol.StatusResponseType;
 import eu.unicore.samly2.assertion.Assertion;
 import eu.unicore.samly2.elements.NameID;
 import eu.unicore.samly2.elements.NameIDPolicy;
@@ -29,6 +29,9 @@ import eu.unicore.samly2.validators.SSOAuthnResponseValidator;
 import eu.unicore.security.dsig.DSigException;
 import eu.unicore.security.dsig.TestBase;
 import eu.unicore.security.dsig.Utils;
+import xmlbeans.org.oasis.saml2.protocol.RequestAbstractType;
+import xmlbeans.org.oasis.saml2.protocol.ResponseDocument;
+import xmlbeans.org.oasis.saml2.protocol.StatusResponseType;
 
 /**
  * Tests utility classes which are creating SAML protocol messages.
@@ -193,10 +196,8 @@ public class ProtoTest extends TestBase {
 				c[0].getPublicKey());
 		SSOAuthnResponseValidator validator = new SSOAuthnResponseValidator(null, null, 
 				"SAMLY2lib_msg_19155ef4173009c5b5d93ec3c07edcdc39d281b15cef0e28", 
-				360000000000L, trustChecker, new ReplayAttackChecker(), SAMLBindings.HTTP_POST);
+				3600000000000L, trustChecker, new ReplayAttackChecker(), SAMLBindings.HTTP_POST);
 		XMLExpandedMessage verifiableMsg = new XMLExpandedMessage(authenticationResponseDoc, authenticationResponseDoc.getResponse());
 		validator.validate(authenticationResponseDoc, verifiableMsg);
-		
 	}
-
 }

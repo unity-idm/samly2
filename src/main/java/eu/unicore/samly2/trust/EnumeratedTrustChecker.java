@@ -60,7 +60,7 @@ public class EnumeratedTrustChecker implements SamlTrustChecker
 	}
 	
 	@Override
-	public void checkTrust(AssertionDocument assertionDoc, ResponseTrustCheckResult rt) throws SAMLValidationException
+	public void checkTrust(SAMLUtils.XMLBeansWithDom<AssertionDocument> assertionDoc, ResponseTrustCheckResult rt) throws SAMLValidationException
 	{
 		throw new IllegalStateException("This trust checker should not be used for assertions validation");
 	}
@@ -120,7 +120,7 @@ public class EnumeratedTrustChecker implements SamlTrustChecker
 	}
 	
 	@Override
-	public void checkTrust(AssertionDocument assertionDoc) throws SAMLValidationException
+	public void checkTrust(SAMLUtils.XMLBeansWithDom<AssertionDocument> assertionDoc) throws SAMLValidationException
 	{
 		checkTrust(assertionDoc, new ResponseTrustCheckResult(false));
 	}

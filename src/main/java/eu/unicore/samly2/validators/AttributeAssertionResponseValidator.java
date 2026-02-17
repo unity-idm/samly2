@@ -74,7 +74,7 @@ public class AttributeAssertionResponseValidator extends StatusResponseValidator
 		if (issuer.getFormat() != null && !issuer.getFormat().equals(SAMLConstants.NFORMAT_ENTITY))
 			throw new SAMLValidationException("Issuer of SAML response must be of Entity type in SSO AuthN. It is: " + issuer.getFormat());
 
-		List<AssertionDocument> assertions;
+		List<SAMLUtils.XMLBeansWithDom<AssertionDocument>> assertions;
 		try
 		{
 			assertions = SAMLUtils.extractAllAssertions(response, decryptionKey);
@@ -87,9 +87,9 @@ public class AttributeAssertionResponseValidator extends StatusResponseValidator
 		AssertionValidator asValidator = new AssertionValidator(consumerSamlName, consumerEndpointUri, 
 				requestId, samlValidityGraceTime, trustChecker, responseTrust);
 		
-		for (AssertionDocument assertionDoc: assertions)
+		for (SAMLUtils.XMLBeansWithDom<AssertionDocument> assertionDoc: assertions)
 		{
-			AssertionType assertion = assertionDoc.getAssertion();
+			AssertionType assertion = assertionDoc.xmlBean.getAssertion();
 			if (assertion.sizeOfAttributeStatementArray() > 0)
 				validateAssertion(assertionDoc, asValidator);
 			else
@@ -97,17 +97,17 @@ public class AttributeAssertionResponseValidator extends StatusResponseValidator
 		}
 	}
 	
-	protected void validateAssertion(AssertionDocument assertionDoc, AssertionValidator asValidator) 
+	protected void validateAssertion(SAMLUtils.XMLBeansWithDom<AssertionDocument> assertionDoc, AssertionValidator asValidator)
 			throws SAMLValidationException
 	{
 		asValidator.validate(assertionDoc);
-		AssertionType assertion = assertionDoc.getAssertion();
+		AssertionType assertion = assertionDoc.xmlBean.getAssertion();
 		NameIDType receivedSubject = assertion.getSubject().getNameID();
 
 		if (!SAMLUtils.compareNameIDs(receivedSubject, requestedSubject))
 			throw new SAMLValidationException("Received assertion for subject which was not requested: " + receivedSubject.xmlText() +
 					"(requested was " + requestedSubject.xmlText() + ")");
-		attributeAssertions.add(assertionDoc);
+		attributeAssertions.add(assertionDoc.xmlBean);
 		
 	}
 	
