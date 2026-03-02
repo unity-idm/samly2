@@ -35,7 +35,7 @@ import org.w3c.dom.NodeList;
 
 public class DigSignatureVerificator
 {
-	private static final Logger log = LogManager.getLogger("unicore.security.dsig." + 
+	private static final Logger log = LogManager.getLogger(LoggerPfx.DSIG_PFX + 
 		DigSignatureVerificator.class.getSimpleName());
 	private XMLSignatureFactory fac = null;
 	
@@ -124,10 +124,9 @@ public class DigSignatureVerificator
 		XMLSignature signature = fac.unmarshalXMLSignature(valContext);
 		boolean coreValidity = signature.validate(valContext);
 
-		if (coreValidity == false) 
-			log.debug("Signature failed core validation");
 		if (coreValidity == false && log.isDebugEnabled()) 
 		{		
+			log.debug("Signature failed core validation");
 			boolean sv = signature.getSignatureValue().validate(valContext);
 			log.debug("signature validation status: " + sv);
 			Iterator<?> i = signature.getSignedInfo().getReferences().iterator();

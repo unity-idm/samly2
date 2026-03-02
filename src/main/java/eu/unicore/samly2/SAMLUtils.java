@@ -191,8 +191,10 @@ public class SAMLUtils
 			{
 				EncryptionUtil encUtil = new EncryptionUtil();
 				Document reverted = encUtil.decrypt(SAMLUtils.getDOM(encAssertion.xmlBean), decryptionKey);
-				AssertionDocument xmlBeansWrapper = AssertionDocument.Factory.parse(reverted.getDocumentElement().getFirstChild());
-				allAs.add(new XMLBeansWithDom<>(xmlBeansWrapper, reverted));
+				Element decryptedAssertionElement = (Element) reverted.getElementsByTagNameNS(
+						SAMLConstants.ASSERTION_NS, "Assertion").item(0);
+				AssertionDocument xmlBeansWrapper = AssertionDocument.Factory.parse(decryptedAssertionElement);
+				allAs.add(new XMLBeansWithDom<>(xmlBeansWrapper, decryptedAssertionElement));
 			}
 		}
 		return allAs;

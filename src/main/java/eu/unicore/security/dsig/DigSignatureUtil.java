@@ -65,7 +65,7 @@ import xmlbeans.org.w3.x2000.x09.xmldsig.X509DataType;
  */
 public class DigSignatureUtil
 {
-	private static final Logger log = LogManager.getLogger("unicore.security.dsig." + 
+	private static final Logger log = LogManager.getLogger(LoggerPfx.DSIG_PFX + 
 		DigSignatureUtil.class.getSimpleName());
 	private XMLSignatureFactory fac = null;
 	
@@ -153,11 +153,6 @@ public class DigSignatureUtil
 		dsc.setIdAttributeNS(elToSign, idAttribute.getNamespace(), idAttribute.getLocalName());
 		
 		
-		//hack to overcome gateway/ActiveSOAP bugs with default prefixes...
-		// -> only relevant for gateway version < 6.3.0  
-		dsc.putNamespacePrefix(
-			"http://www.w3.org/2000/09/xmldsig#", 
-			"dsig");
 		KeyInfo ki = null;
 		KeyInfoFactory kif = fac.getKeyInfoFactory();
 		List<XMLStructure> kiVals = new ArrayList<>();

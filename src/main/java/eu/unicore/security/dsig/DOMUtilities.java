@@ -29,7 +29,7 @@ import org.w3c.dom.Node;
  */
 public class DOMUtilities
 {
-	private static final Logger log = LogManager.getLogger("unicore.security.dsig." + 
+	private static final Logger log = LogManager.getLogger(LoggerPfx.DSIG_PFX + 
 			DOMUtilities.class.getSimpleName());
 	
 	public static String getDOMAsRawString(Document doc) throws IOException
@@ -46,10 +46,10 @@ public class DOMUtilities
 				getDOMAsRawString(doc));
 		} catch (IOException e)
 		{
-			logger.warn("Can't serialize DOM to string: " + e);
+			logSerializationProblem(logger, e);
 		}
 	}
-	
+
 	public static String dumpNodeToString(Node document)
 	{
 		TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -63,9 +63,15 @@ public class DOMUtilities
 			return stringWriter.toString();
 		} catch (TransformerException e)
 		{
-        		log.warn("Can't serialize DOM Document to String: " + e);
+        		logSerializationProblem(log, e);
         		return null;
 		}
+	}
+	
+	private static void logSerializationProblem(Logger logger, Exception e)
+	{
+		logger.warn("Can't serialize DOM to string: {}", e.toString());
+		logger.debug("DOM serialization failure reason follows", e);
 	}
 }
 
