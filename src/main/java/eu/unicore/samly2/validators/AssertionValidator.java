@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.unicore.samly2.SAMLConstants;
+import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.samly2.trust.ResponseTrustCheckResult;
 import eu.unicore.samly2.trust.SamlTrustChecker;
@@ -92,9 +93,9 @@ public class AssertionValidator
 		this.consumerSamlNames.add(alias);
 	}
 	
-	public void validate(AssertionDocument assertionDoc) throws SAMLValidationException
+	public void validate(SAMLUtils.XMLBeansWithDom<AssertionDocument> assertionDoc) throws SAMLValidationException
 	{
-		AssertionType assertionXml = assertionDoc.getAssertion(); 
+		AssertionType assertionXml = assertionDoc.xmlBean.getAssertion();
 		checkMandatoryElements(assertionXml);
 		trustChecker.checkTrust(assertionDoc, responseCheckResult);
 		checkConditions(assertionXml);

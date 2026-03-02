@@ -33,6 +33,7 @@ public class DSigTest extends TestBase
 		try
 		{
 			DigSignatureUtil dsigEngine = new DigSignatureUtil();
+			DigSignatureVerificator dsigVerificator = new DigSignatureVerificator();
 			Document doc = readDoc("/doc.xml");
 			
 			Node n = doc.getDocumentElement().getChildNodes().item(1);
@@ -40,7 +41,7 @@ public class DSigTest extends TestBase
 			dsigEngine.genEnvelopedSignature(privKey1, pubKey, issuerCert1, 
 				doc, n, SamlTrustChecker.ASSERTION_ID_QNAME);
 
-			assertTrue(dsigEngine.verifyEnvelopedSignature(doc, Collections.singletonList(doc.getDocumentElement()), 
+			assertTrue(dsigVerificator.verifyEnvelopedSignature(doc, Collections.singletonList(doc.getDocumentElement()), 
 					SamlTrustChecker.ASSERTION_ID_QNAME, pubKey));
 			
 		} catch (Exception e)
@@ -56,7 +57,7 @@ public class DSigTest extends TestBase
 	{
 		try
 		{
-			DigSignatureUtil dsigEngine = new DigSignatureUtil();
+			DigSignatureVerificator dsigEngine = new DigSignatureVerificator();
 			Document doc = readDoc("/docSigned.xml");
 			
 			BigInteger modulus = new BigInteger("163777238822666015285329706279830595411974064586059702871587099431512157455719495774518770867278091194963281647181853106959836263061780091305987288645684760669758102471364248456086999347113921145640831970575719191169166816785623263506972893282383928337258596366986798122055894688767641149446988631156789299337");

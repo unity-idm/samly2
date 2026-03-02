@@ -17,6 +17,14 @@ import java.util.Date;
 
 import org.w3c.dom.Document;
 
+import eu.unicore.samly2.SAMLUtils;
+import eu.unicore.samly2.exceptions.SAMLValidationException;
+import eu.unicore.samly2.trust.SamlTrustChecker;
+import eu.unicore.samly2.validators.AssertionValidator;
+import eu.unicore.security.dsig.DSigException;
+import eu.unicore.security.dsig.DigSignatureVerificator;
+import eu.unicore.security.dsig.Utils;
+import eu.unicore.security.enc.EncryptionUtil;
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.AssertionType;
 import xmlbeans.org.oasis.saml2.assertion.ConditionsType;
@@ -26,14 +34,6 @@ import xmlbeans.org.oasis.saml2.assertion.SubjectConfirmationType;
 import xmlbeans.org.oasis.saml2.assertion.SubjectType;
 import xmlbeans.org.w3.x2000.x09.xmldsig.KeyInfoType;
 import xmlbeans.org.w3.x2000.x09.xmldsig.X509DataType;
-import eu.unicore.samly2.SAMLUtils;
-import eu.unicore.samly2.exceptions.SAMLValidationException;
-import eu.unicore.samly2.trust.SamlTrustChecker;
-import eu.unicore.samly2.validators.AssertionValidator;
-import eu.unicore.security.dsig.DSigException;
-import eu.unicore.security.dsig.DigSignatureUtil;
-import eu.unicore.security.dsig.Utils;
-import eu.unicore.security.enc.EncryptionUtil;
 
 
 /**
@@ -126,7 +126,7 @@ public class AssertionParser implements Serializable
 		try
 		{
 			Document doc = getAsDOM();
-			DigSignatureUtil sign = new DigSignatureUtil();
+			DigSignatureVerificator sign = new DigSignatureVerificator();
 			if (!sign.verifyEnvelopedSignature(doc, Collections.singletonList(doc.getDocumentElement()),  
 					SamlTrustChecker.ASSERTION_ID_QNAME, key))
 				throw new SAMLValidationException("Signature is incorrect");

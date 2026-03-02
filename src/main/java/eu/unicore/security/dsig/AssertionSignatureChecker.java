@@ -62,7 +62,7 @@ public class AssertionSignatureChecker
 		try
 		{
 			checker = new AssertionSignatureChecker();
-			DigSignatureUtil dsigEngine = new DigSignatureUtil();
+			DigSignatureVerificator dsigEngine = new DigSignatureVerificator();
 			Document doc = checker.readDoc(null);
 			AssertionDocument asXDoc = AssertionDocument.Factory.parse(doc);
 			AssertionParser assertion = new AssertionParser(asXDoc);

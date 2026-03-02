@@ -7,6 +7,7 @@ package eu.unicore.samly2.trust;
 import java.security.PublicKey;
 import java.util.List;
 
+import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.samly2.messages.SAMLVerifiableElement;
 import eu.unicore.samly2.messages.XMLExpandedAssertion;
@@ -41,10 +42,11 @@ public abstract class DsigSamlTrustCheckerBase implements SamlTrustChecker
 	}
 	
 	@Override
-	public void checkTrust(AssertionDocument assertionDoc, ResponseTrustCheckResult responseCheckResult) 
+	public void checkTrust(SAMLUtils.XMLBeansWithDom<AssertionDocument> assertionDoc,
+			ResponseTrustCheckResult responseCheckResult)
 			throws SAMLValidationException
 	{
-		AssertionType assertion = assertionDoc.getAssertion();
+		AssertionType assertion = assertionDoc.xmlBean.getAssertion();
 		XMLExpandedAssertion verifiableAssertion = new XMLExpandedAssertion(assertionDoc);
 		if (mode == CheckingMode.REQUIRE_SIGNED_ASSERTION)
 			checkRequiredSignature(verifiableAssertion, assertion.getIssuer(), assertion.getSignature());
@@ -53,7 +55,7 @@ public abstract class DsigSamlTrustCheckerBase implements SamlTrustChecker
 	}
 
 	@Override
-	public void checkTrust(AssertionDocument assertionDoc) throws SAMLValidationException
+	public void checkTrust(SAMLUtils.XMLBeansWithDom<AssertionDocument> assertionDoc) throws SAMLValidationException
 	{
 		checkTrust(assertionDoc, new ResponseTrustCheckResult(false));
 	}

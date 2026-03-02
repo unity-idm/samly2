@@ -12,6 +12,7 @@ import java.util.Date;
 import org.apache.xmlbeans.XmlObject;
 import org.junit.Test;
 
+import eu.unicore.security.dsig.DSigException;
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.AudienceRestrictionType;
 import xmlbeans.org.oasis.saml2.assertion.AuthnContextType;
@@ -64,7 +65,7 @@ public class AssertionTest extends TestBase {
 		try
 		{
 	
-			checker.checkTrust(as.getXMLBeanDoc(), checkTrust);
+			checker.checkTrust(addDom(as.getXMLBeanDoc()), checkTrust);
 			fail("Should fail on unsigned assertion");
 		} catch (SAMLValidationException e)
 		{
@@ -77,7 +78,7 @@ public class AssertionTest extends TestBase {
 		checker2.addTrustedIssuer(issuerDN1, SAMLConstants.NFORMAT_DN, issuerCert1[0].getPublicKey());
 		ResponseTrustCheckResult checkTrust2 = checker2.checkTrust(verifiableMessage, resp.getXMLBean());
 		assertTrue(checkTrust2.isTrustEstablished());
-		checker2.checkTrust(as.getXMLBeanDoc(), checkTrust2);
+		checker2.checkTrust(addDom(as.getXMLBeanDoc()), checkTrust2);
 	}
 
 	@Test
@@ -93,14 +94,14 @@ public class AssertionTest extends TestBase {
 		XMLExpandedMessage verifiableMessage = new XMLExpandedMessage(resp.getXMLBeanDoc(), resp.getXMLBean());
 		ResponseTrustCheckResult checkTrust = checker.checkTrust(verifiableMessage, resp.getXMLBean());
 		assertFalse(checkTrust.isTrustEstablished());
-		checker.checkTrust(as.getXMLBeanDoc(), checkTrust);
+		checker.checkTrust(addDom(as.getXMLBeanDoc()), checkTrust);
 		
 		SimpleTrustChecker checker2 = new SimpleTrustChecker(issuerCert1[0], false);
 		ResponseTrustCheckResult checkTrust2 = checker2.checkTrust(verifiableMessage, resp.getXMLBean());
 		assertFalse(checkTrust2.isTrustEstablished());
 		try
 		{
-			checker2.checkTrust(as.getXMLBeanDoc(), checkTrust2);
+			checker2.checkTrust(addDom(as.getXMLBeanDoc()), checkTrust2);
 			fail("Should fail on unsigned assertion");
 		} catch (SAMLValidationException e)
 		{
@@ -156,7 +157,7 @@ public class AssertionTest extends TestBase {
 		checker.addTrustedIssuer("foo", SAMLConstants.NFORMAT_ENTITY, issuerCert1[0].getPublicKey());
 		try
 		{
-			checker.checkTrust(assertion.getXMLBeanDoc());
+			checker.checkTrust(addDom(assertion.getXMLBeanDoc()));
 		} catch (SAMLValidationException e)
 		{
 			e.printStackTrace();
@@ -189,5 +190,16 @@ public class AssertionTest extends TestBase {
 			assertion.sign(privKey1, issuerCert1);
 		
 		return assertion.getXMLBeanDoc();
+	}
+
+	private static SAMLUtils.XMLBeansWithDom<AssertionDocument> addDom(AssertionDocument xmlBeans)
+	{
+		try
+		{
+			return new SAMLUtils.XMLBeansWithDom<>(xmlBeans, SAMLUtils.getDOM(xmlBeans));
+		} catch (DSigException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 }

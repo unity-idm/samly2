@@ -3,7 +3,6 @@
  * See LICENCE file for licencing information.
  *
  * Created on Sep 25, 2007
- * Author: K. Benedyczak <golbi@mat.umk.pl>
  */
 
 package eu.unicore.samly2;
@@ -31,6 +30,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import eu.unicore.security.dsig.DSigException;
+import eu.unicore.security.dsig.Utils;
+import eu.unicore.security.enc.EncryptionUtil;
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.EncryptedAssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
@@ -38,13 +40,9 @@ import xmlbeans.org.oasis.saml2.protocol.ResponseType;
 import xmlbeans.org.w3.x2000.x09.xmldsig.KeyInfoType;
 import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;
 import xmlbeans.org.w3.x2000.x09.xmldsig.X509DataType;
-import eu.unicore.samly2.assertion.AssertionParser;
-import eu.unicore.security.dsig.DSigException;
-import eu.unicore.security.dsig.Utils;
 
 /**
  * Auxiliary static SAML helpers.
- * @author K. Benedyczak
  */
 public class SAMLUtils
 {
@@ -118,17 +116,16 @@ public class SAMLUtils
 	 * Extracts assertions from the wrapping SAML response in a safe way. It is guaranteed that no link is preserved 
 	 * in the returned objects to the parameter object.
 	 */
-	public static AssertionDocument[] getAssertions(ResponseType response) 
-		throws XmlException, IOException
+	public static List<XMLBeansWithDom<AssertionDocument>> getAssertions(ResponseType response)
+		throws XmlException
 	{
-		
  		Element node = (Element)response.getDomNode();
  		NodeList allChildren = node.getChildNodes();
 		NodeList asNodes = node.getElementsByTagNameNS(
 			SAMLConstants.ASSERTION_NS, "Assertion");
-		if (asNodes == null || asNodes.getLength() == 0)
-			return new AssertionDocument[0];
-		List<AssertionDocument> ret = new ArrayList<AssertionDocument>(asNodes.getLength());
+		if (asNodes.getLength() == 0)
+			return Collections.emptyList();
+		List<XMLBeansWithDom<AssertionDocument>> ret = new ArrayList<>(asNodes.getLength());
 		//work carefully: we only return Assertions which are direct children of the response,
 		//to make XML Dsig attacks more difficult
 		
@@ -139,35 +136,28 @@ public class SAMLUtils
 			{
 				if (allChildren.item(j).equals(asNode))
 				{
-					AssertionDocument wrapper = AssertionDocument.Factory.parse(asNode);
-					//this weird... however without this step (slooow) the returned object is incorrectly 
-					//handled in the signature checking code... 
-					//though its XML text representation is fully correct even before this step.
-					//TODO a better (faster) approach should be used.
-					
-					AssertionDocument wrapper2 = AssertionDocument.Factory.parse(wrapper.xmlText());
-					ret.add(wrapper2);
+					AssertionDocument xmlBeansWrapper = AssertionDocument.Factory.parse(asNode);
+					ret.add(new XMLBeansWithDom<>(xmlBeansWrapper, asNode));
 				}
 			}			
 		}
-		return ret.toArray(new AssertionDocument[ret.size()]);
+		return ret;
 	}
 	
 	/**
 	 * Extracts encrypted assertions from the wrapping SAML response in a safe way. 
 	 * It is guaranteed that no link is preserved in the returned objects to the parameter object.
 	 */
-	public static EncryptedAssertionDocument[] getEncryptedAssertions(ResponseType response) 
-		throws XmlException, IOException
+	public static List<XMLBeansWithDom<EncryptedAssertionDocument>> getEncryptedAssertions(ResponseType response)
+		throws XmlException
 	{
-		
  		Element node = (Element)response.getDomNode();
  		NodeList allChildren = node.getChildNodes();
 		NodeList asNodes = node.getElementsByTagNameNS(
 			SAMLConstants.ASSERTION_NS, "EncryptedAssertion");
-		if (asNodes == null || asNodes.getLength() == 0)
-			return new EncryptedAssertionDocument[0];
-		List<EncryptedAssertionDocument> ret = new ArrayList<EncryptedAssertionDocument>(asNodes.getLength());
+		if (asNodes.getLength() == 0)
+			return Collections.emptyList();
+		List<XMLBeansWithDom<EncryptedAssertionDocument>> ret = new ArrayList<>(asNodes.getLength());
 		for (int i=0; i<asNodes.getLength(); i++)
 		{
 			Node asNode = asNodes.item(i);
@@ -176,36 +166,35 @@ public class SAMLUtils
 				if (allChildren.item(j).equals(asNode))
 				{
 					EncryptedAssertionDocument parsed = EncryptedAssertionDocument.Factory.parse(asNode); 
-					ret.add(parsed);
+					ret.add(new XMLBeansWithDom<>(parsed, asNode));
 				}
 			}			
 		}
-		return ret.toArray(new EncryptedAssertionDocument[ret.size()]);
+		return ret;
 	}
 	
 	/**
 	 * Extracts all assertions from the response, decrypting those encrypted.
 	 */
-	public static List<AssertionDocument> extractAllAssertions(ResponseType response, PrivateKey decryptionKey) 
+	public static List<XMLBeansWithDom<AssertionDocument>> extractAllAssertions(ResponseType response, PrivateKey decryptionKey)
 			throws Exception
 	{
-		
-		AssertionDocument[] assertions = SAMLUtils.getAssertions(response);
-		EncryptedAssertionDocument[] encAssertions = getEncryptedAssertions(response);
-		List<AssertionDocument> allAs = new ArrayList<AssertionDocument>(assertions.length + 
-				encAssertions.length);
+		List<XMLBeansWithDom<AssertionDocument>> assertions = SAMLUtils.getAssertions(response);
+		List<XMLBeansWithDom<EncryptedAssertionDocument>> encAssertions = getEncryptedAssertions(response);
+		List<XMLBeansWithDom<AssertionDocument>> allAs = new ArrayList<>(assertions.size() + encAssertions.size());
 
-		Collections.addAll(allAs, assertions);
+		allAs.addAll(assertions);
 		
 		if (decryptionKey != null)
 		{
-			for (EncryptedAssertionDocument encAssertion: encAssertions)
+			for (XMLBeansWithDom<EncryptedAssertionDocument> encAssertion: encAssertions)
 			{
-				AssertionParser parser = new AssertionParser(encAssertion, decryptionKey);
-				AssertionDocument wrapper = parser.getXMLBeanDoc();
-				//TODO same as above - extra rewrap needed for signatures
-				AssertionDocument wrapper3 = AssertionDocument.Factory.parse(wrapper.xmlText());
-				allAs.add(wrapper3);
+				EncryptionUtil encUtil = new EncryptionUtil();
+				Document reverted = encUtil.decrypt(SAMLUtils.getDOM(encAssertion.xmlBean), decryptionKey);
+				Element decryptedAssertionElement = (Element) reverted.getElementsByTagNameNS(
+						SAMLConstants.ASSERTION_NS, "Assertion").item(0);
+				AssertionDocument xmlBeansWrapper = AssertionDocument.Factory.parse(decryptedAssertionElement);
+				allAs.add(new XMLBeansWithDom<>(xmlBeansWrapper, decryptedAssertionElement));
 			}
 		}
 		return allAs;
@@ -220,5 +209,17 @@ public class SAMLUtils
 					destinationUri.getHost(), -1, destinationUri.getPath(), 
 					destinationUri.getQuery(), destinationUri.getFragment());
 		return destinationUri;
+	}
+
+	public static class XMLBeansWithDom<T extends XmlObject>
+	{
+		public final T xmlBean;
+		public final Node domNode;
+
+		XMLBeansWithDom(T xmlBean, Node domNode)
+		{
+			this.xmlBean = xmlBean;
+			this.domNode = domNode;
+		}
 	}
 }
