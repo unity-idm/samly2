@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import eu.emi.security.authn.x509.impl.X500NameUtils;
+import io.imunity.tanl.x509.impl.X500NameUtils;
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLValidationException;

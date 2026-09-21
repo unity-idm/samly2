@@ -15,9 +15,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.xmlbeans.XmlOptions;
 import org.junit.Test;
 
-import eu.emi.security.authn.x509.impl.CertificateUtils;
-import eu.emi.security.authn.x509.impl.CertificateUtils.Encoding;
-import eu.emi.security.authn.x509.impl.KeystoreCredential;
+import io.imunity.tanl.x509.impl.CertificateUtils;
+import io.imunity.tanl.x509.impl.CertificateUtils.Encoding;
+import io.imunity.tanl.x509.impl.KeystoreCredential;
 import eu.unicore.samly2.assertion.Assertion;
 import eu.unicore.samly2.assertion.AssertionParser;
 import eu.unicore.samly2.trust.StrictSamlTrustChecker;

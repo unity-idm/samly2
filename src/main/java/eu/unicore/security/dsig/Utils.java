@@ -15,8 +15,8 @@ import java.security.cert.X509Certificate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import eu.emi.security.authn.x509.impl.CertificateUtils;
-import eu.emi.security.authn.x509.impl.CertificateUtils.Encoding;
+import io.imunity.tanl.x509.impl.CertificateUtils;
+import io.imunity.tanl.x509.impl.CertificateUtils.Encoding;
 
 /**
  * Auxiliary static methods.

@@ -83,7 +83,7 @@
 		<dependency>
 			<groupId>io.imunity.tanl</groupId>
 			<artifactId>tanl</artifactId>
-			<version>0.0.2</version>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>

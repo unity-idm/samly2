@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import eu.emi.security.authn.x509.impl.X500NameUtils;
+import io.imunity.tanl.x509.impl.X500NameUtils;
 import eu.unicore.samly2.SAMLConstants;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 import xmlbeans.org.w3.x2000.x09.xmldsig.SignatureType;

@@ -17,7 +17,7 @@ import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.AudienceRestrictionType;
 import xmlbeans.org.oasis.saml2.assertion.AuthnContextType;
 import xmlbeans.org.oasis.saml2.assertion.AuthnStatementType;
-import eu.emi.security.authn.x509.impl.X500NameUtils;
+import io.imunity.tanl.x509.impl.X500NameUtils;
 import eu.unicore.samly2.assertion.Assertion;
 import eu.unicore.samly2.assertion.AssertionParser;
 import eu.unicore.samly2.elements.NameID;

@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import eu.emi.security.authn.x509.impl.X500NameUtils;
+import io.imunity.tanl.x509.impl.X500NameUtils;
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
